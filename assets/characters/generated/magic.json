@@ -1,0 +1,289 @@
+{
+  "id": "magic",
+  "originalBones": 65,
+  "uniqueBones": 65,
+  "maximumBindDifference": 0,
+  "height": 1.8,
+  "scale": 0.01012826710823944,
+  "bytes": 9107160,
+  "clips": [
+    {
+      "name": "Hit",
+      "duration": 1.1833332777023315,
+      "tracks": 53
+    },
+    {
+      "name": "Down",
+      "duration": 2.133333444595337,
+      "tracks": 47
+    },
+    {
+      "name": "GetUp",
+      "duration": 2.700000047683716,
+      "tracks": 47
+    },
+    {
+      "name": "Block",
+      "duration": 2.75,
+      "tracks": 53
+    },
+    {
+      "name": "Roll",
+      "duration": 2.366666555404663,
+      "tracks": 47
+    },
+    {
+      "name": "Defeat",
+      "duration": 3.616666555404663,
+      "tracks": 53
+    },
+    {
+      "name": "Victory",
+      "duration": 4.5,
+      "tracks": 47
+    },
+    {
+      "name": "Idle",
+      "duration": 1.8666666746139526,
+      "tracks": 53
+    },
+    {
+      "name": "AimIdle",
+      "duration": 5.183333396911621,
+      "tracks": 53
+    },
+    {
+      "name": "IdleFidget",
+      "duration": 11.399999618530273,
+      "tracks": 53
+    },
+    {
+      "name": "Walk",
+      "duration": 1.1333333253860474,
+      "tracks": 53
+    },
+    {
+      "name": "Run",
+      "duration": 0.7333333492279053,
+      "tracks": 53
+    },
+    {
+      "name": "Sprint",
+      "duration": 0.5666666626930237,
+      "tracks": 53
+    },
+    {
+      "name": "CombatWalk",
+      "duration": 1.1333333253860474,
+      "tracks": 53
+    },
+    {
+      "name": "CombatRun",
+      "duration": 0.7333333492279053,
+      "tracks": 53
+    },
+    {
+      "name": "BackWalk",
+      "duration": 1.2000000476837158,
+      "tracks": 53
+    },
+    {
+      "name": "BackRun",
+      "duration": 0.6166666746139526,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeLeftWalk",
+      "duration": 1.149999976158142,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeRightWalk",
+      "duration": 1.1833332777023315,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeLeftRun",
+      "duration": 0.75,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeRightRun",
+      "duration": 0.7666666507720947,
+      "tracks": 53
+    },
+    {
+      "name": "TurnLeft",
+      "duration": 1.8666666746139526,
+      "tracks": 53
+    },
+    {
+      "name": "TurnRight",
+      "duration": 1.6333333253860474,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchIdle",
+      "duration": 1.350000023841858,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchWalk",
+      "duration": 1.1333333253860474,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchBack",
+      "duration": 1.2166666984558105,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchLeft",
+      "duration": 1.149999976158142,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchRight",
+      "duration": 1.25,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchStart",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchEnd",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "Jump",
+      "duration": 2.3499999046325684,
+      "tracks": 53
+    },
+    {
+      "name": "JumpRun",
+      "duration": 1.0499999523162842,
+      "tracks": 53
+    },
+    {
+      "name": "Land",
+      "duration": 1.100000023841858,
+      "tracks": 53
+    },
+    {
+      "name": "LandRun",
+      "duration": 1.3666666746139526,
+      "tracks": 53
+    },
+    {
+      "name": "BlockStart",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "BlockEnd",
+      "duration": 1.2833333015441895,
+      "tracks": 53
+    },
+    {
+      "name": "BlockHit",
+      "duration": 1.3333333730697632,
+      "tracks": 53
+    },
+    {
+      "name": "HitBack",
+      "duration": 1.25,
+      "tracks": 53
+    },
+    {
+      "name": "HitLeft",
+      "duration": 1.1833332777023315,
+      "tracks": 53
+    },
+    {
+      "name": "HitRight",
+      "duration": 0.9833333492279053,
+      "tracks": 53
+    },
+    {
+      "name": "DefeatBack",
+      "duration": 3.6666667461395264,
+      "tracks": 53
+    },
+    {
+      "name": "DefeatLeft",
+      "duration": 3.5,
+      "tracks": 53
+    },
+    {
+      "name": "DefeatRight",
+      "duration": 3.5999999046325684,
+      "tracks": 53
+    },
+    {
+      "name": "Light",
+      "duration": 2.2833333015441895,
+      "tracks": 53
+    },
+    {
+      "name": "Kick",
+      "duration": 2.633333444595337,
+      "tracks": 53
+    },
+    {
+      "name": "Heavy",
+      "duration": 3.25,
+      "tracks": 53
+    }
+  ],
+  "sources": {
+    "Hit": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing React Small From Front.fbx",
+    "Down": "./assets/animations/Boxing Animation/Knocked Down.fbx",
+    "GetUp": "./assets/animations/Boxing Animation/Getting Up.fbx",
+    "Block": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Block Idle.fbx",
+    "Roll": "./assets/animations/Boxing Animation/Stand To Roll.fbx",
+    "Defeat": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing React Death Backward.fbx",
+    "Victory": "./assets/animations/Boxing Animation/Victory.fbx",
+    "Idle": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/standing idle.fbx",
+    "AimIdle": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/standing idle 02.fbx",
+    "IdleFidget": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Idle 03.fbx",
+    "Walk": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Walk Forward.fbx",
+    "Run": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Run Forward.fbx",
+    "Sprint": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Sprint Forward.fbx",
+    "CombatWalk": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Walk Forward.fbx",
+    "CombatRun": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Run Forward.fbx",
+    "BackWalk": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Walk Back.fbx",
+    "BackRun": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Run Back.fbx",
+    "StrafeLeftWalk": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Walk Left.fbx",
+    "StrafeRightWalk": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Walk Right.fbx",
+    "StrafeLeftRun": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Run Left.fbx",
+    "StrafeRightRun": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Run Right.fbx",
+    "TurnLeft": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Turn Left 90.fbx",
+    "TurnRight": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Turn Right 90.fbx",
+    "CrouchIdle": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Crouch Idle.fbx",
+    "CrouchWalk": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Crouch Walk Forward.fbx",
+    "CrouchBack": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Crouch Walk Back.fbx",
+    "CrouchLeft": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Crouch Walk Left.fbx",
+    "CrouchRight": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Crouch Walk Right.fbx",
+    "CrouchStart": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Idle To Crouch.fbx",
+    "CrouchEnd": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Crouch To Standing Idle.fbx",
+    "Jump": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Jump.fbx",
+    "JumpRun": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Jump Running.fbx",
+    "Land": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Land To Standing Idle.fbx",
+    "LandRun": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Jump Running Landing.fbx",
+    "BlockStart": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Block Start.fbx",
+    "BlockEnd": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Block End.fbx",
+    "BlockHit": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing Block React Large.fbx",
+    "HitBack": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing React Small From Back.fbx",
+    "HitLeft": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing React Small From Left.fbx",
+    "HitRight": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing React Small From Right.fbx",
+    "DefeatBack": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing React Death Forward.fbx",
+    "DefeatLeft": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing React Death Right.fbx",
+    "DefeatRight": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing React Death Left.fbx",
+    "Light": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing 1H Magic Attack 01.fbx",
+    "Kick": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing 2H Magic Attack 02.fbx",
+    "Heavy": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing 2H Magic Area Attack 02.fbx"
+  }
+}

@@ -1,0 +1,465 @@
+import * as THREE from 'three';
+import { MOVES, DEFENSE, HIT_MAX_ANGLE, attackPhase } from './moves.js';
+import { shortestAngle } from '../characters/Mover.js';
+import { sweepHurtCapsule } from '../physics/collision.js';
+
+const _p = new THREE.Vector3();
+const _q = new THREE.Vector3();
+
+// One fighter: health, the combat state machine, hit detection and hit reactions.
+// States: free | attack | block | dodge | hit | down | getup | victory | dead
+// Controllers (player input, AI) only call tryAttack / wantBlock / tryDodge / steer.
+export class Combatant {
+  constructor({ name, team, character, mover, world, bat = null, maxHp = 100, spawn, spawnFacing, moves = MOVES, defense = DEFENSE, profile = null, equipment = null }) {
+    this.name = name;
+    this.team = team;
+    this.character = character;
+    this.mover = mover;
+    this.world = world;
+    this.bat = bat;
+    this.moves = moves; this.defense = defense; this.profile = profile; this.equipment = equipment;
+    this.cooldowns = {};
+    this.wantCrouch = false; this.crouching = false; this.jumpVelocity = 0;
+    this.maxHp = maxHp;
+    this.hp = maxHp;
+    this.spawn = spawn.clone();
+    this.spawnFacing = spawnFacing;
+    this.radius = 0.38;
+    this.height = 1.7;
+    this.previousPosition = spawn.clone();
+    this.previousFacing = spawnFacing;
+    this.target = null;
+    this.hitTargets = [];
+    this.strikeProgress = 0;
+
+    this.state = 'free';
+    this.stateT = 0;
+    this.move = null;
+    this.strikers = [];
+    this.wantBlock = false;
+    this.buffer = null; this.bufferAim = null; this.bufferT = 0;
+    this.dodgeBuffer = null;
+    this.iframes = 0;
+    this.dodgeCd = 0;
+    this.holdT = 0;
+    this.deadT = 0;
+    this.lastHit = '';
+    this.lastDamage = 0;
+
+    // For the white hit flash.
+    this.flashT = 0;
+    this.mats = [];
+    const seen = new Set();
+    character.model.traverse(o => {
+      if (!o.isMesh) return;
+      for (const m of [].concat(o.material)) {
+        if (m && m.emissive && !seen.has(m)) { seen.add(m); this.mats.push({ m, e: m.emissive.clone(), i: m.emissiveIntensity }); }
+      }
+    });
+
+    this.reset();
+  }
+
+  get alive() { return this.state !== 'dead'; }
+  get position() { return this.character.root.position; }
+  get phase() { return this.state === 'attack' ? attackPhase(this.move, this.character.actionProgress()) : this.state === 'free' ? 'idle' : this.state === 'hit' ? 'stagger' : this.state === 'down' ? 'knockdown' : this.state; }
+
+  replaceFighter({ character, mover, profile, moves, defense, equipment = null }) {
+    const scene = this.character.root.parent;
+    this.character.mixer.stopAllAction(); this.character.mixer.uncacheRoot(this.character.model);
+    const oldMaterials = new Set();
+    this.character.model.traverse(o => { if (o.isMesh) for (const m of [].concat(o.material)) oldMaterials.add(m); });
+    for (const material of oldMaterials) material.dispose();
+    this.equipment?.dispose(); this.character.root.removeFromParent();
+    Object.assign(this, { character, mover, profile, moves, defense, equipment, bat: null });
+    this.mats = [];
+    const seen = new Set();
+    character.model.traverse(o => { if (o.isMesh) for (const m of [].concat(o.material)) if (m.emissive && !seen.has(m)) {
+      seen.add(m); this.mats.push({ m, e: m.emissive.clone(), i: m.emissiveIntensity });
+    } });
+    scene?.add(character.root); this.reset();
+  }
+
+  reset() {
+    this.hp = this.maxHp;
+    this.character.root.position.copy(this.spawn);
+    this.previousPosition.copy(this.spawn);
+    this.previousFacing = this.spawnFacing;
+    this.character.root.rotation.y = this.spawnFacing;
+    this.mover.facing = this.spawnFacing;
+    this.mover.facingTarget = null;
+    this.mover.lockFacing = null;
+    this.mover.enabled = true;
+    this.mover.steer(_p.set(0, 0, 0), 0);
+    this.mover.impulse.set(0, 0, 0);
+    this.mover.speed = 0;
+    this.mover.velocity.set(0, 0, 0);
+    this.character.mixer.stopAllAction();
+    this.character.action = null; this.character.actionName = null;
+    this.character.startLocomotion(this.character.locomotionOptions);
+    this.character.update(0);
+    this.character.locoGain = 1;
+    this.state = 'free';
+    this.stateT = 0;
+    this.move = null;
+    this.strikers = [];
+    this.buffer = null;
+    this.bufferAim = null; this.bufferT = 0;
+    this.dodgeBuffer = null; this.castTarget = null;
+    this.dodgeCd = 0;
+    this.wantBlock = false;
+    this.cooldowns = {}; this.wantCrouch = false; this.crouching = false; this.jumpVelocity = 0;
+    this.mover.crouching = false; this.mover.sprinting = false;
+    this.target = null;
+    this.hitTargets = []; this.strikeProgress = 0;
+    this.iframes = 0.6;
+    this.deadT = 0;
+    this.holdT = 0;
+    this.flashT = 0;
+    for (const x of this.mats) { x.m.emissive.copy(x.e); x.m.emissiveIntensity = x.i; }
+  }
+
+  // ---- Intents --------------------------------------------------------
+  tryAttack(id, aim = null) {
+    if (this.world.combatEnabled === false) return false;
+    const m = this.moves[id];
+    if (!m || !this.character.hasClip(m.clip)) return false;
+    if (m.requiresBat && (!this.bat || !this.bat.holder.visible)) return false;
+    if ((this.cooldowns[id] || 0) > 0) return false;
+    if (this.state === 'attack') { this.buffer = id; this.bufferAim = aim; this.bufferT = 0.5; return false; }
+    if (!['free', 'block', 'blockEnd'].includes(this.state)) return false;
+    this._startAttack(id, aim);
+    return true;
+  }
+
+  tryDodge(aim = null) {
+    if (this.world.combatEnabled === false) return false;
+    if (this.dodgeCd > 0) return false;
+    const D = this.defense.dodge;
+    if (!this.character.hasClip(D.clip)) return false;
+    if (this.state === 'attack') {
+      const progress = this.character.actionProgress(), opens = this.move.dodgeCancelAt ?? this.move.cancelAt;
+      if (progress < opens) {
+        const remaining = (opens - progress) * this.character.action.getClip().duration / this.move.speed;
+        if (remaining <= 0.16) this.dodgeBuffer = { aim, remaining: 0.18 };
+        return false;
+      }
+      this._toFree(0.06);
+    }
+    if (!['free', 'block', 'blockEnd'].includes(this.state)) return false;
+    const ang = aim !== null ? aim : this.mover.facing;
+    this.mover.facing = ang; this.mover.facingTarget = null;
+    this.character.playAction(D.clip, { fade: 0.08, timeScale: D.speed });
+    this.mover.addImpulse(new THREE.Vector3(Math.sin(ang), 0, Math.cos(ang)).multiplyScalar(D.impulse), D.decay);
+    this._setState('dodge');
+    this.dodgeCd = D.cooldown;
+    this.buffer = null; this.dodgeBuffer = null;
+    return true;
+  }
+
+  tryJump() {
+    if (this.world.combatEnabled === false || this.state !== 'free' || this.position.y > 0.01 || !this.character.hasClip('Jump')) return false;
+    this.crouching = false; this.mover.crouching = false;
+    this.jumpVelocity = 5.2;
+    const moving = this.mover.speed > 2 && this.character.hasClip('JumpRun');
+    const clip = moving ? 'JumpRun' : 'Jump';
+    this.jumpMoving = moving;
+    const duration = this.character.actions.get(clip).getClip().duration;
+    this.character.playAction(clip, { fade: 0.07, timeScale: this.character.hasClip('JumpLoop') ? 1.4 : duration / 0.8 });
+    this._setState('jump'); return true;
+  }
+
+  // ---- State machine --------------------------------------------------
+  _setState(s) { this.state = s; this.stateT = 0; }
+
+  _toFree(fade = 0.18) {
+    this.character.endAction(fade);
+    this.move = null;
+    this.strikers = [];
+    this.buffer = null; this.dodgeBuffer = null;
+    this.mover.facingTarget = null;
+    this.mover.faceRate = 24;
+    this._setState('free');
+  }
+
+  _nearestEnemy() {
+    let best = null;
+    const me = this.position;
+    for (const c of this.world.combatants) {
+      if (c === this || c.team === this.team || !c.alive) continue;
+      const dx = c.position.x - me.x, dz = c.position.z - me.z;
+      const d = Math.hypot(dx, dz);
+      if (!best || d < best.dist) best = { c, dist: d, angle: Math.atan2(dx, dz) };
+    }
+    return best;
+  }
+
+  _setStrikers(m) {
+    this.strikers = [];
+    for (const n of m.strikers) {
+      let obj = null;
+      if (n === 'bat:tip') obj = this.bat?.tip;
+      else if (n === 'bat:mid') obj = this.bat?.mid;
+      else if (n === 'bat:base') obj = this.bat?.base;
+      else obj = this.character.bone(n);
+      if (!obj) continue;
+      obj.getWorldPosition(_p);
+      this.strikers.push({ obj, prev: _p.clone(), armed: true, speed: 0, name: n });
+    }
+  }
+
+  _startAttack(id, aim) {
+    this.dodgeBuffer = null;
+    this.crouching = false; this.mover.crouching = false;
+    const m = this.moves[id];
+    const e = this.target?.alive
+      ? { c: this.target, dist: this.position.distanceTo(this.target.position), angle: Math.atan2(this.target.position.x - this.position.x, this.target.position.z - this.position.z) }
+      : this._nearestEnemy();
+    let ang = this.mover.facing;
+    if (aim !== null) ang = aim;
+    if (e && e.dist < 4.0) {
+      const toE = shortestAngle(ang, e.angle);
+      if (Math.abs(toE) < 1.75) ang = e.angle;       // soft auto-aim: within ~100 deg of where you point
+    }
+    this.mover.facingTarget = ang;
+    const decay = 7;
+    let v = m.lunge * 0.5;
+    if (e && e.dist < 4.0) v = THREE.MathUtils.clamp((e.dist - 0.95) * decay, 0, m.lunge);
+    this.mover.addImpulse(new THREE.Vector3(Math.sin(ang), 0, Math.cos(ang)).multiplyScalar(v), decay);
+
+    this.character.playAction(m.clip, { fade: m.fade, timeScale: m.speed });
+    this.move = m;
+    this.moveId = id;
+    // Ranged attacks commit their aim during startup; moving targets can evade.
+    this.castTarget = m.kind === 'projectile' && e && Math.abs(shortestAngle(ang, e.angle)) < Math.PI / 3
+      ? e.c.position.clone().add(new THREE.Vector3(0, 1, 0)) : null;
+    this.cooldowns[id] = m.cooldown || 0;
+    this.attackEvents = new Set();
+    this.hitTargets = m.windows.map(() => new Set());
+    this.strikeProgress = 0;
+    this._setStrikers(m);
+    this._setState('attack');
+  }
+
+  _startBlock() {
+    this.crouching = false; this.mover.crouching = false;
+    const B = this.defense.block;
+    this.guardPhase = this.character.hasClip('BlockStart') ? 'start' : 'hold';
+    this.character.playAction(this.guardPhase === 'start' ? 'BlockStart' : B.clip, { fade: 0.1, timeScale: B.speed, loop: this.guardPhase === 'hold' && B.loop });
+    this._setState('block');
+  }
+
+  update(dt) {
+    this.previousPosition.copy(this.position);
+    this.previousFacing = this.mover.facing;
+    const ch = this.character;
+    for (const id of Object.keys(this.cooldowns)) this.cooldowns[id] = Math.max(0, this.cooldowns[id] - dt);
+    if (this.iframes > 0) this.iframes -= dt;
+    if (this.dodgeCd > 0) this.dodgeCd -= dt;
+    if (this.bufferT > 0) { this.bufferT -= dt; if (this.bufferT <= 0) this.buffer = null; }
+    this.stateT += dt;
+    this._updateFlash(dt);
+    if (this.dodgeBuffer) {
+      this.dodgeBuffer.remaining -= dt;
+      if (this.dodgeBuffer.remaining <= 0) this.dodgeBuffer = null;
+      else if (this.state === 'attack' && ch.actionProgress() >= (this.move.dodgeCancelAt ?? this.move.cancelAt)) this.tryDodge(this.dodgeBuffer.aim);
+    }
+    const p = ch.actionProgress();
+
+    switch (this.state) {
+      case 'free':
+        this.crouching = !!this.wantCrouch && ch.hasClip('CrouchIdle');
+        this.mover.crouching = this.crouching;
+        if (this.wantBlock) this._startBlock();
+        break;
+      case 'attack': {
+        const m = this.move;
+        // Heading is committed once the first strike is active.
+        if (p >= m.windows[0][0]) this.mover.facingTarget = null;
+        if (this.buffer && p >= m.cancelAt && !(this.cooldowns[this.buffer] > 0)) {
+          const b = this.buffer, aim = this.bufferAim; this.buffer = null;
+          this._startAttack(b, aim);
+        } else if (p >= m.endAt) this._toFree(0.18);
+        break;
+      }
+      case 'block': {
+        const e = this._nearestEnemy();
+        this.mover.facingTarget = e ? e.angle : null;
+        const B = this.defense.block;
+        if (!this.wantBlock) {
+          if (ch.hasClip('BlockEnd')) { ch.playAction('BlockEnd', { fade: 0.08, timeScale: 2.5 }); this._setState('blockEnd'); }
+          else this._toFree(0.15);
+        } else if ((this.guardPhase === 'start' || this.guardPhase === 'react') && p >= 0.94) {
+          this.guardPhase = 'hold'; ch.playAction(B.clip, { fade: 0.1, timeScale: B.speed, loop: !!B.loop });
+        } else if (!B.loop && p >= B.hold && ch.action) ch.action.paused = true;
+        break;
+      }
+      case 'blockEnd':
+        if (p >= 0.92) this._toFree(0.1);
+        break;
+      case 'jump':
+        if (ch.hasClip('JumpLoop') && ch.actionName === 'Jump' && p >= 0.9) ch.playAction('JumpLoop', { fade: 0.08, loop: true });
+        break;
+      case 'land':
+        if (p >= 0.9) this._toFree(0.1);
+        break;
+      case 'dodge':
+        if (p >= this.defense.dodge.endAt) this._toFree(0.15);
+        break;
+      case 'hit':
+        if (p >= this.defense.hit.endAt) this._toFree(0.15);
+        break;
+      case 'down':
+        if (p >= 0.97) {
+          this.holdT += dt;
+          if (this.holdT > this.defense.down.hold) {
+            ch.playAction(this.defense.getUp.clip, { fade: 0.1, timeScale: this.defense.getUp.speed });
+            this._setState('getup');
+          }
+        }
+        break;
+      case 'getup':
+        if (p >= this.defense.getUp.endAt) { this.iframes = 0.3; this._toFree(0.15); }
+        break;
+      case 'victory':
+        if (this.stateT > 2.5) this._toFree(0.3);
+        break;
+      case 'dead':
+        this.deadT += dt;
+        if (this.deadT > 3.5) this.world.onRespawn?.(this);
+        break;
+    }
+
+    this.height = this.crouching ? 1.12 : this.profile?.height || 1.7;
+    this.mover.enabled = this.state === 'free' || this.state === 'jump' || (this.state === 'land' && this.jumpMoving);
+    this.mover.update(dt);
+    if (this.jumpVelocity !== 0 || this.position.y > 0) {
+      this.jumpVelocity -= 14 * dt; this.position.y += this.jumpVelocity * dt;
+      if (this.position.y <= 0) {
+        this.position.y = 0; this.jumpVelocity = 0;
+        if (this.state === 'jump') {
+          const clip = this.jumpMoving && ch.hasClip('LandRun') ? 'LandRun' : 'Land';
+          if (ch.hasClip(clip)) { ch.playAction(clip, { fade: 0.07, timeScale: 2.8 }); this._setState('land'); }
+          else this._toFree(0.12);
+        }
+      }
+    }
+  }
+
+  // Runs after the mixer has posed the skeleton, so strike points are current.
+  postAnimation(dt) {
+    if (this.state !== 'attack' || dt < 1e-4) return;
+    const m = this.move;
+    const p = this.character.actionProgress();
+    const previousProgress = this.strikeProgress;
+    this.strikeProgress = p;
+    const root = this.position;
+    for (const [index, event] of (m.events || []).entries()) if (previousProgress <= event && p >= event && !this.attackEvents.has(index)) {
+      this.attackEvents.add(index);
+      this.world.onCast?.(this, m);
+    }
+
+    for (const s of this.strikers) {
+      s.obj.getWorldPosition(_p);
+      s.speed = _p.distanceTo(s.prev) / dt;
+      const from = s.prev.clone(), to = _p.clone();
+      s.prev.copy(_p);
+      s.armed = false;
+      for (let index = 0; index < m.windows.length; index++) {
+        const [start, end] = m.windows[index];
+        const a = Math.max(previousProgress, start), b = Math.min(p, end);
+        if (b <= a || s.speed < m.minSpeed) continue;
+        s.armed = true;
+        // Clip the sweep to the active part of this animation step. Motion in
+        // startup/recovery cannot leak into a hit at a window boundary.
+        const span = p - previousProgress;
+        const activeFrom = from.clone().lerp(to, (a - previousProgress) / span);
+        const activeTo = from.clone().lerp(to, (b - previousProgress) / span);
+        if (m.power === 'heavy') this.world.onTrail?.(activeFrom, activeTo);
+        for (const t of this.world.combatants) {
+          if (t === this || t.team === this.team || !t.alive || this.hitTargets[index].has(t)) continue;
+          const dx = t.position.x - root.x, dz = t.position.z - root.z;
+          if (Math.abs(shortestAngle(this.mover.facing, Math.atan2(dx, dz))) > HIT_MAX_ANGLE) continue;
+          if (this.world.arena && !this.world.arena.hasLineOfSight(root, t.position)) continue;
+          const point = new THREE.Vector3();
+          if (!sweepHurtCapsule(activeFrom, activeTo, t, m.strikeRadius, point, (a - previousProgress) / span, (b - previousProgress) / span)) continue;
+          const dir = _q.set(dx, 0, dz).normalize().clone();
+          const res = t.takeHit({ damage: m.damage, knock: m.knock, power: m.power, dir, attacker: this, point });
+          if (res !== 'miss') {
+            this.hitTargets[index].add(t);
+            this.world.onHit?.(this, t, res, m, point);
+          }
+        }
+      }
+    }
+  }
+
+  // Returns 'miss' (no effect), 'blocked', 'hit', 'down', or 'dead'.
+  takeHit({ damage, knock, power, dir, attacker }) {
+    if (this.world.combatEnabled === false) return 'miss';
+    if (this.state === 'dead' || this.state === 'down' || this.state === 'getup') return 'miss';
+    if (this.iframes > 0) return 'miss';
+    if (this.state === 'dodge' && this.character.actionProgress() < this.defense.dodge.iframeUntil) return 'miss';
+
+    const toAttacker = Math.atan2(-dir.x, -dir.z);
+    const B = this.defense.block;
+    const facingAttacker = Math.abs(shortestAngle(this.mover.facing, toAttacker)) < B.arc * Math.PI / 180;
+
+    if (this.state === 'block' && facingAttacker && power !== 'heavy') {
+      const before = this.hp;
+      this.hp = Math.max(Math.min(1, this.hp), this.hp - damage * B.damageTaken);
+      this.lastDamage = before - this.hp;
+      this.mover.addImpulse(dir.clone().multiplyScalar(knock * B.pushback), 6);
+      this._flash(0.08, 0.3, 0.55, 1.0);
+      if (this.character.hasClip('BlockHit')) { this.guardPhase = 'react'; this.character.playAction('BlockHit', { fade: 0.05, timeScale: 2 }); }
+      return 'blocked';
+    }
+
+    // Heavy hits break a guard but do reduced damage to it.
+    const dmg = this.state === 'block' ? damage * 0.6 : damage;
+    this.lastDamage = Math.min(this.hp, dmg);
+    this.hp -= dmg;
+    this._flash(0.1, 1.0, 0.4, 0.25);
+    this.buffer = null;
+    this.dodgeBuffer = null;
+    this.move = null;
+    this.strikers = [];
+    this.mover.facingTarget = toAttacker;
+    this.mover.faceRate = 40;
+    this.mover.addImpulse(dir.clone().multiplyScalar(knock), power === 'heavy' ? 4.5 : 6);
+
+    if (this.hp <= 0) {
+      this.hp = 0;
+      this.character.playAction(this.reactionClip('Defeat', toAttacker), { fade: 0.1, timeScale: 1.2 });
+      this._setState('dead');
+      this.deadT = 0;
+      this.world.onKill?.(attacker, this);
+      return 'dead';
+    }
+    if (power === 'heavy') {
+      this.character.playAction(this.defense.down.clip, { fade: 0.08, timeScale: this.defense.down.speed });
+      this.holdT = 0;
+      this._setState('down');
+      return 'down';
+    }
+    this.character.playAction(this.reactionClip(this.defense.hit.clip, toAttacker), { fade: 0.06, timeScale: this.defense.hit.speed });
+    this._setState('hit');
+    return 'hit';
+  }
+
+  // ---- Visual feedback ------------------------------------------------
+  reactionClip(base, angle) {
+    const diff = shortestAngle(this.mover.facing, angle);
+    const suffix = Math.abs(diff) > Math.PI * 0.75 ? 'Back' : Math.abs(diff) > Math.PI * 0.25 ? diff > 0 ? 'Right' : 'Left' : '';
+    return this.character.hasClip(base + suffix) ? base + suffix : base;
+  }
+  _flash(t, r, g, b) {
+    this.flashT = t;
+    for (const x of this.mats) { x.m.emissive.setRGB(r, g, b); x.m.emissiveIntensity = 0.9; }
+  }
+  _updateFlash(dt) {
+    if (this.flashT <= 0) return;
+    this.flashT -= dt;
+    if (this.flashT <= 0) for (const x of this.mats) { x.m.emissive.copy(x.e); x.m.emissiveIntensity = x.i; }
+  }
+}

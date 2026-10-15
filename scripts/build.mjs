@@ -1,0 +1,31 @@
+import { cp, mkdir, readFile, writeFile, rm, lstat, readdir } from 'node:fs/promises';
+import path from 'node:path';
+
+const root = process.cwd();
+const output = path.resolve(root, 'dist');
+if (path.dirname(output) !== root || path.basename(output) !== 'dist') throw new Error('Invalid output directory');
+const previous = await lstat(output).catch(error => { if (error.code !== 'ENOENT') throw error; });
+if (previous?.isSymbolicLink()) throw new Error('Refusing to replace a linked output directory');
+await rm(output, { recursive: true, force: true });
+await mkdir(output, { recursive: true });
+
+// Preserve runtime paths; FBX sources, development tools and unused models stay local.
+for (const entry of ['src', 'assets/characters/generated', 'assets/environment', 'assets/textures', 'assets/ASSET-LICENSES.md']) {
+  await cp(path.join(root, entry), path.join(output, entry), { recursive: true });
+}
+await mkdir(path.join(output, 'vendor/three/build'), { recursive: true });
+await cp(path.join(root, 'node_modules/three/build/three.module.js'), path.join(output, 'vendor/three/build/three.module.js'));
+await cp(path.join(root, 'node_modules/three/examples/jsm'), path.join(output, 'vendor/three/examples/jsm'), { recursive: true });
+await cp(path.join(root, 'node_modules/three/LICENSE'), path.join(output, 'vendor/three/LICENSE'));
+const html = (await readFile(path.join(root, 'index.html'), 'utf8')).replaceAll('./node_modules/three/', './vendor/three/');
+await writeFile(path.join(output, 'index.html'), html);
+
+async function size(dir) {
+  let total = 0;
+  for (const item of await readdir(dir, { withFileTypes: true })) {
+    const file = path.join(dir, item.name);
+    total += item.isDirectory() ? await size(file) : (await lstat(file)).size;
+  }
+  return total;
+}
+console.log(`Static game ready in dist (${((await size(output)) / 1e6).toFixed(1)} MB).`);

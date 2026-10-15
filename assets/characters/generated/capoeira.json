@@ -1,0 +1,162 @@
+{
+  "id": "capoeira",
+  "originalBones": 109,
+  "uniqueBones": 65,
+  "maximumBindDifference": 0,
+  "height": 1.8,
+  "scale": 0.009993452866756966,
+  "bytes": 9937224,
+  "clips": [
+    {
+      "name": "Hit",
+      "duration": 1.5833333730697632,
+      "tracks": 47
+    },
+    {
+      "name": "Down",
+      "duration": 2.133333444595337,
+      "tracks": 47
+    },
+    {
+      "name": "GetUp",
+      "duration": 2.700000047683716,
+      "tracks": 47
+    },
+    {
+      "name": "Block",
+      "duration": 2.5166666507720947,
+      "tracks": 47
+    },
+    {
+      "name": "Roll",
+      "duration": 2.9000000953674316,
+      "tracks": 53
+    },
+    {
+      "name": "Defeat",
+      "duration": 4.75,
+      "tracks": 47
+    },
+    {
+      "name": "Victory",
+      "duration": 4.5,
+      "tracks": 47
+    },
+    {
+      "name": "Idle",
+      "duration": 3.5333333015441895,
+      "tracks": 53
+    },
+    {
+      "name": "AimIdle",
+      "duration": 3.8333332538604736,
+      "tracks": 53
+    },
+    {
+      "name": "Walk",
+      "duration": 1.0333333015441895,
+      "tracks": 47
+    },
+    {
+      "name": "Run",
+      "duration": 0.699999988079071,
+      "tracks": 47
+    },
+    {
+      "name": "CombatWalk",
+      "duration": 1.2333333492279053,
+      "tracks": 53
+    },
+    {
+      "name": "CombatRun",
+      "duration": 1.2333333492279053,
+      "tracks": 53
+    },
+    {
+      "name": "BackWalk",
+      "duration": 1.1333333253860474,
+      "tracks": 53
+    },
+    {
+      "name": "BackRun",
+      "duration": 1.1333333253860474,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeLeftWalk",
+      "duration": 2.2666666507720947,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeRightWalk",
+      "duration": 1.6666666269302368,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeLeftRun",
+      "duration": 2.2666666507720947,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeRightRun",
+      "duration": 1.6666666269302368,
+      "tracks": 53
+    },
+    {
+      "name": "Light",
+      "duration": 2.450000047683716,
+      "tracks": 53
+    },
+    {
+      "name": "Kick",
+      "duration": 1.3666666746139526,
+      "tracks": 53
+    },
+    {
+      "name": "Heavy",
+      "duration": 1.6333333253860474,
+      "tracks": 53
+    },
+    {
+      "name": "Jump",
+      "duration": 2.1666667461395264,
+      "tracks": 47
+    },
+    {
+      "name": "IdleFidget",
+      "duration": 2.9000000953674316,
+      "tracks": 53
+    },
+    {
+      "name": "Sprint",
+      "duration": 0.5793103349619898,
+      "tracks": 47
+    }
+  ],
+  "sources": {
+    "Hit": "./assets/animations/Boxing Animation/Hit Reaction.fbx",
+    "Down": "./assets/animations/Boxing Animation/Knocked Down.fbx",
+    "GetUp": "./assets/animations/Boxing Animation/Getting Up.fbx",
+    "Block": "./assets/animations/Boxing Animation/Outward Block.fbx",
+    "Roll": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/au.fbx",
+    "Defeat": "./assets/animations/Boxing Animation/Defeat.fbx",
+    "Victory": "./assets/animations/Boxing Animation/Victory.fbx",
+    "Idle": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/ginga variation 1.fbx",
+    "AimIdle": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/ginga variation 2.fbx",
+    "Walk": "./assets/animations/locomotion/walking.fbx",
+    "Run": "./assets/animations/locomotion/running.fbx",
+    "CombatWalk": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/ginga forward.fbx",
+    "CombatRun": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/ginga forward.fbx",
+    "BackWalk": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/ginga backward.fbx",
+    "BackRun": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/ginga backward.fbx",
+    "StrafeLeftWalk": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/ginga sideways 2.fbx",
+    "StrafeRightWalk": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/ginga sideways 1.fbx",
+    "StrafeLeftRun": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/ginga sideways 2.fbx",
+    "StrafeRightRun": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/ginga sideways 1.fbx",
+    "Light": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/meia lua de frente.fbx",
+    "Kick": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/bencao.fbx",
+    "Heavy": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/armada.fbx",
+    "Jump": "./assets/animations/locomotion/jump.fbx",
+    "IdleFidget": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/ginga variation 3.fbx"
+  }
+}

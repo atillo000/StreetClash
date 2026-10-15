@@ -1,0 +1,307 @@
+{
+  "id": "soldier",
+  "originalBones": 65,
+  "uniqueBones": 65,
+  "maximumBindDifference": 0,
+  "height": 1.85,
+  "scale": 0.010188597927557335,
+  "bytes": 13459596,
+  "clips": [
+    {
+      "name": "Hit",
+      "duration": 1.5833333730697632,
+      "tracks": 47
+    },
+    {
+      "name": "Down",
+      "duration": 2.133333444595337,
+      "tracks": 47
+    },
+    {
+      "name": "GetUp",
+      "duration": 2.700000047683716,
+      "tracks": 47
+    },
+    {
+      "name": "Block",
+      "duration": 2.5166666507720947,
+      "tracks": 47
+    },
+    {
+      "name": "Roll",
+      "duration": 2.366666555404663,
+      "tracks": 47
+    },
+    {
+      "name": "Defeat",
+      "duration": 3.4166667461395264,
+      "tracks": 53
+    },
+    {
+      "name": "Victory",
+      "duration": 4.5,
+      "tracks": 47
+    },
+    {
+      "name": "Idle",
+      "duration": 2.0999999046325684,
+      "tracks": 53
+    },
+    {
+      "name": "AimIdle",
+      "duration": 2.0999999046325684,
+      "tracks": 53
+    },
+    {
+      "name": "Walk",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "Run",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "Sprint",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "CombatWalk",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "CombatRun",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "BackWalk",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "BackRun",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeLeftWalk",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeRightWalk",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeLeftRun",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeRightRun",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "ForwardLeftWalk",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "ForwardRightWalk",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "BackLeftWalk",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "BackRightWalk",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "ForwardLeftRun",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "ForwardRightRun",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "BackLeftRun",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "BackRightRun",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "TurnLeft",
+      "duration": 0.9833333492279053,
+      "tracks": 53
+    },
+    {
+      "name": "TurnRight",
+      "duration": 0.9833333492279053,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchIdle",
+      "duration": 2.0999999046325684,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchWalk",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchBack",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchLeft",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchRight",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchForwardLeft",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchForwardRight",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchBackLeft",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "CrouchBackRight",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "Jump",
+      "duration": 0.5333333611488342,
+      "tracks": 53
+    },
+    {
+      "name": "JumpLoop",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "Land",
+      "duration": 0.6666666865348816,
+      "tracks": 53
+    },
+    {
+      "name": "MoveStart",
+      "duration": 1.4500000476837158,
+      "tracks": 53
+    },
+    {
+      "name": "MoveStop",
+      "duration": 2.6666667461395264,
+      "tracks": 53
+    },
+    {
+      "name": "Light",
+      "duration": 1.1666666269302368,
+      "tracks": 53
+    },
+    {
+      "name": "Heavy",
+      "duration": 1.1666666269302368,
+      "tracks": 53
+    },
+    {
+      "name": "Kick",
+      "duration": 1.0333333015441895,
+      "tracks": 47
+    },
+    {
+      "name": "DefeatBack",
+      "duration": 2.950000047683716,
+      "tracks": 53
+    },
+    {
+      "name": "DefeatLeft",
+      "duration": 3.2833333015441895,
+      "tracks": 53
+    }
+  ],
+  "sources": {
+    "Hit": "./assets/animations/Boxing Animation/Hit Reaction.fbx",
+    "Down": "./assets/animations/Boxing Animation/Knocked Down.fbx",
+    "GetUp": "./assets/animations/Boxing Animation/Getting Up.fbx",
+    "Block": "./assets/animations/Boxing Animation/Outward Block.fbx",
+    "Roll": "./assets/animations/Boxing Animation/Stand To Roll.fbx",
+    "Defeat": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/death from the front.fbx",
+    "Victory": "./assets/animations/Boxing Animation/Victory.fbx",
+    "Idle": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/idle.fbx",
+    "AimIdle": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/idle aiming.fbx",
+    "Walk": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk forward.fbx",
+    "Run": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/run forward.fbx",
+    "Sprint": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/sprint forward.fbx",
+    "CombatWalk": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk forward.fbx",
+    "CombatRun": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/run forward.fbx",
+    "BackWalk": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk backward.fbx",
+    "BackRun": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/run backward.fbx",
+    "StrafeLeftWalk": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk left.fbx",
+    "StrafeRightWalk": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk right.fbx",
+    "StrafeLeftRun": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/run left.fbx",
+    "StrafeRightRun": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/run right.fbx",
+    "ForwardLeftWalk": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk forward left.fbx",
+    "ForwardRightWalk": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk forward right.fbx",
+    "BackLeftWalk": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk backward left.fbx",
+    "BackRightWalk": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk backward right.fbx",
+    "ForwardLeftRun": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/run forward left.fbx",
+    "ForwardRightRun": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/run forward right.fbx",
+    "BackLeftRun": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/run backward left.fbx",
+    "BackRightRun": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/run backward right.fbx",
+    "TurnLeft": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/turn 90 left.fbx",
+    "TurnRight": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/turn 90 right.fbx",
+    "CrouchIdle": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/idle crouching.fbx",
+    "CrouchWalk": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk crouching forward.fbx",
+    "CrouchBack": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk crouching backward.fbx",
+    "CrouchLeft": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk crouching left.fbx",
+    "CrouchRight": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk crouching right.fbx",
+    "CrouchForwardLeft": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk crouching forward left.fbx",
+    "CrouchForwardRight": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk crouching forward right.fbx",
+    "CrouchBackLeft": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk crouching backward left.fbx",
+    "CrouchBackRight": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/walk crouching backward right.fbx",
+    "Jump": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/jump up.fbx",
+    "JumpLoop": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/jump loop.fbx",
+    "Land": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/jump down.fbx",
+    "MoveStart": "./assets/animations/Soldier Character Animation Pack/Shooter Locomotion Pack/start walking.fbx",
+    "MoveStop": "./assets/animations/Soldier Character Animation Pack/Shooter Locomotion Pack/stop walking.fbx",
+    "Light": "./assets/animations/Soldier Character Animation Pack/Shooter Locomotion Pack/firing rifle.fbx",
+    "Heavy": "./assets/animations/Soldier Character Animation Pack/Shooter Locomotion Pack/firing rifle.fbx",
+    "Kick": "./assets/animations/Boxing Animation/Mma Kick.fbx",
+    "DefeatBack": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/death from the back.fbx",
+    "DefeatLeft": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/death from right.fbx"
+  }
+}

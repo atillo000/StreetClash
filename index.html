@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Street Clash — Ironworks</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #14161c; overflow: hidden; font-family: system-ui, sans-serif; color: #fff; }
+  canvas { display: block; }
+  #hud { position: fixed; top: 12px; left: 12px; font-size: 13px; line-height: 1.5; background: rgba(0,0,0,.55); padding: 10px 14px; border-radius: 8px; }
+  #hud b { color: #ffcf40; }
+  #status { position: fixed; bottom: 12px; left: 12px; font-size: 12px; opacity: .8; }
+  #error { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(10,10,14,.92); text-align: center; padding: 24px; }
+  .bar { width: 260px; height: 14px; background: rgba(0,0,0,.6); border: 2px solid #000; border-radius: 4px; overflow: hidden; }
+  .bar > div { height: 100%; width: 100%; transition: width .12s; }
+  #barP { position: fixed; bottom: 36px; left: 50%; transform: translateX(-50%); text-align: center; font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+  #barP .bar { width: 340px; } #hpP { background: linear-gradient(#5be37a,#2aa84d); }
+  #barE { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); text-align: center; font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+  #barE .bar { width: 340px; } #hpE { background: linear-gradient(#ff6a5c,#c92a2a); }
+  #debug { position: fixed; top: 12px; right: 12px; display: none; white-space: pre; font: 12px/1.4 ui-monospace, Consolas, monospace; background: rgba(0,0,0,.6); padding: 8px 10px; border-radius: 6px; }
+  #defeat { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; font-size: 56px; font-weight: 900; letter-spacing: 4px; color: #ff5a4d; text-shadow: 0 4px 0 #000; pointer-events: none; }
+  #combat { position: fixed; bottom: 82px; left: 50%; transform: translateX(-50%); text-align: center; font-size: 12px; line-height: 1.8; background: #101726cc; border: 1px solid #6985a0; border-radius: 8px; padding: 8px 20px; }
+  #phase { color: #ffcf40; font-weight: 800; letter-spacing: 1px; }
+  #lock { color: #b6d9ff; }
+  #pause { position: fixed; inset: 0; display: none; z-index: 5; align-items: center; justify-content: center; background: #101623dd; text-align: center; }
+  #pause h1 { letter-spacing: 6px; color: #ffcf40; }
+  #resume { border: 0; border-radius: 6px; padding: 12px 30px; background: #ffcf40; color: #171c2a; font: bold 16px system-ui; cursor: pointer; }
+</style>
+<link rel="stylesheet" href="./src/ui/game.css">
+<script type="importmap">
+{ "imports": {
+  "three": "./node_modules/three/build/three.module.js",
+  "three/addons/": "./node_modules/three/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<section id="lobby" class="screen lobby" aria-label="Match setup">
+  <div class="menu-card">
+    <div class="eyebrow">STREET CLASH / UNDERGROUND CIRCUIT</div>
+    <h1>AFTER<br><span>HOURS.</span></h1>
+    <p class="menu-intro">Clock out. Square up. Own the loading bay.</p>
+    <div class="fighter-select"><div class="eyebrow">CHOOSE YOUR FIGHTER</div><div id="fighterChoices"></div><p id="fighterDescription"></p><label for="opponentChoice">RIVAL</label><select id="opponentChoice"></select></div>
+    <div class="arena-card"><span class="arena-number">09</span><div><strong>IRONWORKS</strong><small>DOCK 09 · INDUSTRIAL WAREHOUSE</small></div><span class="arena-tag">1V1</span></div>
+    <p class="match-rules">One rival. Two minutes. Win by knockout or finish with more health.</p>
+    <button id="startMatch" class="primary" type="button" disabled>Loading warehouse…</button>
+    <button id="practice" class="secondary" type="button" disabled>Practice arena</button>
+    <p class="menu-controls"><kbd>WASD</kbd> move <kbd>J / K / L</kbd> attacks <kbd>Tab</kbd> lock on<br><kbd>F</kbd> guard <kbd>Space</kbd> evade <kbd>X</kbd> jump <kbd>C</kbd> crouch <kbd>Z</kbd> sprint</p>
+    <details class="credits"><summary>Asset credits</summary>Industrial props: Kenney Factory Kit (CC0). Concrete: eye-candy.xyz / Poly Haven (CC0). Fighters: existing Three.js / Mixamo stand-ins. <a href="./assets/ASSET-LICENSES.md" target="_blank" rel="noopener">License record</a></details>
+  </div>
+  <div class="location-stamp"><span>FREIGHT TERMINAL</span><strong>DOCK / 09</strong><small>WAREHOUSE DUEL</small></div>
+</section>
+<div id="fightHud" hidden>
+<div id="hud">
+  <b>STREET CLASH</b> / IRONWORKS<br>
+  <b>WASD</b> move &nbsp; <b>Shift</b> walk &nbsp; <b>Space</b> dodge roll<br>
+  <b>LMB / J</b> light &nbsp; <b>E / K</b> secondary &nbsp; <b>RMB / L</b> heavy<br>
+  <b>X</b> jump &nbsp; <b>C</b> crouch (caster / rifle) &nbsp; <b>Z</b> sprint<br>
+  <b>Hold F</b> block &nbsp; AI: <span id="ai">ON</span> &nbsp; <b>R</b> restart<br>
+  <b>Click</b> game to capture mouse, <b>Esc</b> release, <b>Wheel</b> zoom<br>
+  <b>Tab</b> target lock &nbsp; <b>P</b> pause &nbsp; <b>M</b> sound: <span id="sound">ON</span><br>
+  <b>Q</b> quality: <span id="q">medium</span> &nbsp; <b>F1</b> debug <span id="grip" hidden></span>
+</div>
+<div id="barE"><div class="fighter-label"><span id="opponentName">RIVAL</span><small id="hpEText">100 / 100</small></div><div class="bar"><div id="hpE"></div></div></div>
+<div id="barP"><div class="fighter-label"><span id="playerName">YOU / CHALLENGER</span><small id="hpPText">100 / 100</small></div><div class="bar"><div id="hpP"></div></div></div>
+<div id="debug"></div>
+<div id="combat"><div class="abilities"><span id="ability-punch"></span><span id="ability-kick"></span><span id="ability-heavy"></span></div><span id="lock">FREE - Tab to lock</span><br><span id="phase">IDLE</span> &nbsp; | &nbsp; Evade: <span id="dodge">READY</span></div>
+<div id="defeat">DEFEATED</div>
+</div>
+<div id="matchHud" hidden><span id="matchMode">1V1 / KNOCKOUT OR HIGHER HEALTH</span><strong id="timer">2:00</strong><small>IRONWORKS / DOCK 09</small></div>
+<div id="countdown" hidden aria-live="polite">3</div>
+<section id="results" class="screen results" hidden aria-label="Match results">
+  <div class="result-card">
+    <div class="eyebrow">IRONWORKS / MATCH COMPLETE</div>
+    <h1 id="resultTitle">VICTORY</h1><p id="resultReason">Knockout</p>
+    <div class="scoreline"><span>YOU</span><strong id="resultHealth">100 — 0</strong><span>RIVAL</span></div>
+    <div class="stats"><div><strong id="resultDamage">0</strong><span>DAMAGE DEALT</span></div><div><strong id="resultTaken">0</strong><span>DAMAGE TAKEN</span></div><div><strong id="resultHits">0</strong><span>HITS LANDED</span></div><div><strong id="resultTime">0:00</strong><span>FIGHT TIME</span></div></div>
+    <button id="rematch" class="primary" type="button">Fight again <span>↗</span></button><button id="returnMenu" class="secondary" type="button">Return to dock</button>
+  </div>
+</section>
+<div id="pause"><div class="pause-card"><div class="eyebrow">TAKE A BREATHER</div><h1>PAUSED</h1><p>Your match timer is stopped.</p><button id="resume" class="primary" type="button">Resume fight</button><button id="restartMatch" class="secondary" type="button">Restart</button><button id="pauseMenu" class="secondary" type="button">Return to dock</button></div></div>
+<div id="status">Loading…</div>
+<div id="error"><div><h2>Unable to load the arena</h2><p id="errmsg"></p><p>Check that npm start is running and the assets folder is present.</p><button type="button" onclick="location.reload()">Try again</button></div></div>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
