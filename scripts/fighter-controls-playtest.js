@@ -10,6 +10,8 @@
     const rival = document.getElementById('opponentChoice'); rival.value = 'magic'; rival.dispatchEvent(new Event('change'));
     check('rival dropdown selects Magic', __dummy.profile.id === 'magic');
     document.getElementById('practice').click();
+    // Allow lobby pointer-lock release to finish before holding gameplay keys.
+    await wait(200);
     key('KeyC', true); await wait(650);
     check('C holds crouch through input loop', p.crouching);
     key('KeyC', false); await wait(600);

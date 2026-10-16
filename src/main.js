@@ -112,7 +112,7 @@ const world = {
     c.equipment?.kick();
     if (move.kind === 'projectile') {
       const source = c.equipment?.muzzle || c.character.bone('mixamorigRightHand');
-      effects.cast(source.getWorldPosition(new THREE.Vector3()), move.color);
+      effects.cast(source.getWorldPosition(new THREE.Vector3()), move.color, c.profile.id === 'soldier' ? 'muzzle' : move.projectileStyle === 'arrow' ? 'wind' : 'cast');
     }
     if (move.kind === 'area') projectiles.area(c, move); else projectiles.emit(c, move);
     sound.play(move.kind === 'area' ? 'heavy' : c.profile.id === 'soldier' ? 'rifle' : 'magic');
@@ -147,6 +147,7 @@ async function boot() {
   const [library, warehouse] = await Promise.all([
     new FighterLibrary().load((n, total) => { statusEl.textContent = `Loading fighters ${n}/${total}…`; }),
     createWarehouseArena(scene, (n, total) => { statusEl.textContent = `Loading warehouse ${n}/${total}…`; }),
+    effects.loadSprites(),
   ]);
   arena = warehouse; world.arena = arena;
   world.library = library;

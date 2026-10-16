@@ -27,7 +27,11 @@ export class Effects {
   clear() { this.free.push(...this.items); this.items.length = 0; this.mesh.count = 0; this.quarks.clear();
     this.ringFree.push(...this.rings); this.rings.length = 0; this.ringMesh.count = 0; }
 
-  cast(pos, color) { this.quarks.burst(pos, color, 'cast'); }
+  async loadSprites() { await this.quarks.loadAtlas(); }
+  cast(pos, color, kind = 'cast') {
+    this.quarks.burst(pos, color, kind);
+    if (kind === 'muzzle') this.quarks.burst(pos, 0x777777, 'smoke');
+  }
   impact(pos, color, heavy = false) { this.quarks.burst(pos, color, heavy ? 'heavy' : 'impact'); }
   projectileTrail(pos, color, style) { this.quarks.burst(pos, color, style === 'arrow' ? 'wind' : 'arcane'); }
 

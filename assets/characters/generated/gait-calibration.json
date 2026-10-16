@@ -1,0 +1,471 @@
+{
+  "capoeira": {
+    "Walk": {
+      "stride": 1.67862,
+      "phase": 0.27083,
+      "direction": 1
+    },
+    "Run": {
+      "stride": 3.2004,
+      "phase": 0.38542,
+      "direction": 1
+    },
+    "CombatWalk": {
+      "stride": 4.58183,
+      "phase": 0.90625,
+      "direction": -1
+    },
+    "CombatRun": {
+      "stride": 4.58183,
+      "phase": 0.90625,
+      "direction": -1
+    },
+    "BackWalk": {
+      "stride": 5.29451,
+      "phase": 0.90625,
+      "direction": 1
+    },
+    "BackRun": {
+      "stride": 5.29451,
+      "phase": 0.90625,
+      "direction": 1
+    },
+    "StrafeLeftWalk": {
+      "stride": 5.91914,
+      "phase": 0.84375,
+      "direction": -1
+    },
+    "StrafeRightWalk": {
+      "stride": 6.91138,
+      "phase": 0.86458,
+      "direction": 1
+    },
+    "StrafeLeftRun": {
+      "stride": 5.91914,
+      "phase": 0.84375,
+      "direction": -1
+    },
+    "StrafeRightRun": {
+      "stride": 6.91138,
+      "phase": 0.86458,
+      "direction": 1
+    },
+    "Sprint": {
+      "stride": 3.16887,
+      "phase": 0.39583,
+      "direction": 1
+    }
+  },
+  "magic": {
+    "Walk": {
+      "stride": 1.4593,
+      "phase": 0.5625,
+      "direction": 1
+    },
+    "Run": {
+      "stride": 1.98057,
+      "phase": 0.55208,
+      "direction": 1
+    },
+    "Sprint": {
+      "stride": 2.36779,
+      "phase": 0.48958,
+      "direction": 1
+    },
+    "CombatWalk": {
+      "stride": 1.4593,
+      "phase": 0.5625,
+      "direction": 1
+    },
+    "CombatRun": {
+      "stride": 1.98057,
+      "phase": 0.55208,
+      "direction": 1
+    },
+    "BackWalk": {
+      "stride": 1.1592,
+      "phase": 0.25,
+      "direction": 1
+    },
+    "BackRun": {
+      "stride": 1.52769,
+      "phase": 0.28125,
+      "direction": 1
+    },
+    "StrafeLeftWalk": {
+      "stride": 1.2489,
+      "phase": 0.8125,
+      "direction": 1
+    },
+    "StrafeRightWalk": {
+      "stride": 1.50359,
+      "phase": 0.02083,
+      "direction": 1
+    },
+    "StrafeLeftRun": {
+      "stride": 1.92825,
+      "phase": 0.72917,
+      "direction": 1
+    },
+    "StrafeRightRun": {
+      "stride": 2.50962,
+      "phase": 0.70833,
+      "direction": 1
+    },
+    "CrouchWalk": {
+      "stride": 1.73916,
+      "phase": 0.20833,
+      "direction": 1
+    },
+    "CrouchBack": {
+      "stride": 1.29367,
+      "phase": 0.21875,
+      "direction": 1
+    },
+    "CrouchLeft": {
+      "stride": 1.426,
+      "phase": 0.76042,
+      "direction": 1
+    },
+    "CrouchRight": {
+      "stride": 1.5775,
+      "phase": 0.48958,
+      "direction": 1
+    }
+  },
+  "soldier": {
+    "Walk": {
+      "stride": 1.852,
+      "phase": 0.30208,
+      "direction": 1
+    },
+    "Run": {
+      "stride": 2.3755,
+      "phase": 0.38542,
+      "direction": 1
+    },
+    "Sprint": {
+      "stride": 2.999,
+      "phase": 0.33333,
+      "direction": 1
+    },
+    "CombatWalk": {
+      "stride": 1.852,
+      "phase": 0.30208,
+      "direction": 1
+    },
+    "CombatRun": {
+      "stride": 2.3755,
+      "phase": 0.38542,
+      "direction": 1
+    },
+    "BackWalk": {
+      "stride": 1.885,
+      "phase": 0.19792,
+      "direction": 1
+    },
+    "BackRun": {
+      "stride": 1.941,
+      "phase": 0.23958,
+      "direction": 1
+    },
+    "StrafeLeftWalk": {
+      "stride": 1.835,
+      "phase": 0.83333,
+      "direction": 1
+    },
+    "StrafeRightWalk": {
+      "stride": 1.802,
+      "phase": 0.73958,
+      "direction": 1
+    },
+    "StrafeLeftRun": {
+      "stride": 2.151,
+      "phase": 0.67708,
+      "direction": 1
+    },
+    "StrafeRightRun": {
+      "stride": 2.0725,
+      "phase": 0.66667,
+      "direction": 1
+    },
+    "ForwardLeftWalk": {
+      "stride": 1.882,
+      "phase": 0.80208,
+      "direction": 1
+    },
+    "ForwardRightWalk": {
+      "stride": 1.87,
+      "phase": 0.80208,
+      "direction": 1
+    },
+    "BackLeftWalk": {
+      "stride": 1.997,
+      "phase": 0.73958,
+      "direction": 1
+    },
+    "BackRightWalk": {
+      "stride": 1.885,
+      "phase": 0.69792,
+      "direction": 1
+    },
+    "ForwardLeftRun": {
+      "stride": 1.9705,
+      "phase": 0.76042,
+      "direction": 1
+    },
+    "ForwardRightRun": {
+      "stride": 2.1965,
+      "phase": 0.69792,
+      "direction": 1
+    },
+    "BackLeftRun": {
+      "stride": 1.944,
+      "phase": 0.70833,
+      "direction": 1
+    },
+    "BackRightRun": {
+      "stride": 1.4305,
+      "phase": 0.60417,
+      "direction": 1
+    },
+    "CrouchWalk": {
+      "stride": 1.969,
+      "phase": 0.30208,
+      "direction": 1
+    },
+    "CrouchBack": {
+      "stride": 1.921,
+      "phase": 0.19792,
+      "direction": 1
+    },
+    "CrouchLeft": {
+      "stride": 1.949,
+      "phase": 0.70833,
+      "direction": 1
+    },
+    "CrouchRight": {
+      "stride": 2.053,
+      "phase": 0.71875,
+      "direction": 1
+    },
+    "CrouchForwardLeft": {
+      "stride": 2.049,
+      "phase": 0.80208,
+      "direction": 1
+    },
+    "CrouchForwardRight": {
+      "stride": 2.001,
+      "phase": 0.80208,
+      "direction": 1
+    },
+    "CrouchBackLeft": {
+      "stride": 2.011,
+      "phase": 0.65625,
+      "direction": 1
+    },
+    "CrouchBackRight": {
+      "stride": 2.059,
+      "phase": 0.71875,
+      "direction": 1
+    }
+  },
+  "archer": {
+    "BackWalk": {
+      "stride": 1.22788,
+      "phase": 0.19792,
+      "direction": 1
+    },
+    "BackRun": {
+      "stride": 1.6666,
+      "phase": 0.20833,
+      "direction": 1
+    },
+    "StrafeLeftWalk": {
+      "stride": 1.668,
+      "phase": 0.80208,
+      "direction": 1
+    },
+    "StrafeRightWalk": {
+      "stride": 1.7952,
+      "phase": 0.85417,
+      "direction": 1
+    },
+    "StrafeLeftRun": {
+      "stride": 1.8069,
+      "phase": 0.69792,
+      "direction": 1
+    },
+    "StrafeRightRun": {
+      "stride": 2.241,
+      "phase": 0.79167,
+      "direction": 1
+    },
+    "Walk": {
+      "stride": 1.25635,
+      "phase": 0.21875,
+      "direction": 1
+    },
+    "Run": {
+      "stride": 2.79781,
+      "phase": 0.3125,
+      "direction": 1
+    },
+    "CombatWalk": {
+      "stride": 1.25871,
+      "phase": 0.21875,
+      "direction": 1
+    },
+    "CombatRun": {
+      "stride": 1.25871,
+      "phase": 0.21875,
+      "direction": 1
+    },
+    "Sprint": {
+      "stride": 2.7409,
+      "phase": 0.3125,
+      "direction": 1
+    }
+  },
+  "greatsword": {
+    "BackWalk": {
+      "stride": 1.36383,
+      "phase": 0.20833,
+      "direction": 1
+    },
+    "BackRun": {
+      "stride": 1.36383,
+      "phase": 0.20833,
+      "direction": 1
+    },
+    "StrafeLeftWalk": {
+      "stride": 1.26278,
+      "phase": 0.55208,
+      "direction": 1
+    },
+    "StrafeRightWalk": {
+      "stride": 1.20635,
+      "phase": 0.0625,
+      "direction": 1
+    },
+    "StrafeLeftRun": {
+      "stride": 1.0138,
+      "phase": 0.17708,
+      "direction": 1
+    },
+    "StrafeRightRun": {
+      "stride": 1.68315,
+      "phase": 0.27083,
+      "direction": 1
+    },
+    "Walk": {
+      "stride": 1.39995,
+      "phase": 0.21875,
+      "direction": 1
+    },
+    "Run": {
+      "stride": 1.68925,
+      "phase": 0.66667,
+      "direction": -1
+    },
+    "Sprint": {
+      "stride": 1.67345,
+      "phase": 0.65625,
+      "direction": -1
+    }
+  },
+  "axe": {
+    "BackWalk": {
+      "stride": 1.1448,
+      "phase": 0.21875,
+      "direction": 1
+    },
+    "BackRun": {
+      "stride": 1.26298,
+      "phase": 0.26042,
+      "direction": 1
+    },
+    "StrafeLeftWalk": {
+      "stride": 0.97603,
+      "phase": 0.85417,
+      "direction": 1
+    },
+    "StrafeRightWalk": {
+      "stride": 1.26827,
+      "phase": 0.79167,
+      "direction": 1
+    },
+    "StrafeLeftRun": {
+      "stride": 0.97603,
+      "phase": 0.85417,
+      "direction": 1
+    },
+    "StrafeRightRun": {
+      "stride": 1.26827,
+      "phase": 0.79167,
+      "direction": 1
+    },
+    "Walk": {
+      "stride": 1.14579,
+      "phase": 0.20833,
+      "direction": 1
+    },
+    "Run": {
+      "stride": 1.49459,
+      "phase": 0.22917,
+      "direction": 1
+    },
+    "Sprint": {
+      "stride": 1.36835,
+      "phase": 0.22917,
+      "direction": 1
+    }
+  },
+  "mutant": {
+    "BackWalk": {
+      "stride": 1.9087,
+      "phase": 0.25,
+      "direction": 1
+    },
+    "BackRun": {
+      "stride": 1.64557,
+      "phase": 0.27083,
+      "direction": 1
+    },
+    "StrafeLeftWalk": {
+      "stride": 1.91208,
+      "phase": 0.8125,
+      "direction": 1
+    },
+    "StrafeRightWalk": {
+      "stride": 1.91002,
+      "phase": 0.78125,
+      "direction": 1
+    },
+    "StrafeLeftRun": {
+      "stride": 3.19626,
+      "phase": 0.64583,
+      "direction": 1
+    },
+    "StrafeRightRun": {
+      "stride": 3.07821,
+      "phase": 0.82292,
+      "direction": 1
+    },
+    "Walk": {
+      "stride": 1.9087,
+      "phase": 0.22917,
+      "direction": 1
+    },
+    "Run": {
+      "stride": 1.63083,
+      "phase": 0.26042,
+      "direction": 1
+    },
+    "Sprint": {
+      "stride": 1.73057,
+      "phase": 0.26042,
+      "direction": 1
+    }
+  }
+}

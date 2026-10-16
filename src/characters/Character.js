@@ -1,11 +1,12 @@
 import * as THREE from 'three';
+import { FootContact } from '../animation/FootContact.js';
 
 // Shared character wrapper: owns the model, an AnimationMixer, a speed-driven locomotion
 // blend (idle/walk/run) and an "action" layer (attacks, hits, block, roll...) that fades in
 // over locomotion and fades back out when finished.
 export class Character {
   // modelYaw: number (radians) or 'auto' (works out which way the model faces from its feet).
-  constructor(gltf, { scale = 1, modelYaw = 'auto' } = {}) {
+  constructor(gltf, { scale = 1, modelYaw = 'auto', gaitCalibration = null } = {}) {
     this.root = new THREE.Group();   // the pivot we move/rotate in the world; +Z is "forward"
     this.model = gltf.scene;
     this.model.scale.setScalar(scale);
@@ -19,6 +20,9 @@ export class Character {
       }
     });
     this.model.rotation.y = modelYaw === 'auto' ? this._detectYaw() : modelYaw;
+    this.feet = new FootContact(this.model);
+    this.grounded = true;
+    this.gaitCalibration = gaitCalibration; this.gaitPhase = 0; this.groundSpeed = 0;
 
     this.gltf = gltf;
     this.mixer = new THREE.AnimationMixer(this.model);
@@ -60,6 +64,7 @@ export class Character {
 
   // ---- Locomotion layer -------------------------------------------------
   startLocomotion({ idle = 'Idle', walk = 'Walk', run = 'Run', walkSpeed = 1.7, runSpeed = 4.8, lockSpeed = 2.8, sprintSpeed = 6, crouchSpeed = 1, gaitRate = 1 } = {}) {
+    this.gaitPhase = 0; this.feet.offset = 0; this.model.position.y = this.feet.baseY;
     this.locomotionOptions = { idle, walk, run, walkSpeed, runSpeed, lockSpeed, sprintSpeed, crouchSpeed, gaitRate };
     const find = n => this.actions.get(n) ||
       [...this.actions].find(([k]) => k.toLowerCase() === n.toLowerCase())?.[1];
@@ -83,6 +88,7 @@ export class Character {
   locomote(speed, dt, { locked = false, side = 0, forward = 1, turn = 0, crouching = false } = {}) {
     const L = this.loco;
     if (!L) return;
+    this.groundSpeed = crouching ? 0 : speed;
     const { a, w, walkSpeed, runSpeed, lockSpeed, sprintSpeed, crouchSpeed } = L;
 
     const transient = name => {
@@ -112,15 +118,17 @@ export class Character {
     else t.run = 1;
     if (a.Sprint && speed > runSpeed) { const fast = THREE.MathUtils.clamp((speed - runSpeed) / (sprintSpeed - runSpeed), 0, 1); t.run = 1 - fast; t.Sprint = fast; }
 
+    // Native clip labels use anatomical left/right; local +X is anatomical left.
     const directional = (amount, names) => {
+      const nativeSide = -side;
       if (names.every(name => a[name])) {
-        const sector = ((Math.atan2(side, forward) + Math.PI * 2) % (Math.PI * 2)) / (Math.PI / 4);
+        const sector = ((Math.atan2(nativeSide, forward) + Math.PI * 2) % (Math.PI * 2)) / (Math.PI / 4);
         const index = Math.floor(sector) % 8, k = sector - Math.floor(sector);
         t[names[index]] = (t[names[index]] || 0) + amount * (1 - k);
         t[names[(index + 1) % 8]] = (t[names[(index + 1) % 8]] || 0) + amount * k;
       } else {
         const total = Math.abs(side) + Math.abs(forward) || 1;
-        const lateral = names[side >= 0 ? 2 : 6], longitudinal = names[forward >= 0 ? 0 : 4];
+        const lateral = names[nativeSide >= 0 ? 2 : 6], longitudinal = names[forward >= 0 ? 0 : 4];
         t[lateral] = (t[lateral] || 0) + amount * Math.abs(side) / total;
         t[longitudinal] = (t[longitudinal] || 0) + amount * Math.abs(forward) / total;
       }
@@ -172,6 +180,19 @@ export class Character {
       else if (name === 'Sprint') act.timeScale = THREE.MathUtils.clamp(speed / sprintSpeed, 0.6, 1.2) * this.locomotionOptions.gaitRate;
       else if (!['idle', 'walk', 'run', 'AimIdle'].includes(name)) act.timeScale = cyclesPerSecond * act.getClip().duration;
     }
+    if (this.gaitCalibration) {
+      const entries = Object.entries(a).map(([name, act]) => ({ name, act,
+        gait: this.gaitCalibration[name === 'walk' ? this.locomotionOptions.walk : name === 'run' ? this.locomotionOptions.run : name] })).filter(e => e.gait);
+      let distance = 0, weight = 0;
+      for (const { name, gait } of entries) { const amount = w[name] || 0; distance += amount * gait.stride; weight += amount; }
+      const frequency = speed > 0.01 && weight > 0.001 ? speed / Math.max(0.2, distance / weight) : 0;
+      for (const { act, gait } of entries) {
+        const duration = act.getClip().duration;
+        act.time = (((this.gaitPhase * (gait.direction || 1) + gait.phase) % 1 + 1) % 1) * duration;
+        act.timeScale = frequency * duration * (gait.direction || 1);
+      }
+      this.gaitPhase = (this.gaitPhase + frequency * dt) % 1;
+    }
   }
 
   // ---- Action layer -----------------------------------------------------
@@ -212,5 +233,7 @@ export class Character {
   update(dt) {
     this.mixer.update(dt);
     if (this.autoAction && this.actionProgress() >= 0.95) this.endAction(0.12);
+    this.feet.update(this.root, dt, this.grounded && (!this.action || this.autoAction),
+      this.groundSpeed > (this.loco?.walkSpeed || 2) + 0.2);
   }
 }

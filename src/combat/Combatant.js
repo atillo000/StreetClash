@@ -356,6 +356,7 @@ export class Combatant {
     }
 
     this.height = this.crouching ? 1.12 : this.profile?.height || 1.7;
+    this.character.grounded = this.position.y <= 0.001 && ['free', 'block', 'blockEnd'].includes(this.state);
     this.mover.enabled = this.state === 'free' || this.state === 'jump' || (this.state === 'land' && this.jumpMoving);
     this.mover.update(dt);
     if (this.jumpVelocity !== 0 || this.position.y > 0) {

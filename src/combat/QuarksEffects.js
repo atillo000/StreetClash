@@ -10,6 +10,8 @@ export const COMBAT_VFX = {
   arcane: { count: 3,  life: 0.22, size: 0.19, speed: 0.25, radius: 0.04 },
   wind:   { count: 2,  life: 0.14, size: 0.08, speed: 0.12, radius: 0.015 },
   pulse:  { count: 24, life: 0.48, size: 0.24, speed: 4, radius: 0.12 },
+  muzzle: { count: 1, life: 0.07, size: 0.38, speed: 0, radius: 0 },
+  smoke:  { count: 2, life: 0.45, size: 0.16, speed: 0.35, radius: 0.02 },
 };
 
 function glowTexture() {
@@ -47,6 +49,7 @@ export class QuarksEffects {
         behaviors: [new ColorOverLife(new Gradient([[new THREE.Vector3(1, 1, 1), 0], [new THREE.Vector3(1, 1, 1), 1]], [[1, 0], [0, 1]])),
           new SizeOverLife(new PiecewiseBezier([[new Bezier(1, 0.85, 0.35, 0), 0]]))],
         material: this.material, renderMode: RenderMode.BillBoard,
+        uTileCount: 2, vTileCount: 2, startTileIndex: new ConstantValue(0),
       });
       system.stop(); scene.add(system.emitter); this.batch.addSystem(system);
       return { system, remaining: 0, reserved: 0 };
@@ -55,6 +58,18 @@ export class QuarksEffects {
 
   get reserved() { return this.slots.reduce((sum, slot) => sum + slot.reserved, 0); }
   get particleCount() { return this.slots.reduce((sum, slot) => sum + slot.system.particleNum, 0); }
+
+  async loadAtlas() {
+    const names = ['spark_01', 'magic_01', 'muzzle_01', 'smoke_01'];
+    const images = await Promise.all(names.map(name => new THREE.TextureLoader().loadAsync(`./assets/textures/kenney/${name}.png`)));
+    const canvas = document.createElement('canvas'); canvas.width = canvas.height = 256;
+    const context = canvas.getContext('2d');
+    images.forEach((texture,i) => { context.drawImage(texture.image, (i%2)*128+6, Math.floor(i/2)*128+6, 116, 116); texture.dispose(); });
+    const source = context.getImageData(0,0,256,256).data, pixels = new Uint8Array(source.length);
+    for (let y=0;y<256;y++) pixels.set(source.subarray(y*1024,(y+1)*1024), (255-y)*1024);
+    this.texture.image = { data: pixels, width: 256, height: 256 }; this.texture.needsUpdate = true;
+    this.atlasLoaded = true;
+  }
 
   setBudget(count) {
     this.budget = Math.max(0, Math.floor(count));
@@ -70,6 +85,7 @@ export class QuarksEffects {
     const slot = this.slots.find(s => s.remaining <= 0);
     if (!slot || count <= 0) return false;
     const s = slot.system, tint = new THREE.Color(color);
+    s.startTileIndex.value = kind === 'muzzle' ? 2 : kind === 'smoke' ? 3 : ['cast','arcane','pulse'].includes(kind) ? 1 : 0;
     s.startColor.color.set(tint.r, tint.g, tint.b, 1);
     s.startLife.value = preset.life; s.startSize.value = preset.size * scale;
     s.startSpeed.value = preset.speed * scale; s.emissionBursts[0].count.value = count;

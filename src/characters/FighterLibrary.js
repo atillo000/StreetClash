@@ -4,7 +4,6 @@ import { Character } from './Character.js';
 import { Mover } from './Mover.js';
 import { FIGHTERS, FIGHTER_LIST } from './FighterCatalog.js';
 import { FIGHTER_MOVES, fighterDefense } from '../combat/fighterMoves.js';
-import { createRifle } from '../combat/Rifle.js';
 import { FighterWeapons } from './FighterWeapons.js';
 
 export class FighterLibrary {
@@ -16,16 +15,20 @@ export class FighterLibrary {
       this.models.set(config.id, gltf); progress(++done, FIGHTER_LIST.length);
     }));
     this.weapons = await new FighterWeapons().load();
+    const response = await fetch('./assets/characters/generated/gait-calibration.json');
+    if (!response.ok) throw new Error('Missing gait calibration data');
+    this.gaits = await response.json();
     return this;
   }
   create(id, facing) {
     const profile = FIGHTERS[id], template = this.models.get(id);
     if (!profile || !template) throw new Error('Unknown or unloaded fighter: ' + id);
     const gltf = { scene: clone(template.scene), animations: template.animations };
-    const character = new Character(gltf, { modelYaw: 0 }); character.startLocomotion(profile);
+    const character = new Character(gltf, { modelYaw: 0, gaitCalibration: this.gaits[id] }); character.startLocomotion(profile);
     const mover = new Mover(character, { walkSpeed: profile.walkSpeed, runSpeed: profile.runSpeed, accel: profile.accel, turnRate: profile.turnRate, facing });
     Object.assign(mover, { lockSpeed: profile.lockSpeed, sprintSpeed: profile.sprintSpeed, crouchSpeed: profile.crouchSpeed || 1 });
-    const equipment = profile.weapon === 'rifle' ? createRifle(character) : this.weapons.create(profile.weapon, character);
+    character.mixer.update(0); character.root.updateMatrixWorld(true);
+    const equipment = this.weapons.create(profile.weapon, character);
     return { profile, character, mover, equipment, moves: FIGHTER_MOVES[id], defense: fighterDefense(id) };
   }
 }

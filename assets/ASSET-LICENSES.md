@@ -40,6 +40,13 @@ The Soldier and Xbot GLBs and existing Mixamo FBX animations remain development 
 
 ## Additional user-supplied roster assets
 
+### Kenney combat kits (2026-10-16)
+
+- Blaster Kit 2.1: `assets/Weapons/kenney/blaster-n.glb` and its palette were extracted from the supplied `kenney_blaster-kit_2.1.zip`. `blaster-n-runtime.glb` embeds that palette for deployment. Source: https://kenney.nl/assets/blaster-kit
+- Particle Pack 1.1: `spark_01.png`, `magic_01.png`, `muzzle_01.png`, and `smoke_01.png` were extracted from the supplied `kenney_particle-pack.zip`. Source: https://kenney.nl/assets/particle-pack
+- Both archives include Creative Commons Zero (CC0) licenses. The original license text is retained in each runtime asset directory as `License.txt`, including the particle pack's additional contributor credits.
+- The Soldier uses the blaster; the four particle images form a shared runtime atlas for Three.quarks. Remaining archive contents are not loaded or deployed.
+
 Archer, Great Sword, Axe and Mutant models and their animation packs, the long bow,
 battle axe, great sword, old barrel and wooden crate were supplied locally by the
 user. Original download URLs and licenses were not supplied. These files are not
