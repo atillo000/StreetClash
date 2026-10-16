@@ -37,3 +37,16 @@ Warehouse layout, architecture, pallet assemblies, corrugated-wall texture, sign
 ## Existing assets (before Stage 5)
 
 The Soldier and Xbot GLBs and existing Mixamo FBX animations remain development stand-ins. Their provenance and existing redistribution limitations are recorded in README.md; they are not newly acquired CC0 assets. RobotExpressive is unused. Three.js is MIT licensed (see `node_modules/three/LICENSE`).
+
+## Additional user-supplied roster assets
+
+Archer, Great Sword, Axe and Mutant models and their animation packs, the long bow,
+battle axe, great sword, old barrel and wooden crate were supplied locally by the
+user. Original download URLs and licenses were not supplied. These files are not
+labeled CC0 or CC-BY. File hashes and derived runtime copies are recorded in
+[USER-ASSETS.json](USER-ASSETS.json). Existing source files are preserved.
+
+Runtime character conversion, animation fitting and sword simplification are
+documented in [the roster guide](../docs/expanded-roster.md). Three.quarks and
+quarks.core are MIT licensed; their licenses are included in the deployment vendor
+folders. meshoptimizer is an MIT-licensed development-only preparation tool.

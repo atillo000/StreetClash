@@ -51,7 +51,7 @@ function batchStatic(group) {
 export async function createWarehouseArena(scene, onProgress = () => {}) {
   const loader = new GLTFLoader(), textures = new THREE.TextureLoader();
   let done = 0;
-  const [loaded, diffuse, normal] = await Promise.all([
+  const [loaded, diffuse, normal, imported] = await Promise.all([
     Promise.all(MODEL_NAMES.map(async name => {
       const asset = await loader.loadAsync(`./assets/environment/factory/${name}.glb`).catch(() => { throw new Error(`Could not load warehouse model: ${name}.glb`); });
       onProgress(++done, MODEL_NAMES.length);
@@ -59,6 +59,7 @@ export async function createWarehouseArena(scene, onProgress = () => {}) {
     })),
     textures.loadAsync('./assets/textures/concrete-floor-diffuse.jpg').catch(() => { throw new Error('Could not load concrete-floor-diffuse.jpg'); }),
     textures.loadAsync('./assets/textures/concrete-floor-normal.jpg').catch(() => { throw new Error('Could not load concrete-floor-normal.jpg'); }),
+    Promise.all(['old-barrel', 'wooden-crate'].map(async name => [name, (await loader.loadAsync(`./assets/environment/${name}.glb`)).scene])),
   ]);
   const models = new Map(loaded), group = new THREE.Group(); group.name = 'Ironworks - Dock 09'; scene.add(group);
   const obstacles = [], cameraBlockers = [];
@@ -66,6 +67,7 @@ export async function createWarehouseArena(scene, onProgress = () => {}) {
   models.values().next().value.traverse(o => { if (o.isMesh && o.material.map) palette = o.material.map; });
   const assetMaterial = new THREE.MeshStandardMaterial({ map: palette, roughness: 0.78, metalness: 0.12 });
   for (const model of models.values()) model.traverse(o => { if (o.isMesh) o.material = assetMaterial; });
+  for (const [name, model] of imported) models.set(name, model);
 
   const metal = new THREE.MeshStandardMaterial({ color: 0x263c46, metalness: 0.55, roughness: 0.6 });
   const concrete = new THREE.MeshStandardMaterial({ color: 0x667475, roughness: 0.95 });
@@ -166,6 +168,17 @@ export async function createWarehouseArena(scene, onProgress = () => {}) {
     addModel('cone', x > 0 ? 8.2 : -8.2, 7.8, { scale: 1.3 });
   }
   addModel('crane', -8, -10.1, { scale: 1.4, yaw: Math.PI / 2 });
+  // Supplied textured wood props: measured bounds feed both combat and camera collision.
+  const importedPlacements = [];
+  for (const [name, x, z, height, yaw] of [
+    ['old-barrel', -7.2, -4.7, 0.95, 0.3], ['old-barrel', 7.2, -4.7, 0.95, -0.3],
+    ['wooden-crate', -7, 1, 0.85, 0.15], ['wooden-crate', 7, 1, 0.85, -0.15],
+    ['wooden-crate', -6.5, 8, 0.85, -0.2], ['wooden-crate', 6.5, 8, 0.85, 0.2],
+  ]) {
+    const bounds = new THREE.Box3().setFromObject(models.get(name));
+    const model = addModel(name, x, z, { scale: height / (bounds.max.y - bounds.min.y), yaw, solid: true });
+    importedPlacements.push({ name, bounds: new THREE.Box3().setFromObject(model) });
+  }
   for (let x = -10; x <= 10; x += 2) addModel('catwalk-straight', x, -10.8, { scale: 1.6, y: 3.8 });
 
   for (const x of [-3.6, 3.6]) stripe(x, 0, 0.07, 18);
@@ -182,5 +195,6 @@ export async function createWarehouseArena(scene, onProgress = () => {}) {
   const arena = new ArenaCollision({ halfSize: 12, obstacles });
   arena.cameraBlockers = cameraBlockers; arena.name = 'Ironworks · Dock 09';
   arena.assetCount = models.size; arena.staticBatches = batches; arena.group = group;
+  arena.importedPlacements = importedPlacements;
   return arena;
 }

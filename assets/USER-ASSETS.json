@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-16",
+  "source": "User-supplied local files; original download URLs and licenses were not supplied.",
+  "licenseStatus": "Unconfirmed; no CC0/CC-BY claim is made for these files.",
+  "derivatives": "Prepared character GLBs embed their dedicated supplied animation clips. The generated sword is a simplified copy of the supplied sword.",
+  "assets": [
+    {
+      "file": "characters/Archer Type Character.fbx",
+      "bytes": 20637248,
+      "sha256": "44a5ff257caa3c90d016115d0ed261fc806d14909c6a7d0dbf407bc5eb12720a"
+    },
+    {
+      "file": "characters/Great Sword Type Character.fbx",
+      "bytes": 17320016,
+      "sha256": "47395dad9f0edf7ca728792b427a3403d8df4202c66277375aec43e3bed5a323"
+    },
+    {
+      "file": "characters/Melee Axe Type Character.fbx",
+      "bytes": 24125824,
+      "sha256": "2f76a09e0bbf22f3de0316d6c46ccef98fd50b8afd1eb77b49f792ccc188c33b"
+    },
+    {
+      "file": "characters/Mutant Boss Enemy Character.fbx",
+      "bytes": 25199376,
+      "sha256": "478b98559f4bc0b7425e5a62f59e8169c7446e4503d1e5fb65f74e07cbe2f051"
+    },
+    {
+      "file": "characters/generated/archer.glb",
+      "bytes": 10713892,
+      "sha256": "1ebe3a4be2855d7537a4c58eb280874fba8b9f2f804e35012c57174a3341dea4"
+    },
+    {
+      "file": "characters/generated/greatsword.glb",
+      "bytes": 6219136,
+      "sha256": "ef0d2d8643c7c9356e60b25f28a4533cb34e68cc9090b710aea23346c98e75a0"
+    },
+    {
+      "file": "characters/generated/axe.glb",
+      "bytes": 17030560,
+      "sha256": "da77235226575b8a6aa986d20a082e72a1e25acd39d671c5dd4282977ffecdba"
+    },
+    {
+      "file": "characters/generated/mutant.glb",
+      "bytes": 9153568,
+      "sha256": "3030af4fb3ef19e1050eabf94e23574c7121df341408ed29037f55a3ddcf9d91"
+    },
+    {
+      "file": "Weapons/long-bow.glb",
+      "bytes": 587772,
+      "sha256": "0624a1dccbf33128e0c3f154f695915d0c1ff18c2be441cadcf2d84f3ad9b415"
+    },
+    {
+      "file": "Weapons/battle-axe.glb",
+      "bytes": 632060,
+      "sha256": "3df3d62731f34d17f886bb4371b4c49a01360c7d47c5f1090541403b6f1c0523"
+    },
+    {
+      "file": "Weapons/great-sword.glb",
+      "bytes": 12544368,
+      "sha256": "3ae27ab2d80800ee6c23630dba2d1814f56a8ef1db3c34be0bc52c5ccae8c613"
+    },
+    {
+      "file": "Weapons/generated/great-sword.glb",
+      "bytes": 4369364,
+      "sha256": "f55a649e16e87664e3fd06f0a959ff3b987982e763090777d492cea95f6a83ad"
+    },
+    {
+      "file": "environment/old-barrel.glb",
+      "bytes": 1211508,
+      "sha256": "6f8e57362eececfebd597b0360aa5e114bd6f8411c06ee2c4614a50528c9ea3a"
+    },
+    {
+      "file": "environment/wooden-crate.glb",
+      "bytes": 909948,
+      "sha256": "9d69da0a6d46cb27432022685f1c7186ee694fc8f8427ad16e01c756c97adfcc"
+    }
+  ]
+}

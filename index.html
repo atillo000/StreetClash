@@ -30,7 +30,9 @@
 <script type="importmap">
 { "imports": {
   "three": "./node_modules/three/build/three.module.js",
-  "three/addons/": "./node_modules/three/examples/jsm/"
+  "three/addons/": "./node_modules/three/examples/jsm/",
+  "three.quarks": "./node_modules/three.quarks/dist/three.quarks.esm.js",
+  "quarks.core": "./node_modules/quarks.core/dist/quarks.core.esm.js"
 } }
 </script>
 </head>
@@ -45,7 +47,7 @@
     <p class="match-rules">One rival. Two minutes. Win by knockout or finish with more health.</p>
     <button id="startMatch" class="primary" type="button" disabled>Loading warehouse…</button>
     <button id="practice" class="secondary" type="button" disabled>Practice arena</button>
-    <p class="menu-controls"><kbd>WASD</kbd> move <kbd>J / K / L</kbd> attacks <kbd>Tab</kbd> lock on<br><kbd>F</kbd> guard <kbd>Space</kbd> evade <kbd>X</kbd> jump <kbd>C</kbd> crouch <kbd>Z</kbd> sprint</p>
+    <p class="menu-controls"><kbd>WASD</kbd> move <kbd>LMB</kbd> basic <kbd>RMB</kbd> heavy <kbd>1 / 2 / 3</kbd> skills <kbd>Tab</kbd> lock on<br><kbd>F</kbd> guard <kbd>Space</kbd> evade <kbd>X</kbd> jump <kbd>C</kbd> crouch <kbd>Z</kbd> sprint<br>Click to capture mouse and aim. Capoeira: tap J to chain three strikes.</p>
     <details class="credits"><summary>Asset credits</summary>Industrial props: Kenney Factory Kit (CC0). Concrete: eye-candy.xyz / Poly Haven (CC0). Fighters: existing Three.js / Mixamo stand-ins. <a href="./assets/ASSET-LICENSES.md" target="_blank" rel="noopener">License record</a></details>
   </div>
   <div class="location-stamp"><span>FREIGHT TERMINAL</span><strong>DOCK / 09</strong><small>WAREHOUSE DUEL</small></div>
@@ -54,7 +56,8 @@
 <div id="hud">
   <b>STREET CLASH</b> / IRONWORKS<br>
   <b>WASD</b> move &nbsp; <b>Shift</b> walk &nbsp; <b>Space</b> dodge roll<br>
-  <b>LMB / J</b> light &nbsp; <b>E / K</b> secondary &nbsp; <b>RMB / L</b> heavy<br>
+  <b>LMB / J</b> light &nbsp; <b>1 / E / K</b> secondary &nbsp; <b>RMB / L</b> heavy<br>
+  <b>2 / 3</b> skills &nbsp; Red rings warn of incoming attacks<br>
   <b>X</b> jump &nbsp; <b>C</b> crouch (caster / rifle) &nbsp; <b>Z</b> sprint<br>
   <b>Hold F</b> block &nbsp; AI: <span id="ai">ON</span> &nbsp; <b>R</b> restart<br>
   <b>Click</b> game to capture mouse, <b>Esc</b> release, <b>Wheel</b> zoom<br>
@@ -64,9 +67,10 @@
 <div id="barE"><div class="fighter-label"><span id="opponentName">RIVAL</span><small id="hpEText">100 / 100</small></div><div class="bar"><div id="hpE"></div></div></div>
 <div id="barP"><div class="fighter-label"><span id="playerName">YOU / CHALLENGER</span><small id="hpPText">100 / 100</small></div><div class="bar"><div id="hpP"></div></div></div>
 <div id="debug"></div>
-<div id="combat"><div class="abilities"><span id="ability-punch"></span><span id="ability-kick"></span><span id="ability-heavy"></span></div><span id="lock">FREE - Tab to lock</span><br><span id="phase">IDLE</span> &nbsp; | &nbsp; Evade: <span id="dodge">READY</span></div>
+<div id="combat"><div class="abilities"><span id="ability-punch"></span><span id="ability-kick"></span><span id="ability-heavy"></span></div><div class="abilities skills"><span id="ability-skill1"></span><span id="ability-skill2"></span></div><div id="chain"></div><span id="lock">FREE - Tab to lock</span><br><span id="phase">IDLE</span> &nbsp; | &nbsp; Evade: <span id="dodge">READY</span></div>
 <div id="defeat">DEFEATED</div>
 </div>
+<div id="crosshair" hidden aria-hidden="true"><span></span><small id="hitConfirm"></small></div>
 <div id="matchHud" hidden><span id="matchMode">1V1 / KNOCKOUT OR HIGHER HEALTH</span><strong id="timer">2:00</strong><small>IRONWORKS / DOCK 09</small></div>
 <div id="countdown" hidden aria-live="polite">3</div>
 <section id="results" class="screen results" hidden aria-label="Match results">

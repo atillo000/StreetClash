@@ -5,6 +5,7 @@ import { Mover } from './Mover.js';
 import { FIGHTERS, FIGHTER_LIST } from './FighterCatalog.js';
 import { FIGHTER_MOVES, fighterDefense } from '../combat/fighterMoves.js';
 import { createRifle } from '../combat/Rifle.js';
+import { FighterWeapons } from './FighterWeapons.js';
 
 export class FighterLibrary {
   constructor() { this.models = new Map(); }
@@ -14,6 +15,7 @@ export class FighterLibrary {
       const gltf = await loader.loadAsync(config.url).catch(() => { throw new Error(`Could not load prepared fighter ${config.name}. Check assets/characters/generated.`); });
       this.models.set(config.id, gltf); progress(++done, FIGHTER_LIST.length);
     }));
+    this.weapons = await new FighterWeapons().load();
     return this;
   }
   create(id, facing) {
@@ -23,7 +25,7 @@ export class FighterLibrary {
     const character = new Character(gltf, { modelYaw: 0 }); character.startLocomotion(profile);
     const mover = new Mover(character, { walkSpeed: profile.walkSpeed, runSpeed: profile.runSpeed, accel: profile.accel, turnRate: profile.turnRate, facing });
     Object.assign(mover, { lockSpeed: profile.lockSpeed, sprintSpeed: profile.sprintSpeed, crouchSpeed: profile.crouchSpeed || 1 });
-    const equipment = profile.weapon === 'rifle' ? createRifle(character) : null;
+    const equipment = profile.weapon === 'rifle' ? createRifle(character) : this.weapons.create(profile.weapon, character);
     return { profile, character, mover, equipment, moves: FIGHTER_MOVES[id], defense: fighterDefense(id) };
   }
 }

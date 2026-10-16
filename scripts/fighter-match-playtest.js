@@ -7,7 +7,8 @@
   const brain = new SparringAI(p, { random });
   const check = (label, passed, detail) => results.push({ label, passed: !!passed, detail });
   try {
-    for (const [a, b] of [['capoeira','soldier'], ['capoeira','magic'], ['soldier','capoeira'], ['magic','soldier']]) {
+    for (const [a, b] of [['capoeira','soldier'], ['capoeira','magic'], ['soldier','capoeira'], ['magic','soldier'],
+      ['archer','axe'], ['greatsword','mutant'], ['axe','greatsword'], ['mutant','archer']]) {
       w.setPaused(false); m.toLobby(); w.selectFighter('player', a); w.selectFighter('opponent', b);
       m.start(); m.update(3); w.setPaused(true); brain.reset(); brain.enabled = true; __ai.random = random;
       check(a + ': selection locked during match', w.selectFighter('player', b) === false && p.profile.id === a);
@@ -26,7 +27,7 @@
       check(a + ' vs ' + b + ': complete match with real damage', m.state === 'results' && m.result.damageDealt + m.result.damageTaken > 0, m.result);
       check(a + ': projectiles cleared at result', w.projectiles.items.length === 0);
       document.getElementById('rematch').click();
-      check(a + ': rematch restores health and class', m.state === 'countdown' && p.hp === 100 && e.hp === 100 && p.profile.id === a);
+      check(a + ': rematch restores health and fighter', m.state === 'countdown' && p.hp === p.maxHp && e.hp === e.maxHp && p.profile.id === a);
     }
     check('no runtime error overlay', !document.getElementById('errmsg').textContent);
     return { passed: results.every(r => r.passed), results };

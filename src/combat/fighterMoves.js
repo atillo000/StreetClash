@@ -1,4 +1,5 @@
 import { DEFENSE } from './moves.js';
+import { IMPORTED_MOVES } from './ImportedMoves.js';
 
 const feet = ['mixamorigRightFoot', 'mixamorigLeftFoot'];
 const move = (label, clip, extra) => ({ label, clip, speed: 1.4, fade: 0.06, endAt: 0.88, cancelAt: 0.7,
@@ -26,7 +27,33 @@ export const FIGHTER_MOVES = {
     heavy: move('Rifle burst', 'Heavy', { kind: 'projectile', strikers: [], events: [0.18, 0.45, 0.72], windows: [[0.12, 0.8]], speed: 0.9, cancelAt: 0.84, dodgeCancelAt: 0.82, endAt: 0.92,
       damage: 7, knock: 0.6, range: 15, projectileSpeed: 24, projectileRadius: 0.065, color: 0xffc574, lunge: 0, cooldown: 3 }),
   },
+  ...IMPORTED_MOVES,
 };
+
+// Reuse the supplied class clips; damage still follows their measured gestures.
+const cap = FIGHTER_MOVES.capoeira, mage = FIGHTER_MOVES.magic, rifle = FIGHTER_MOVES.soldier;
+cap.punch.chain = [
+  { ...cap.punch },
+  { ...cap.kick, label: 'Ginga chain II', damage: 14, cooldown: 0, knock: 1.5, speed: 2.2 },
+  { ...cap.heavy, label: 'Ginga finisher', damage: 20, cooldown: 0, knock: 4.5, speed: 2.4 },
+];
+cap.skill1 = move('Rush kick', 'Kick', { speed: 2.2, windows: [[0.32, 0.65]], cancelAt: 0.7, dodgeCancelAt: 0.67,
+  damage: 18, knock: 3, range: 4.5, lunge: 20, lungeDecay: 5, cooldown: 4, color: 0xffbd58, skill: true });
+cap.skill2 = move('Roda sweep', 'Heavy', { kind: 'area', strikers: [], events: [0.77], windows: [[0.65, 0.88]],
+  speed: 2.15, cancelAt: 0.92, dodgeCancelAt: 0.9, endAt: 0.97, damage: 23, knock: 5, power: 'heavy',
+  range: 2.4, lunge: 0, cooldown: 8, color: 0xffa84e, skill: true });
+mage.skill1 = move('Astral seal', 'Heavy', { kind: 'area', targeted: true, castRange: 9, strikers: [], events: [0.52],
+  windows: [[0.46, 0.62]], speed: 1.9, dodgeCancelAt: 0.64, range: 2.3, damage: 23, knock: 3,
+  lunge: 0, cooldown: 6, color: 0xb494ff, skill: true });
+mage.skill2 = move('Phase step', 'Roll', { kind: 'mobility', strikers: [], events: [0.08], windows: [[0.08, 0.35]],
+  speed: 2.4, cancelAt: 0.72, dodgeCancelAt: 0.65, endAt: 0.84, damage: 0, range: 0, lunge: 16, lungeDecay: 6,
+  invulnerable: [0.08, 0.35], cooldown: 5, color: 0x9dbdff, skill: true });
+rifle.skill1 = move('Focus round', 'Light', { kind: 'projectile', strikers: [], events: [0.48], windows: [[0.4, 0.56]],
+  speed: 1.05, cancelAt: 0.68, dodgeCancelAt: 0.6, damage: 19, knock: 2, range: 15, projectileSpeed: 26,
+  projectileRadius: 0.09, lunge: 0, cooldown: 5, color: 0xff9f65, skill: true });
+rifle.skill2 = move('Tactical roll', 'Roll', { kind: 'mobility', strikers: [], events: [0.08], windows: [[0.08, 0.35]],
+  speed: 2.4, cancelAt: 0.72, dodgeCancelAt: 0.65, endAt: 0.84, damage: 0, range: 0, lunge: 14, lungeDecay: 5,
+  invulnerable: [0.08, 0.35], cooldown: 5, color: 0x8be0c5, skill: true });
 
 export function fighterDefense(id) {
   const defense = Object.fromEntries(Object.entries(DEFENSE).map(([key, value]) => [key, { ...value }]));

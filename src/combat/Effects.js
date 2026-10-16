@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { QuarksEffects } from './QuarksEffects.js';
 
 // Fixed particle pool rendered in one draw call, with no per-impact meshes.
 export class Effects {
@@ -15,10 +16,26 @@ export class Effects {
     scene.add(this.mesh);
     this._dummy = new THREE.Object3D();
     this._dir = new THREE.Vector3();
+    this.quarks = new QuarksEffects(scene);
+    this.rings = []; this.ringFree = Array.from({ length: 16 }, () => ({ position: new THREE.Vector3(), color: new THREE.Color() }));
+    this.ringMesh = new THREE.InstancedMesh(new THREE.RingGeometry(0.88, 1, 32).rotateX(-Math.PI / 2),
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }), 16);
+    this.ringMesh.count = 0; this.ringMesh.frustumCulled = false; scene.add(this.ringMesh);
   }
 
-  setBudget(count) { this.budget = Math.min(this.capacity, count); }
-  clear() { this.free.push(...this.items); this.items.length = 0; this.mesh.count = 0; }
+  setBudget(count) { this.budget = Math.min(this.capacity, count); this.quarks.setBudget(this.budget); }
+  clear() { this.free.push(...this.items); this.items.length = 0; this.mesh.count = 0; this.quarks.clear();
+    this.ringFree.push(...this.rings); this.rings.length = 0; this.ringMesh.count = 0; }
+
+  cast(pos, color) { this.quarks.burst(pos, color, 'cast'); }
+  impact(pos, color, heavy = false) { this.quarks.burst(pos, color, heavy ? 'heavy' : 'impact'); }
+  projectileTrail(pos, color, style) { this.quarks.burst(pos, color, style === 'arrow' ? 'wind' : 'arcane'); }
+
+  shockwave(pos, color, radius) {
+    if (!this.ringFree.length || this.rings.length >= Math.max(2, this.budget / 12)) return;
+    const ring = this.ringFree.pop(); ring.position.copy(pos); ring.position.y += 0.04;
+    ring.color.set(color); ring.radius = radius; ring.remaining = ring.life = 0.4; this.rings.push(ring);
+  }
 
   spawn(pos, color, life, trail = false) {
     if (!this.free.length || this.items.length >= this.budget) return null;
@@ -38,10 +55,10 @@ export class Effects {
     }
   }
 
-  trail(from, to) {
+  trail(from, to, color = 0xffcb61) {
     this._dir.subVectors(to, from);
     if (this._dir.lengthSq() < 0.0004) return;
-    const it = this.spawn(from, 0xffcb61, 0.12, true);
+    const it = this.spawn(from, color, 0.12, true);
     if (!it) return;
     it.position.lerp(to, 0.5); it.length = this._dir.length() / 0.1;
     it.rotation.setFromUnitVectors(new THREE.Vector3(0, 1, 0), this._dir.normalize());
@@ -59,6 +76,8 @@ export class Effects {
   }
 
   pulse(pos, color, radius) {
+    this.shockwave(pos, color, radius);
+    this.quarks.burst(pos.clone().add(new THREE.Vector3(0, 0.15, 0)), color, 'pulse', Math.min(1.5, radius));
     const count = this.budget < 64 ? 12 : 28;
     for (let i = 0; i < count; i++) {
       const a = i / count * Math.PI * 2, it = this.spawn(pos, color, 0.4);
@@ -70,6 +89,19 @@ export class Effects {
   }
 
   update(dt) {
+    this.quarks.update(dt);
+    for (let i = this.rings.length - 1; i >= 0; i--) {
+      const ring = this.rings[i]; ring.remaining -= dt;
+      if (ring.remaining <= 0 || i >= Math.max(2, this.budget / 12)) { this.ringFree.push(ring); this.rings.splice(i, 1); }
+    }
+    for (let i = 0; i < this.rings.length; i++) {
+      const ring = this.rings[i], t = 1 - ring.remaining / ring.life;
+      this._dummy.position.copy(ring.position); this._dummy.quaternion.identity();
+      this._dummy.scale.setScalar(ring.radius * (0.2 + 0.8 * t)); this._dummy.updateMatrix();
+      this.ringMesh.setMatrixAt(i, this._dummy.matrix); this.ringMesh.setColorAt(i, ring.color.clone().multiplyScalar(1 - t));
+    }
+    this.ringMesh.count = this.rings.length; this.ringMesh.instanceMatrix.needsUpdate = true;
+    if (this.ringMesh.instanceColor) this.ringMesh.instanceColor.needsUpdate = true;
     for (let i = this.items.length - 1; i >= 0; i--) {
       const it = this.items[i];
       it.life -= dt;

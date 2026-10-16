@@ -1,19 +1,23 @@
 (async () => {
   const T = await import('three');
   const { FBXLoader } = await import('three/addons/loaders/FBXLoader.js');
+  const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
   const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
   const { mergeVertices } = await import('three/addons/utils/BufferGeometryUtils.js');
-  const { FIGHTERS } = await import('../src/characters/FighterCatalog.js');
+  const { FIGHTERS } = await import('../src/characters/FighterCatalog.js?prepare=roster-v2');
   const { fitClips } = await import('../src/animation/AnimBank.js');
   const id = window.__prepareFighter || 'capoeira', config = FIGHTERS[id];
   if (!config) throw new Error('Unknown fighter');
   const manager = new T.LoadingManager();
   let complete = false;
   manager.onLoad = () => { complete = true; };
-  const model = await new FBXLoader(manager).loadAsync(encodeURI(config.source));
+  const model = config.source.endsWith('.glb')
+    ? (await new GLTFLoader(manager).loadAsync(encodeURI(config.source))).scene
+    : await new FBXLoader(manager).loadAsync(encodeURI(config.source));
   for (let i = 0; i < 1200 && !complete; i++) await new Promise(r => setTimeout(r, 25));
   if (!complete) throw new Error('Character textures did not finish loading');
   model.updateMatrixWorld(true);
+  for (const name of config.omitMeshes || []) model.getObjectByName(name)?.removeFromParent();
 
   // Some multi-mesh FBXs repeat bone names across separate skin deformers.
   // PropertyBinding would animate only the first copy. Rebind every skin to one
@@ -82,6 +86,10 @@
     clips.push(sprint);
   }
   for (const clip of clips) {
+    if (config.reverseClips?.includes(clip.name)) for (const track of clip.tracks) {
+      const stride = track.getValueSize(), original = track.values.slice();
+      for (let i = 0; i < track.times.length; i++) track.values.set(original.subarray((track.times.length - 1 - i) * stride, (track.times.length - i) * stride), i * stride);
+    }
     if (['Jump', 'JumpRun', 'JumpLoop'].includes(clip.name)) for (const track of clip.tracks) if (/Hips\.position$/.test(track.name)) {
       for (let i = 3; i < track.values.length; i += 3) {
         track.values[i] = track.values[0]; track.values[i + 1] = track.values[1]; track.values[i + 2] = track.values[2];
@@ -117,12 +125,13 @@
   model.name = config.name;
   model.updateMatrixWorld(true);
   const binary = await new GLTFExporter().parseAsync(model, { binary: true, animations: clips, maxTextureSize: 1024, onlyVisible: false });
-  const response = await fetch(`http://127.0.0.1:8124/${id}.glb`, { method: 'POST', body: binary });
+  const receiver = window.__assetReceiver || 'http://127.0.0.1:8124';
+  const response = await fetch(`${receiver}/${id}.glb`, { method: 'POST', body: binary });
   if (!response.ok) throw new Error(await response.text());
   const report = { id, originalBones: originals.length, uniqueBones: canonical.size, maximumBindDifference,
     height: config.height, scale, bytes: binary.byteLength,
     clips: clips.map(c => ({ name: c.name, duration: c.duration, tracks: c.tracks.length })), sources: config.clips };
-  await fetch(`http://127.0.0.1:8124/${id}.json`, { method: 'POST', body: JSON.stringify(report, null, 2) });
+  await fetch(`${receiver}/${id}.json`, { method: 'POST', body: JSON.stringify(report, null, 2) });
   model.traverse(o => { if (o.isMesh) o.geometry.dispose(); });
   for (const material of materials.values()) { for (const key of ['map', 'normalMap', 'alphaMap']) material[key]?.dispose(); material.dispose(); }
   return { id, originalBones: originals.length, uniqueBones: canonical.size, maximumBindDifference, bytes: binary.byteLength, clipCount: report.clips.length };

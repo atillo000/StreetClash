@@ -7,9 +7,10 @@ export class Input {
     this.mouseDY = 0;
     this.wheel = 0;
     this.canvas = canvas;
+    this.combatEnabled = false;
 
     window.addEventListener('keydown', e => {
-      if (['Space', 'Tab', 'F1', 'KeyX', 'KeyC', 'KeyZ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+      if (['Space', 'Tab', 'F1', 'KeyX', 'KeyC', 'KeyZ', 'Digit1', 'Digit2', 'Digit3', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
       if (!e.repeat) this.pressedSet.add(e.code);
       this.keys.add(e.code);
     });
@@ -18,18 +19,16 @@ export class Input {
     document.addEventListener('visibilitychange', () => { if (document.hidden) this.clear(); });
     document.addEventListener('pointerlockchange', () => { if (!this.locked) this.clear(); });
 
-    // Mouse buttons act like keys: Mouse0 = left, Mouse2 = right (only while the mouse is captured).
+    // The first gameplay click both captures the mouse and attacks.
     canvas.addEventListener('mousedown', e => {
-      if (!this.locked) return;
+      if (!this.combatEnabled || ![0, 2].includes(e.button)) return;
+      if (!this.locked) canvas.requestPointerLock?.()?.catch(() => {});
       const code = 'Mouse' + e.button;
       this.pressedSet.add(code); this.keys.add(code);
     });
     window.addEventListener('mouseup', e => this.keys.delete('Mouse' + e.button));
     canvas.addEventListener('contextmenu', e => e.preventDefault());
 
-    canvas.addEventListener('click', () => {
-      if (document.pointerLockElement !== canvas) canvas.requestPointerLock?.();
-    });
     window.addEventListener('mousemove', e => {
       if (document.pointerLockElement === canvas) {
         this.mouseDX += e.movementX;

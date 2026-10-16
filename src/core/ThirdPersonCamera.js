@@ -39,10 +39,11 @@ export class ThirdPersonCamera {
     this.yaw += shortestAngle(this.yaw, heading) * (1 - Math.exp(-5 * dt));
   }
 
-  update(dt, targetPos, look = { dx: 0, dy: 0, wheel: 0 }, lockPos = null, blockers = []) {
+  update(dt, targetPos, look = { dx: 0, dy: 0, wheel: 0 }, lockPos = null, blockers = [], shoulder = false) {
     this.applyLook(look);
 
     const want = new THREE.Vector3(targetPos.x, targetPos.y + this.height, targetPos.z);
+    if (shoulder && !lockPos) want.addScaledVector(this.right(), 0.65);
     if (lockPos) { want.x += (lockPos.x - targetPos.x) * 0.25; want.z += (lockPos.z - targetPos.z) * 0.25; }
     if (this._first) { this.focus.copy(want); this._first = false; }
     else this.focus.lerp(want, 1 - Math.exp(-14 * dt));

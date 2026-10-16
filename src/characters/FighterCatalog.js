@@ -1,3 +1,4 @@
+import { IMPORTED_FIGHTERS } from './ImportedFighters.js';
 const shared = file => `./assets/animations/Boxing Animation/${file}.fbx`;
 const cap = file => `./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/${file}.fbx`;
 const magic = file => `./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/${file}.fbx`;
@@ -8,7 +9,7 @@ const common = { Hit: shared('Hit Reaction'), Down: shared('Knocked Down'), GetU
 
 export const FIGHTERS = {
   capoeira: {
-    id: 'capoeira', name: 'Roda', role: 'Capoeira fighter', description: 'Ginga footwork, fast kicks and spinning strikes.', color: '#f2b85b',
+    id: 'capoeira', name: 'Roda', role: 'Capoeira', description: 'Ginga footwork, fast kicks and spinning strikes.', color: '#f2b85b',
     source: './assets/characters/Capoeira Type Character.fbx', url: './assets/characters/generated/capoeira.glb',
     height: 1.8, walkSpeed: 2, runSpeed: 6.4, sprintSpeed: 7.8, lockSpeed: 3.8, accel: 42, turnRate: 22, gaitRate: 1.3, weapon: null,
     clips: { ...common, Idle: cap('ginga variation 1'), AimIdle: cap('ginga variation 2'),
@@ -21,7 +22,7 @@ export const FIGHTERS = {
     moveLabels: ['Meia lua', 'Bencao', 'Armada'],
   },
   magic: {
-    id: 'magic', name: 'Vesper', role: 'Arcane caster', description: 'Moving casts, focused bolts and a close-range arcane pulse.', color: '#bd9bff',
+    id: 'magic', name: 'Vesper', role: 'Magician', description: 'Moving casts, focused bolts and a close-range arcane pulse.', color: '#bd9bff',
     source: './assets/characters/Magic Type Character.fbx', url: './assets/characters/generated/magic.glb',
     height: 1.8, walkSpeed: 1.9, runSpeed: 5.7, sprintSpeed: 6.8, lockSpeed: 3.8, crouchSpeed: 1.35, accel: 36, turnRate: 20, gaitRate: 1.2, weapon: null,
     clips: { ...common, Idle: magic('standing idle'), AimIdle: magic('standing idle 02'), IdleFidget: magic('Standing Idle 03'),
@@ -42,7 +43,7 @@ export const FIGHTERS = {
     moveLabels: ['Arc bolt', 'Twin-hand blast', 'Arcane pulse'],
   },
   soldier: {
-    id: 'soldier', name: 'Rook', role: 'Rifle specialist', description: 'Disciplined rifle movement, aimed fire and a close-range kick.', color: '#86cbb7',
+    id: 'soldier', name: 'Rook', role: 'Soldier', description: 'Disciplined rifle movement, aimed fire and a close-range kick.', color: '#86cbb7',
     source: './assets/characters/Soldier Type Character.fbx', url: './assets/characters/generated/soldier.glb',
     height: 1.85, walkSpeed: 1.9, runSpeed: 5.5, sprintSpeed: 6.7, lockSpeed: 3.5, crouchSpeed: 1.35, accel: 36, turnRate: 20, gaitRate: 1.2, weapon: 'rifle',
     clipTrims: { Kick: [0.12, 0.75] },
@@ -64,6 +65,7 @@ export const FIGHTERS = {
       Defeat: rifle('death from the front'), DefeatBack: rifle('death from the back'), DefeatLeft: rifle('death from right') },
     moveLabels: ['Rifle shot', 'Close kick', 'Rifle burst'],
   },
+  ...IMPORTED_FIGHTERS,
 };
 
 export const FIGHTER_LIST = Object.values(FIGHTERS);

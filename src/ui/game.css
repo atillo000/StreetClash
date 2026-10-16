@@ -10,10 +10,10 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px soli
 .lobby { background: linear-gradient(90deg, #0a1b24f5 0%, #0a1b24e8 29%, #0a1b2466 57%, #0a1b2400 80%); }
 .menu-card { width: 410px; max-width: 100%; }
 .fighter-select { margin: 16px 0; }
-#fighterChoices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 10px; }
+#fighterChoices { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-top: 10px; }
 .fighter-choice { background: #10252ecc; border: 1px solid #abc4ca44; border-top: 3px solid var(--fighter-color); color: var(--paper); padding: 10px 5px; text-align: left; }
 .fighter-choice[aria-pressed="true"] { background: #34505bd9; border-color: var(--fighter-color); }
-.fighter-choice span { display: block; font-size: 15px; font-weight: 800; }
+.fighter-choice span { display: block; font-size: 13px; font-weight: 800; }
 .fighter-choice small { display: block; font-size: 8px; color: #bed0d2; margin-top: 4px; }
 #fighterDescription { color: #bdcdd0; font-size: 11px; line-height: 1.6; margin: 9px 0; min-height: 18px; }
 .fighter-select label { font-size: 9px; letter-spacing: 1px; color: var(--accent); margin-right: 12px; }
@@ -57,6 +57,15 @@ kbd { font: bold 10px 'Segoe UI', sans-serif; color: var(--paper); border: 1px s
 #barE { left: auto; right: 26px; border-right: 3px solid #e58b67; }
 .fighter-label { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 8px; font-weight: 800; }
 .fighter-label small { font-size: 10px; color: #adc1c4; font-weight: 400; letter-spacing: 0; }
+.skills { margin-block: 4px; color: #bfe8ec; }
+.abilities .cooling { opacity: 0.45; }
+#chain { color: #ffcf70; min-height: 14px; font-weight: 750; }
+#crosshair { position: fixed; left: 50%; top: 44%; transform: translate(-50%, -50%); pointer-events: none; color: #f5eee0; z-index: 2; }
+#crosshair span { display: block; width: 16px; height: 16px; border: 2px solid currentColor; border-radius: 50%; box-shadow: 0 1px 5px #000; }
+#crosshair span::after { content: ''; position: absolute; width: 3px; height: 3px; background: currentColor; left: 8px; top: 8px; }
+#crosshair.on-target { color: #ffcb68; }
+#crosshair.confirmed span { border-radius: 0; transform: rotate(45deg); color: #fff; }
+#hitConfirm { position: absolute; top: 27px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 11px; font-weight: 800; text-shadow: 0 2px 5px #000; }
 #barP .bar, #barE .bar { width: 100%; height: 10px; border: 0; border-radius: 1px; background: #ffffff13; }
 #hpP { background: #7ccab9; } #hpE { background: #e58b67; }
 #matchHud { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; text-shadow: 0 2px 10px #000; pointer-events: none; }

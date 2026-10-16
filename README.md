@@ -1,14 +1,20 @@
-# Street Clash (working title) — Stage 5 (Ironworks warehouse duel)
+# Street Clash - seven-fighter warehouse brawler
 
 Original 3D brawler inspired by the genre of classic arcade PC brawlers. All names and designs are original.
 
 ## Run
 ```
 cd streetclash
-npm install            # installs three.js (only dependency)
+npm install            # installs Three.js and Three.quarks
 npm start              # local server on port 8123
 ```
 Open http://localhost:8123 in Chrome or Edge.
+
+Current development folder: `D:\Carl\Personal\Game\streetclash\streetclash\Repository\StreetClash`.
+The earlier cutoff version has now been extended with four more supplied fighters,
+matching weapons, environment props and the new mouse/number controls. See
+[expanded roster and controls](docs/expanded-roster.md). See the [transfer record](docs/repository-update-2026-10-16.md)
+for included/excluded work, dependency versions and effect customization.
 
 Use Node.js 22 or newer. Run `npm test` for movement and animation regression tests.
 See [Stage 5 verification](docs/stage5-verification.md) for the complete match, warehouse assets and checks. Earlier [Stage 4 verification](docs/stage4-verification.md) and [movement verification](docs/movement-verification.md) record the foundation work.
@@ -16,11 +22,13 @@ See [Stage 5 verification](docs/stage5-verification.md) for the complete match, 
 Choose **Enter the arena** for a 120-second 1v1 match. A three-second countdown gates combat. Win by knockout or higher remaining health when time expires; tied health is a draw. Results show damage, landed hits, health and elapsed fight time, with rematch and return-to-dock buttons. **Practice arena** retains the untimed test mode with optional AI.
 
 Controls: WASD move, Shift walk, click the game to capture the mouse and look around, Esc releases it, wheel zooms, Q cycles graphics quality.
-Choose Roda (Capoeira), Vesper (Magic) or Rook (Soldier) and a rival in the dock menu. Combat: LMB/J light attack, E/K secondary, RMB/L heavy, hold F block, Space evade, X jump, hold C crouch (Magic/Soldier), hold Z sprint. T toggles AI in practice, R restarts, F1 shows debug information. Enter starts a match from the dock/results screen. Match AI starts automatically; completed matches do not auto-respawn.
+Choose Capoeira, Magician, Soldier, Archer, Great Sword, Axe or Mutant and a rival in the dock menu. Combat: LMB/J basic attack, RMB/L heavy, 1/E/K secondary, 2/3 skills, hold F block, Space evade, X jump, hold C crouch (Magic/Soldier), hold Z sprint. T toggles AI in practice, R restarts, F1 shows debug information. Enter starts a match from the dock/results screen. Match AI starts automatically; completed matches do not auto-respawn.
 
-See [fighter integration and animation assignments](docs/fighter-integration.md) for per-character locomotion, attacks, fallbacks, asset preparation and browser checks. All three supplied characters now use optimized GLBs with their dedicated animation sets.
+See [fighter integration and animation assignments](docs/fighter-integration.md) for per-character locomotion, attacks, fallbacks, asset preparation and browser checks. All seven supplied characters use prepared GLBs with dedicated animation sets; see the expanded-roster guide for the new assignments and shared fallbacks.
 
 The [combat pacing pass](docs/combat-pacing.md) adds faster acceleration and combat movement, shorter recovery, buffered recovery dodges and committed ranged aim. Class balance remains provisional.
+
+[Stage 6: class abilities and aiming](docs/class-abilities.md) introduced character skills (now on **2/3**, with the secondary attack on **1**), Capoeira's three-strike **J** chain, mouse-directed crosshair aiming, startup warning rings, hit confirmation and class-colored feedback. Click to capture the mouse; **Tab** target lock remains available.
 
 Stage 4: **Tab** toggles target lock. WASD strafes/backpedals while locked; movement remains camera-relative. Attacks aim at the locked opponent; rolls follow movement input. **P** pauses/resumes, **M** toggles sound. Switching away from the game pauses and clears held inputs. Medium quality is the default; Q also adjusts particle budgets.
 
@@ -56,7 +64,7 @@ Stage 4: **Tab** toggles target lock. WASD strafes/backpedals while locked; move
 - three.js – MIT.
 
 ## Known gaps
-- The three user-supplied fighters are integrated; their source licenses are recorded as unconfirmed in the asset record.
+- The seven user-supplied fighters are integrated; their source licenses are recorded as unconfirmed in the asset record.
 - Jump, directional locomotion, crouch (Magic/Soldier), sprint and class-specific attacks are implemented. Jump does not enable platform traversal.
 - Combat is tuned for this two-fighter prototype. Further playtesting and class-specific balancing remain.
 - The warehouse AI routes around static cover and chooses attacks, guarding and evasions. It is a single-opponent controller, not a squad or multi-level navigation system.

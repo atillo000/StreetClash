@@ -14,6 +14,9 @@ import { Sound } from './core/Sound.js';
 import { TargetLock } from './combat/TargetLock.js';
 import { shortestAngle } from './characters/Mover.js';
 import { Match } from './game/Match.js';
+import { Aim } from './combat/Aim.js';
+import { CombatSignals } from './combat/CombatSignals.js';
+import { ATTACK_BINDINGS, requestedAttacks } from './core/controls.js';
 
 const statusEl = document.getElementById('status');
 const qEl = document.getElementById('q');
@@ -59,6 +62,8 @@ scene.add(key);
 const rim = new THREE.DirectionalLight(0x6fa0ff, 1.2);
 rim.position.set(-5, 4, -5);
 scene.add(rim);
+const portraitFill = new THREE.DirectionalLight(0xe5edff, 1.25);
+scene.add(portraitFill, portraitFill.target);
 
 let arena;
 const effects = new Effects(scene);
@@ -100,20 +105,33 @@ const world = {
   combatEnabled: false,
   paused: false,
   hitstop: 0,
-  onCast(c, move) { c.equipment?.kick(); if (move.kind === 'area') projectiles.area(c, move); else projectiles.emit(c, move); sound.play(move.kind === 'area' ? 'heavy' : 'swing'); },
-  onTrail(from, to) { effects.trail(from, to); },
+  hitMarkerT: 0, hitMessage: '',
+  onAttack(c, move) { if (move.skill) sound.play(move.kind === 'mobility' ? 'dodge' : 'charge'); },
+  onCast(c, move) {
+    if (move.kind === 'mobility') { effects.pulse(c.position, move.color, 0.6); sound.play('dodge'); return; }
+    c.equipment?.kick();
+    if (move.kind === 'projectile') {
+      const source = c.equipment?.muzzle || c.character.bone('mixamorigRightHand');
+      effects.cast(source.getWorldPosition(new THREE.Vector3()), move.color);
+    }
+    if (move.kind === 'area') projectiles.area(c, move); else projectiles.emit(c, move);
+    sound.play(move.kind === 'area' ? 'heavy' : c.profile.id === 'soldier' ? 'rifle' : 'magic');
+  },
+  onTrail(from, to, color) { effects.trail(from, to, color); },
   onHit(attacker, target, result, move, point) {
     this.match?.recordHit(attacker, target, result, target.lastDamage);
     const heavy = move.power === 'heavy';
+    effects.impact(point, move.color ?? attacker.profile?.color ?? 0xffd58a, heavy && result !== 'blocked');
+    if (attacker.team === 'p') { this.hitMarkerT = 0.22; this.hitMessage = result === 'blocked' ? 'GUARDED' : `${Math.round(target.lastDamage)}${attacker.comboStage ? ' / CHAIN ' + attacker.comboStage : ''}`; }
     sound.play(result === 'blocked' ? 'block' : heavy ? 'heavy' : 'hit');
     if (result === 'blocked') {
       effects.spark(point, 0x7fb4ff, 6, 3);
       cam.shake(0.03);
       this.hitstop = Math.max(this.hitstop, 0.03);
     } else {
-      effects.spark(point, heavy ? 0xff9a3c : 0xffe08a, heavy ? 16 : 9, heavy ? 6 : 4);
-      cam.shake(heavy ? 0.22 : 0.07);
-      this.hitstop = Math.max(this.hitstop, heavy ? 0.11 : 0.05);
+      effects.spark(point, move.color ?? attacker.profile?.color ?? (heavy ? 0xff9a3c : 0xffe08a), heavy ? 16 : 9, heavy ? 6 : 4);
+      cam.shake(heavy ? 0.14 : 0.045);
+      this.hitstop = Math.max(this.hitstop, heavy ? 0.075 : 0.035);
       if (heavy) effects.slam(target.position);
     }
   },
@@ -145,11 +163,14 @@ async function boot() {
   const dummy = makeFighter('magic', { name: 'RIVAL', team: 'e', spawn: new THREE.Vector3(0, 0, -3.8), facing: 0 });
   const ai = new SparringAI(dummy);
   const lock = new TargetLock(player, world);
+  const aimTrace = new Aim(); world.aim = aimTrace;
+  const signals = new CombatSignals(scene, world.combatants); world.signals = signals;
   const lockRing = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.57, 32), new THREE.MeshBasicMaterial({ color: 0xffcf40, side: THREE.DoubleSide, depthWrite: false }));
   lockRing.rotation.x = -Math.PI / 2; lockRing.visible = false; scene.add(lockRing);
   function resetArena() {
     player.reset(); dummy.reset(); lock.clear(); effects.clear(); projectiles.clear(); ai.reset();
     input.clear(); world.hitstop = 0;
+    world.hitMarkerT = 0; world.hitMessage = '';
     cam.yaw = 0; cam.pitch = 0.22; cam.distance = 6.2; cam._first = true; cam.shakeAmt = 0;
   }
   const match = new Match({
@@ -182,7 +203,7 @@ async function boot() {
   for (const config of FIGHTER_LIST) {
     const button = document.createElement('button'); button.type = 'button'; button.className = 'fighter-choice';
     button.dataset.fighter = config.id; button.style.setProperty('--fighter-color', config.color);
-    button.innerHTML = `<span>${config.name}</span><small>${config.role}</small>`;
+    button.innerHTML = `<span>${config.role}</span><small>${config.name}</small>`;
     button.addEventListener('click', () => world.selectFighter('player', config.id));
     document.getElementById('fighterChoices').appendChild(button);
     const option = document.createElement('option'); option.value = config.id; option.textContent = `${config.name} / ${config.role}`;
@@ -203,7 +224,12 @@ async function boot() {
     _dir.set(0, 0, 0).addScaledVector(_fwd, axis.y).addScaledVector(_right, axis.x);
     if (_dir.lengthSq() > 0) _dir.normalize();
     const moveAim = mag > 0 ? Math.atan2(_dir.x, _dir.z) : null;
-    const aim = lock.target ? player.mover.lockFacing : moveAim;
+    aimTrace.update(camera, player, world);
+    player.manualAim = !lock.target;
+    player.aimPoint = lock.target ? lock.target.position.clone().add(new THREE.Vector3(0, 1, 0)) : aimTrace.point.clone();
+    const aim = lock.target ? player.mover.lockFacing : aimTrace.heading(player);
+    const ranged = player.profile.ranged ?? ['magic', 'soldier', 'archer'].includes(player.profile.id);
+    if (!lock.target && ranged && input.locked && !input.down('KeyZ')) player.mover.lockFacing = aim;
 
     player.mover.steer(_dir, mag, input.walkModifier);
     player.wantBlock = input.down('KeyF');
@@ -211,9 +237,11 @@ async function boot() {
     player.mover.sprinting = input.down('KeyZ') && player.character.hasClip('Sprint');
     if (input.pressed('KeyX')) player.tryJump();
 
-    if (input.pressed('Mouse0') || input.pressed('KeyJ')) { if (player.tryAttack('punch', aim)) sound.play('swing'); }
-    if (input.pressed('KeyE') || input.pressed('KeyK')) { if (player.tryAttack('kick', aim)) sound.play('swing'); }
-    if (input.pressed('Mouse2') || input.pressed('KeyL')) { if (player.tryAttack('heavy', aim)) sound.play('swing'); }
+    for (const id of requestedAttacks(input)) {
+      const move = player.moves[id];
+      const heading = move?.kind === 'mobility' ? moveAim ?? player.mover.facing + Math.PI : aim;
+      if (player.tryAttack(id, heading)) sound.play('swing');
+    }
     if (input.pressed('Space')) { if (player.tryDodge(moveAim)) sound.play('dodge'); }
 
     if (input.pressed('KeyT') && match.state === 'practice') { ai.enabled = !ai.enabled; }
@@ -237,6 +265,7 @@ async function boot() {
   }
 
   function updateHud() {
+    input.combatEnabled = match.canFight && !world.paused;
     bars.p.fill.style.width = (100 * player.hp / player.maxHp) + '%';
     bars.e.fill.style.width = (100 * dummy.hp / dummy.maxHp) + '%';
     aiEl.textContent = ai.enabled ? 'ON' : 'OFF (dummy)';
@@ -251,10 +280,18 @@ async function boot() {
     document.getElementById('fighterDescription').textContent = player.profile.description;
     for (const button of document.querySelectorAll('[data-fighter]')) button.setAttribute('aria-pressed', String(button.dataset.fighter === player.profile.id));
     document.getElementById('opponentChoice').value = dummy.profile.id;
-    for (const [id, key] of [['punch', 'J'], ['kick', 'K'], ['heavy', 'L']]) {
+    for (const { move: id, label: key } of ATTACK_BINDINGS) {
       const cooldown = player.cooldowns[id] || 0;
-      document.getElementById(`ability-${id}`).textContent = `${key} · ${player.moves[id].label}${cooldown > 0.05 ? ' / ' + cooldown.toFixed(1) + 's' : ''}`;
+      const element = document.getElementById(`ability-${id}`);
+      element.textContent = `${key} · ${player.moves[id].label}${cooldown > 0.05 ? ' / ' + cooldown.toFixed(1) + 's' : ''}`;
+      element.classList.toggle('cooling', cooldown > 0.05);
     }
+    const reticle = document.getElementById('crosshair');
+    reticle.hidden = !match.canFight || world.paused;
+    reticle.classList.toggle('on-target', !!aimTrace.target || !!lock.target);
+    reticle.classList.toggle('confirmed', world.hitMarkerT > 0);
+    document.getElementById('hitConfirm').textContent = world.hitMarkerT > 0 ? world.hitMessage : '';
+    document.getElementById('chain').textContent = match.canFight && player.comboRemaining > 0 ? `GINGA CHAIN ${player.comboStage}/3 · J to follow up` : '';
     document.getElementById('lobby').hidden = match.state !== 'lobby';
     document.getElementById('results').hidden = match.state !== 'results';
     document.getElementById('matchHud').hidden = ['lobby', 'results'].includes(match.state);
@@ -345,7 +382,7 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
     for (const c of world.combatants) c.update(dt);
     arena.resolve(world.combatants);
     for (const c of world.combatants) c.character.update(dt);
-    for (const c of world.combatants) c.equipment?.update(['block','blockEnd','dodge','hit','down','getup','dead','jump','land','victory'].includes(c.state) || (c.state === 'attack' && c.moveId === 'kick'));
+    for (const c of world.combatants) c.equipment?.update(['block','blockEnd','dodge','hit','down','getup','dead','jump','land','victory'].includes(c.state) || (c.state === 'attack' && (c.move?.clip === 'Kick' || c.move?.kind === 'mobility')));
     for (const c of world.combatants) c.postAnimation(dt);
     projectiles.update(dt);
     match.resolveOutcome();
@@ -361,8 +398,9 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
       if (lock.target) cam.trackTarget(raw, player.position, lock.target.position);
     }
     const alpha = world.paused ? 1 : fixed.advance(raw, simulate);
-    for (const c of world.combatants) c.equipment?.update(['block','blockEnd','dodge','hit','down','getup','dead','jump','land','victory'].includes(c.state) || (c.state === 'attack' && c.moveId === 'kick'));
+    for (const c of world.combatants) c.equipment?.update(['block','blockEnd','dodge','hit','down','getup','dead','jump','land','victory'].includes(c.state) || (c.state === 'attack' && (c.move?.clip === 'Kick' || c.move?.kind === 'mobility')));
     if (!world.paused) effects.update(raw);
+    if (!world.paused) world.hitMarkerT = Math.max(0, world.hitMarkerT - raw);
     // Interpolate only for drawing; restore authoritative positions afterwards.
     world.combatants.forEach((c, i) => {
       renderPositions[i].copy(c.position);
@@ -372,9 +410,15 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
     lockRing.visible = !!lock.target;
     if (lock.target) lockRing.position.set(lock.target.position.x, 0.025, lock.target.position.z);
     if (match.state === 'lobby') { camera.position.set(3, 2.2, 0.5); camera.lookAt(1.2, 1, 5.5); }
-    else cam.update(world.paused ? 0 : raw, player.position, undefined, lock.target?.position, arena.cameraBlockers);
+    else cam.update(world.paused ? 0 : raw, player.position, undefined, lock.target?.position, arena.cameraBlockers, input.locked);
+    world.signals.update(match.canFight, player);
     key.position.set(player.position.x + 5, 9, player.position.z + 4);
     key.target.position.copy(player.position); key.target.updateMatrixWorld();
+    portraitFill.visible = match.state === 'lobby';
+    if (portraitFill.visible) {
+      portraitFill.position.copy(camera.position).add(new THREE.Vector3(0, 2, 0));
+      portraitFill.target.position.copy(player.position).add(new THREE.Vector3(0, 1, 0));
+    }
     renderer.render(scene, camera);
     world.combatants.forEach((c, i) => { c.position.copy(renderPositions[i]); c.character.root.rotation.y = c.mover.facing; });
 

@@ -1,0 +1,174 @@
+{
+  "id": "mutant",
+  "originalBones": 37,
+  "uniqueBones": 37,
+  "maximumBindDifference": 0,
+  "height": 2.25,
+  "scale": 1.2088043926212206,
+  "bytes": 9153568,
+  "clips": [
+    {
+      "name": "Hit",
+      "duration": 1.5833333730697632,
+      "tracks": 29
+    },
+    {
+      "name": "Down",
+      "duration": 2.133333444595337,
+      "tracks": 29
+    },
+    {
+      "name": "GetUp",
+      "duration": 2.700000047683716,
+      "tracks": 29
+    },
+    {
+      "name": "Block",
+      "duration": 2.5166666507720947,
+      "tracks": 29
+    },
+    {
+      "name": "Roll",
+      "duration": 2.366666555404663,
+      "tracks": 29
+    },
+    {
+      "name": "Defeat",
+      "duration": 4.583333492279053,
+      "tracks": 31
+    },
+    {
+      "name": "Victory",
+      "duration": 4.666666507720947,
+      "tracks": 31
+    },
+    {
+      "name": "Jump",
+      "duration": 3.1666667461395264,
+      "tracks": 31
+    },
+    {
+      "name": "BackWalk",
+      "duration": 1.4166666269302368,
+      "tracks": 31
+    },
+    {
+      "name": "BackRun",
+      "duration": 0.8666666746139526,
+      "tracks": 31
+    },
+    {
+      "name": "StrafeLeftWalk",
+      "duration": 1.0333333015441895,
+      "tracks": 29
+    },
+    {
+      "name": "StrafeRightWalk",
+      "duration": 1.0333333015441895,
+      "tracks": 29
+    },
+    {
+      "name": "StrafeLeftRun",
+      "duration": 0.6666666865348816,
+      "tracks": 29
+    },
+    {
+      "name": "StrafeRightRun",
+      "duration": 0.6666666865348816,
+      "tracks": 29
+    },
+    {
+      "name": "Idle",
+      "duration": 4.016666889190674,
+      "tracks": 31
+    },
+    {
+      "name": "AimIdle",
+      "duration": 5.300000190734863,
+      "tracks": 31
+    },
+    {
+      "name": "IdleFidget",
+      "duration": 4.666666507720947,
+      "tracks": 31
+    },
+    {
+      "name": "Walk",
+      "duration": 1.4166666269302368,
+      "tracks": 31
+    },
+    {
+      "name": "Run",
+      "duration": 0.8666666746139526,
+      "tracks": 31
+    },
+    {
+      "name": "Light",
+      "duration": 2.6666667461395264,
+      "tracks": 31
+    },
+    {
+      "name": "Heavy",
+      "duration": 2.6666667461395264,
+      "tracks": 31
+    },
+    {
+      "name": "Kick",
+      "duration": 3.1666667461395264,
+      "tracks": 31
+    },
+    {
+      "name": "Slam",
+      "duration": 3.1666667461395264,
+      "tracks": 31
+    },
+    {
+      "name": "Roar",
+      "duration": 4.666666507720947,
+      "tracks": 31
+    },
+    {
+      "name": "TurnLeft",
+      "duration": 1.3333333730697632,
+      "tracks": 31
+    },
+    {
+      "name": "TurnRight",
+      "duration": 1.9500000476837158,
+      "tracks": 31
+    },
+    {
+      "name": "Sprint",
+      "duration": 0.7245901705788784,
+      "tracks": 31
+    }
+  ],
+  "sources": {
+    "Hit": "./assets/animations/Boxing Animation/Hit Reaction.fbx",
+    "Down": "./assets/animations/Boxing Animation/Knocked Down.fbx",
+    "GetUp": "./assets/animations/Boxing Animation/Getting Up.fbx",
+    "Block": "./assets/animations/Boxing Animation/Outward Block.fbx",
+    "Roll": "./assets/animations/Boxing Animation/Stand To Roll.fbx",
+    "Defeat": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant dying.fbx",
+    "Victory": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant flexing muscles.fbx",
+    "Jump": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant jumping.fbx",
+    "BackWalk": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant walking.fbx",
+    "BackRun": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant run.fbx",
+    "StrafeLeftWalk": "./assets/animations/locomotion/left strafe walking.fbx",
+    "StrafeRightWalk": "./assets/animations/locomotion/right strafe walking.fbx",
+    "StrafeLeftRun": "./assets/animations/locomotion/left strafe.fbx",
+    "StrafeRightRun": "./assets/animations/locomotion/right strafe.fbx",
+    "Idle": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant breathing idle.fbx",
+    "AimIdle": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant idle.fbx",
+    "IdleFidget": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant flexing muscles.fbx",
+    "Walk": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant walking.fbx",
+    "Run": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant run.fbx",
+    "Light": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant swiping.fbx",
+    "Heavy": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant swiping.fbx",
+    "Kick": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant jumping.fbx",
+    "Slam": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant jumping.fbx",
+    "Roar": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant flexing muscles.fbx",
+    "TurnLeft": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant left turn 45.fbx",
+    "TurnRight": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant right turn 45.fbx"
+  }
+}

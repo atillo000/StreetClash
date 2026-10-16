@@ -31,9 +31,16 @@ export class SparringAI {
     this.cool -= dt;
     this.thinkT -= dt; this.repathT -= dt;
     const visible = !c.world.arena || c.world.arena.hasLineOfSight(c.position, e.c.position);
-    const ranged = c.profile?.id === 'magic' || c.profile?.id === 'soldier';
-    const distance = ranged ? 7 : 1.02;
+    const ranged = c.profile?.ranged ?? ['magic', 'soldier', 'archer'].includes(c.profile?.id);
+    const distance = ranged ? 7 : c.profile?.weapon ? 1.35 : 1.02;
     c.target = e.c;
+    c.aimPoint = e.c.position.clone();
+    if (visible && c.state === 'free' && c.moves?.skill2?.kind === 'mobility' && e.dist < 2.5 && e.c.state === 'attack' && !(c.cooldowns.skill2 > 0)) {
+      c.tryAttack('skill2', e.angle + Math.PI); this.behavior = 'escape'; return;
+    }
+    if (visible && !ranged && c.state === 'free' && c.moves?.skill1 && e.dist > 1.8 && e.dist <= c.moves.skill1.range && !(c.cooldowns.skill1 > 0)) {
+      c.tryAttack('skill1', e.angle); this.behavior = 'rush kick'; return;
+    }
 
     if (this.thinkT <= 0) {
       this.thinkT = 0.22;
@@ -69,7 +76,7 @@ export class SparringAI {
       else c.mover.steer(_dir.set(0, 0, 0), 0);
       this.behavior = 'engage';
       if (this.cool <= 0 && c.state === 'free') {
-        const options = c.moves ? Object.entries(c.moves).filter(([id, move]) => e.dist <= (move.range || 1.3) && !(c.cooldowns[id] > 0)).map(([id]) => id) : ['punch', 'kick'];
+        const options = c.moves ? Object.entries(c.moves).filter(([id, move]) => move.kind !== 'mobility' && e.dist <= (move.castRange || move.range || 1.3) && !(c.cooldowns[id] > 0)).map(([id]) => id) : ['punch', 'kick'];
         if (options.length) c.tryAttack(options[Math.min(options.length - 1, Math.floor(this.random() * options.length))], e.angle);
         this.cool = 1.15 + this.random() * 0.85;
       }

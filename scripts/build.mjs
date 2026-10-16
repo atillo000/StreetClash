@@ -10,14 +10,22 @@ await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 
 // Preserve runtime paths; FBX sources, development tools and unused models stay local.
-for (const entry of ['src', 'assets/characters/generated', 'assets/environment', 'assets/textures', 'assets/ASSET-LICENSES.md']) {
+for (const entry of ['src', 'assets/characters/generated', 'assets/environment/factory',
+  'assets/environment/old-barrel.glb', 'assets/environment/wooden-crate.glb',
+  'assets/Weapons/long-bow.glb', 'assets/Weapons/battle-axe.glb', 'assets/Weapons/generated/great-sword.glb',
+  'assets/textures', 'assets/ASSET-LICENSES.md', 'assets/USER-ASSETS.json']) {
   await cp(path.join(root, entry), path.join(output, entry), { recursive: true });
 }
 await mkdir(path.join(output, 'vendor/three/build'), { recursive: true });
 await cp(path.join(root, 'node_modules/three/build/three.module.js'), path.join(output, 'vendor/three/build/three.module.js'));
 await cp(path.join(root, 'node_modules/three/examples/jsm'), path.join(output, 'vendor/three/examples/jsm'), { recursive: true });
 await cp(path.join(root, 'node_modules/three/LICENSE'), path.join(output, 'vendor/three/LICENSE'));
-const html = (await readFile(path.join(root, 'index.html'), 'utf8')).replaceAll('./node_modules/three/', './vendor/three/');
+for (const [pkg, file] of [['three.quarks', 'three.quarks.esm.js'], ['quarks.core', 'quarks.core.esm.js']]) {
+  await mkdir(path.join(output, 'vendor', pkg, 'dist'), { recursive: true });
+  await cp(path.join(root, 'node_modules', pkg, 'dist', file), path.join(output, 'vendor', pkg, 'dist', file));
+  await cp(path.join(root, 'node_modules', pkg, 'LICENSE'), path.join(output, 'vendor', pkg, 'LICENSE'));
+}
+const html = (await readFile(path.join(root, 'index.html'), 'utf8')).replaceAll('./node_modules/', './vendor/');
 await writeFile(path.join(output, 'index.html'), html);
 
 async function size(dir) {

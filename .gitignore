@@ -3,3 +3,5 @@ dist/
 .vercel/
 *.zip
 *.fbx
+assets/characters/source-converted/
+*.fbm/

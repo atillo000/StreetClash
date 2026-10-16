@@ -20,12 +20,12 @@ export class Combatant {
     this.moves = moves; this.defense = defense; this.profile = profile; this.equipment = equipment;
     this.cooldowns = {};
     this.wantCrouch = false; this.crouching = false; this.jumpVelocity = 0;
-    this.maxHp = maxHp;
-    this.hp = maxHp;
+    this.maxHp = profile?.maxHp || maxHp;
+    this.hp = this.maxHp;
     this.spawn = spawn.clone();
     this.spawnFacing = spawnFacing;
-    this.radius = 0.38;
-    this.height = 1.7;
+    this.radius = profile?.radius || 0.38;
+    this.height = profile?.height || 1.7;
     this.previousPosition = spawn.clone();
     this.previousFacing = spawnFacing;
     this.target = null;
@@ -72,6 +72,7 @@ export class Combatant {
     for (const material of oldMaterials) material.dispose();
     this.equipment?.dispose(); this.character.root.removeFromParent();
     Object.assign(this, { character, mover, profile, moves, defense, equipment, bat: null });
+    this.maxHp = profile?.maxHp || 100; this.radius = profile?.radius || 0.38;
     this.mats = [];
     const seen = new Set();
     character.model.traverse(o => { if (o.isMesh) for (const m of [].concat(o.material)) if (m.emissive && !seen.has(m)) {
@@ -82,6 +83,7 @@ export class Combatant {
 
   reset() {
     this.hp = this.maxHp;
+    this.height = this.profile?.height || 1.7;
     this.character.root.position.copy(this.spawn);
     this.previousPosition.copy(this.spawn);
     this.previousFacing = this.spawnFacing;
@@ -109,6 +111,7 @@ export class Combatant {
     this.dodgeCd = 0;
     this.wantBlock = false;
     this.cooldowns = {}; this.wantCrouch = false; this.crouching = false; this.jumpVelocity = 0;
+    this.comboStage = 0; this.comboRemaining = 0; this.manualAim = false; this.aimPoint = null; this.castPoint = null;
     this.mover.crouching = false; this.mover.sprinting = false;
     this.target = null;
     this.hitTargets = []; this.strikeProgress = 0;
@@ -126,7 +129,7 @@ export class Combatant {
     if (!m || !this.character.hasClip(m.clip)) return false;
     if (m.requiresBat && (!this.bat || !this.bat.holder.visible)) return false;
     if ((this.cooldowns[id] || 0) > 0) return false;
-    if (this.state === 'attack') { this.buffer = id; this.bufferAim = aim; this.bufferT = 0.5; return false; }
+    if (this.state === 'attack') { this.buffer = id; this.bufferAim = aim; this.bufferPoint = this.aimPoint?.clone(); this.bufferT = 0.5; return false; }
     if (!['free', 'block', 'blockEnd'].includes(this.state)) return false;
     this._startAttack(id, aim);
     return true;
@@ -154,6 +157,7 @@ export class Combatant {
     this._setState('dodge');
     this.dodgeCd = D.cooldown;
     this.buffer = null; this.dodgeBuffer = null;
+    this.comboStage = 0; this.comboRemaining = 0;
     return true;
   }
 
@@ -201,6 +205,7 @@ export class Combatant {
       if (n === 'bat:tip') obj = this.bat?.tip;
       else if (n === 'bat:mid') obj = this.bat?.mid;
       else if (n === 'bat:base') obj = this.bat?.base;
+      else if (n.startsWith('weapon:')) obj = this.equipment?.[n.slice(7)];
       else obj = this.character.bone(n);
       if (!obj) continue;
       obj.getWorldPosition(_p);
@@ -211,37 +216,53 @@ export class Combatant {
   _startAttack(id, aim) {
     this.dodgeBuffer = null;
     this.crouching = false; this.mover.crouching = false;
-    const m = this.moves[id];
+    let m = this.moves[id];
+    if (m.chain) {
+      const index = this.comboRemaining > 0 ? this.comboStage % m.chain.length : 0;
+      m = m.chain[index]; this.comboStage = index + 1; this.comboRemaining = 0.85;
+    } else { this.comboStage = 0; this.comboRemaining = 0; }
     const e = this.target?.alive
       ? { c: this.target, dist: this.position.distanceTo(this.target.position), angle: Math.atan2(this.target.position.x - this.position.x, this.target.position.z - this.position.z) }
       : this._nearestEnemy();
     let ang = this.mover.facing;
     if (aim !== null) ang = aim;
-    if (e && e.dist < 4.0) {
+    if (!this.manualAim && m.kind !== 'mobility' && e && e.dist < 4.0) {
       const toE = shortestAngle(ang, e.angle);
       if (Math.abs(toE) < 1.75) ang = e.angle;       // soft auto-aim: within ~100 deg of where you point
     }
     this.mover.facingTarget = ang;
-    const decay = 7;
+    this.attackAngle = ang;
+    const decay = m.lungeDecay || 7;
     let v = m.lunge * 0.5;
-    if (e && e.dist < 4.0) v = THREE.MathUtils.clamp((e.dist - 0.95) * decay, 0, m.lunge);
+    if (m.kind === 'mobility') v = m.lunge;
+    else if (m.skill && this.manualAim && this.aimPoint && m.lunge) v = THREE.MathUtils.clamp(Math.hypot(this.aimPoint.x - this.position.x, this.aimPoint.z - this.position.z) - 0.95, 0, m.lunge / decay) * decay;
+    else if (e && e.dist < (m.range || 4) + 1 && !this.manualAim) v = THREE.MathUtils.clamp((e.dist - 0.95) * decay, 0, m.lunge);
+    else if (m.skill) v = m.lunge;
     this.mover.addImpulse(new THREE.Vector3(Math.sin(ang), 0, Math.cos(ang)).multiplyScalar(v), decay);
 
     this.character.playAction(m.clip, { fade: m.fade, timeScale: m.speed });
     this.move = m;
     this.moveId = id;
     // Ranged attacks commit their aim during startup; moving targets can evade.
-    this.castTarget = m.kind === 'projectile' && e && Math.abs(shortestAngle(ang, e.angle)) < Math.PI / 3
+    this.castTarget = m.kind === 'projectile' && this.manualAim && this.aimPoint ? this.aimPoint.clone() : m.kind === 'projectile' && e && Math.abs(shortestAngle(ang, e.angle)) < Math.PI / 3
       ? e.c.position.clone().add(new THREE.Vector3(0, 1, 0)) : null;
+    this.castPoint = null;
+    if (m.targeted) {
+      this.castPoint = this.aimPoint?.clone() || e?.c.position.clone() || this.position.clone().add(new THREE.Vector3(Math.sin(ang), 0, Math.cos(ang)).multiplyScalar(m.castRange));
+      const delta = this.castPoint.clone().sub(this.position).setY(0).clampLength(0, m.castRange);
+      this.castPoint.copy(this.position).add(delta).setY(0);
+    }
     this.cooldowns[id] = m.cooldown || 0;
     this.attackEvents = new Set();
     this.hitTargets = m.windows.map(() => new Set());
     this.strikeProgress = 0;
     this._setStrikers(m);
     this._setState('attack');
+    this.world.onAttack?.(this, m);
   }
 
   _startBlock() {
+    this.comboRemaining = 0; this.comboStage = 0;
     this.crouching = false; this.mover.crouching = false;
     const B = this.defense.block;
     this.guardPhase = this.character.hasClip('BlockStart') ? 'start' : 'hold';
@@ -258,6 +279,9 @@ export class Combatant {
     if (this.dodgeCd > 0) this.dodgeCd -= dt;
     if (this.bufferT > 0) { this.bufferT -= dt; if (this.bufferT <= 0) this.buffer = null; }
     this.stateT += dt;
+    if (this.state === 'attack' && this.moveId === 'punch' && this.moves.punch.chain) this.comboRemaining = 0.85;
+    else this.comboRemaining = Math.max(0, this.comboRemaining - dt);
+    if (!this.comboRemaining) this.comboStage = 0;
     this._updateFlash(dt);
     if (this.dodgeBuffer) {
       this.dodgeBuffer.remaining -= dt;
@@ -278,6 +302,7 @@ export class Combatant {
         if (p >= m.windows[0][0]) this.mover.facingTarget = null;
         if (this.buffer && p >= m.cancelAt && !(this.cooldowns[this.buffer] > 0)) {
           const b = this.buffer, aim = this.bufferAim; this.buffer = null;
+          if (this.bufferPoint) this.aimPoint = this.bufferPoint.clone();
           this._startAttack(b, aim);
         } else if (p >= m.endAt) this._toFree(0.18);
         break;
@@ -375,7 +400,7 @@ export class Combatant {
         const span = p - previousProgress;
         const activeFrom = from.clone().lerp(to, (a - previousProgress) / span);
         const activeTo = from.clone().lerp(to, (b - previousProgress) / span);
-        if (m.power === 'heavy') this.world.onTrail?.(activeFrom, activeTo);
+        this.world.onTrail?.(activeFrom, activeTo, m.color ?? this.profile?.color);
         for (const t of this.world.combatants) {
           if (t === this || t.team === this.team || !t.alive || this.hitTargets[index].has(t)) continue;
           const dx = t.position.x - root.x, dz = t.position.z - root.z;
@@ -400,6 +425,10 @@ export class Combatant {
     if (this.state === 'dead' || this.state === 'down' || this.state === 'getup') return 'miss';
     if (this.iframes > 0) return 'miss';
     if (this.state === 'dodge' && this.character.actionProgress() < this.defense.dodge.iframeUntil) return 'miss';
+    if (this.state === 'attack' && this.move.invulnerable) {
+      const p = this.character.actionProgress(), [start, end] = this.move.invulnerable;
+      if (p >= start && p < end) return 'miss';
+    }
 
     const toAttacker = Math.atan2(-dir.x, -dir.z);
     const B = this.defense.block;
@@ -422,6 +451,7 @@ export class Combatant {
     this._flash(0.1, 1.0, 0.4, 0.25);
     this.buffer = null;
     this.dodgeBuffer = null;
+    this.comboStage = 0; this.comboRemaining = 0;
     this.move = null;
     this.strikers = [];
     this.mover.facingTarget = toAttacker;

@@ -1,0 +1,192 @@
+{
+  "id": "archer",
+  "originalBones": 67,
+  "uniqueBones": 67,
+  "maximumBindDifference": 0,
+  "height": 1.85,
+  "scale": 1.0274674616304542,
+  "bytes": 10713892,
+  "clips": [
+    {
+      "name": "Hit",
+      "duration": 1.2666666507720947,
+      "tracks": 53
+    },
+    {
+      "name": "Down",
+      "duration": 2.133333444595337,
+      "tracks": 47
+    },
+    {
+      "name": "GetUp",
+      "duration": 2.700000047683716,
+      "tracks": 47
+    },
+    {
+      "name": "Block",
+      "duration": 1.9833333492279053,
+      "tracks": 53
+    },
+    {
+      "name": "Roll",
+      "duration": 1.6333333253860474,
+      "tracks": 53
+    },
+    {
+      "name": "Defeat",
+      "duration": 3.0999999046325684,
+      "tracks": 53
+    },
+    {
+      "name": "Victory",
+      "duration": 4.5,
+      "tracks": 47
+    },
+    {
+      "name": "Jump",
+      "duration": 2.1666667461395264,
+      "tracks": 47
+    },
+    {
+      "name": "BackWalk",
+      "duration": 1.4666666984558105,
+      "tracks": 53
+    },
+    {
+      "name": "BackRun",
+      "duration": 0.6499999761581421,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeLeftWalk",
+      "duration": 1.2000000476837158,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeRightWalk",
+      "duration": 1.2000000476837158,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeLeftRun",
+      "duration": 0.6666666865348816,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeRightRun",
+      "duration": 0.75,
+      "tracks": 53
+    },
+    {
+      "name": "Idle",
+      "duration": 5.083333492279053,
+      "tracks": 53
+    },
+    {
+      "name": "AimIdle",
+      "duration": 3.7666666507720947,
+      "tracks": 53
+    },
+    {
+      "name": "IdleFidget",
+      "duration": 3.183333396911621,
+      "tracks": 53
+    },
+    {
+      "name": "Walk",
+      "duration": 1.1833332777023315,
+      "tracks": 53
+    },
+    {
+      "name": "Run",
+      "duration": 0.8666666746139526,
+      "tracks": 53
+    },
+    {
+      "name": "CombatWalk",
+      "duration": 1.1833332777023315,
+      "tracks": 53
+    },
+    {
+      "name": "CombatRun",
+      "duration": 1.1833332777023315,
+      "tracks": 53
+    },
+    {
+      "name": "TurnLeft",
+      "duration": 1.25,
+      "tracks": 53
+    },
+    {
+      "name": "TurnRight",
+      "duration": 1.100000023841858,
+      "tracks": 53
+    },
+    {
+      "name": "Light",
+      "duration": 0.6833333373069763,
+      "tracks": 53
+    },
+    {
+      "name": "Heavy",
+      "duration": 1.0166666507720947,
+      "tracks": 53
+    },
+    {
+      "name": "Kick",
+      "duration": 1.4166666269302368,
+      "tracks": 53
+    },
+    {
+      "name": "Volley",
+      "duration": 1.0166666507720947,
+      "tracks": 53
+    },
+    {
+      "name": "DefeatBack",
+      "duration": 3.1666667461395264,
+      "tracks": 53
+    },
+    {
+      "name": "Land",
+      "duration": 0.6833333373069763,
+      "tracks": 53
+    },
+    {
+      "name": "Sprint",
+      "duration": 0.7114427925935431,
+      "tracks": 53
+    }
+  ],
+  "sources": {
+    "Hit": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing react small from front.fbx",
+    "Down": "./assets/animations/Boxing Animation/Knocked Down.fbx",
+    "GetUp": "./assets/animations/Boxing Animation/Getting Up.fbx",
+    "Block": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing block.fbx",
+    "Roll": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing dive forward.fbx",
+    "Defeat": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing death backward 01.fbx",
+    "Victory": "./assets/animations/Boxing Animation/Victory.fbx",
+    "Jump": "./assets/animations/locomotion/jump.fbx",
+    "BackWalk": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing walk back.fbx",
+    "BackRun": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing run back.fbx",
+    "StrafeLeftWalk": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing walk left.fbx",
+    "StrafeRightWalk": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing walk right.fbx",
+    "StrafeLeftRun": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing run left.fbx",
+    "StrafeRightRun": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing run right.fbx",
+    "Idle": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing idle 01.fbx",
+    "AimIdle": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing aim overdraw.fbx",
+    "IdleFidget": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing idle 02 looking.fbx",
+    "Walk": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing walk forward.fbx",
+    "Run": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing run forward.fbx",
+    "CombatWalk": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing aim walk forward.fbx",
+    "CombatRun": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing aim walk forward.fbx",
+    "TurnLeft": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing turn 90 left.fbx",
+    "TurnRight": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing turn 90 right.fbx",
+    "Light": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing aim recoil.fbx",
+    "Heavy": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing draw arrow.fbx",
+    "Kick": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing melee kick.fbx",
+    "Volley": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing draw arrow.fbx",
+    "DefeatBack": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing death forward 01.fbx",
+    "Land": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/fall a land to standing idle 01.fbx"
+  }
+}
