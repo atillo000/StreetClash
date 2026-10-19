@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { QUALITY, applyQuality } from './core/quality.js';
+import { ART, createArcadeLighting, FighterPresentation } from './core/ArtDirection.js';
 import { FighterLibrary } from './characters/FighterLibrary.js';
 import { FIGHTERS, FIGHTER_LIST } from './characters/FighterCatalog.js';
 import { Combatant } from './combat/Combatant.js';
@@ -34,36 +35,23 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.toneMappingExposure = 1.08;
 document.body.appendChild(renderer.domElement);
 
 // Scene
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x81969d);
-scene.fog = new THREE.Fog(0x43545d, 24, 58);
+scene.background = new THREE.Color(ART.sky);
+scene.fog = new THREE.Fog(ART.fog, 23, 49);
 
-const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 100);
 camera.position.set(0, 3, 6);
 
 const input = new Input(renderer.domElement);
 const cam = new ThirdPersonCamera(camera);
 window.__cam = cam;
 
-// Lighting: warm key, cool fill, hemisphere ambient
-scene.add(new THREE.HemisphereLight(0xc0d8e2, 0x554334, 0.9));
-const key = new THREE.DirectionalLight(0xfff0d8, 2.4);
-key.position.set(5, 9, 4);
-key.castShadow = true;
-key.shadow.camera.left = -6; key.shadow.camera.right = 6;
-key.shadow.camera.top = 6; key.shadow.camera.bottom = -6;
-key.shadow.camera.near = 1; key.shadow.camera.far = 30;
-key.shadow.bias = -0.0004;
-scene.add(key);
-const rim = new THREE.DirectionalLight(0x6fa0ff, 1.2);
-rim.position.set(-5, 4, -5);
-scene.add(rim);
-const portraitFill = new THREE.DirectionalLight(0xe5edff, 1.25);
-scene.add(portraitFill, portraitFill.target);
+// Warm arcade key, lifted cool shadows and a soft complementary rim.
+const { key, portraitFill } = createArcadeLighting(scene);
 
 let arena;
 const effects = new Effects(scene);
@@ -162,6 +150,7 @@ async function boot() {
 
   const player = makeFighter('capoeira', { name: 'YOU', team: 'p', spawn: new THREE.Vector3(0, 0, 5.5), facing: Math.PI });
   const dummy = makeFighter('magic', { name: 'RIVAL', team: 'e', spawn: new THREE.Vector3(0, 0, -3.8), facing: 0 });
+  world.presentation = new FighterPresentation(scene, world.combatants);
   const ai = new SparringAI(dummy);
   const lock = new TargetLock(player, world);
   const aimTrace = new Aim(); world.aim = aimTrace;
@@ -172,7 +161,7 @@ async function boot() {
     player.reset(); dummy.reset(); lock.clear(); effects.clear(); projectiles.clear(); ai.reset();
     input.clear(); world.hitstop = 0;
     world.hitMarkerT = 0; world.hitMessage = '';
-    cam.yaw = 0; cam.pitch = 0.22; cam.distance = 6.2; cam._first = true; cam.shakeAmt = 0;
+    cam.yaw = 0; cam.pitch = 0.38; cam.distance = 4.8; cam._first = true; cam.shakeAmt = 0;
   }
   const match = new Match({
     player, opponent: dummy,
@@ -413,13 +402,15 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
     if (match.state === 'lobby') { camera.position.set(3, 2.2, 0.5); camera.lookAt(1.2, 1, 5.5); }
     else cam.update(world.paused ? 0 : raw, player.position, undefined, lock.target?.position, arena.cameraBlockers, input.locked);
     world.signals.update(match.canFight, player);
-    key.position.set(player.position.x + 5, 9, player.position.z + 4);
-    key.target.position.copy(player.position); key.target.updateMatrixWorld();
+    const lightFocus = player.position.clone().lerp(dummy.position, 0.5).setY(0);
+    key.position.set(lightFocus.x + 5, 9, lightFocus.z + 4);
+    key.target.position.copy(lightFocus); key.target.updateMatrixWorld();
     portraitFill.visible = match.state === 'lobby';
     if (portraitFill.visible) {
       portraitFill.position.copy(camera.position).add(new THREE.Vector3(0, 2, 0));
       portraitFill.target.position.copy(player.position).add(new THREE.Vector3(0, 1, 0));
     }
+    world.presentation.update();
     renderer.render(scene, camera);
     world.combatants.forEach((c, i) => { c.position.copy(renderPositions[i]); c.character.root.rotation.y = c.mover.facing; });
 

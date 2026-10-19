@@ -5,6 +5,7 @@ import { Mover } from './Mover.js';
 import { FIGHTERS, FIGHTER_LIST } from './FighterCatalog.js';
 import { FIGHTER_MOVES, fighterDefense } from '../combat/fighterMoves.js';
 import { FighterWeapons } from './FighterWeapons.js';
+import { styleFighterMaterial } from '../core/ArtDirection.js';
 
 export class FighterLibrary {
   constructor() { this.models = new Map(); }
@@ -25,10 +26,15 @@ export class FighterLibrary {
     if (!profile || !template) throw new Error('Unknown or unloaded fighter: ' + id);
     const gltf = { scene: clone(template.scene), animations: template.animations };
     const character = new Character(gltf, { modelYaw: 0, gaitCalibration: this.gaits[id] }); character.startLocomotion(profile);
+    const styled=new Set();
+    character.model.traverse(mesh=>{if(mesh.isMesh)for(const material of [].concat(mesh.material))if(!styled.has(material)){
+      styleFighterMaterial(material,profile.color);styled.add(material);
+    }});
     const mover = new Mover(character, { walkSpeed: profile.walkSpeed, runSpeed: profile.runSpeed, accel: profile.accel, turnRate: profile.turnRate, facing });
     Object.assign(mover, { lockSpeed: profile.lockSpeed, sprintSpeed: profile.sprintSpeed, crouchSpeed: profile.crouchSpeed || 1 });
     character.mixer.update(0); character.root.updateMatrixWorld(true);
     const equipment = this.weapons.create(profile.weapon, character);
+    equipment?.model?.traverse(mesh=>{if(mesh.isMesh)for(const material of [].concat(mesh.material))styleFighterMaterial(material,profile.color);});
     return { profile, character, mover, equipment, moves: FIGHTER_MOVES[id], defense: fighterDefense(id) };
   }
 }
