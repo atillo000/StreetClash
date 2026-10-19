@@ -104,6 +104,7 @@ export class Combatant {
     this.state = 'free';
     this.stateT = 0;
     this.move = null;
+    this.attackSequence = null;
     this.strikers = [];
     this.buffer = null;
     this.bufferAim = null; this.bufferT = 0;
@@ -123,11 +124,20 @@ export class Combatant {
   }
 
   // ---- Intents --------------------------------------------------------
+  // Check all stages before spending cooldown, so a missing prepared clip cannot
+  // leave an ultimate half-played. Internal stages cannot be triggered directly.
+  canPlayAttack(id) {
+    const move = this.moves[id];
+    if (!move || move.sequenceOnly) return false;
+    const stages = move.sequence ? move.sequence.map(key => this.moves[key]) : [move];
+    return stages.length > 0 && stages.every(stage => stage && !stage.sequence
+      && this.character.hasClip(stage.clip)
+      && (!stage.requiresBat || (this.bat && this.bat.holder.visible)));
+  }
+
   tryAttack(id, aim = null) {
     if (this.world.combatEnabled === false) return false;
-    const m = this.moves[id];
-    if (!m || !this.character.hasClip(m.clip)) return false;
-    if (m.requiresBat && (!this.bat || !this.bat.holder.visible)) return false;
+    if (!this.canPlayAttack(id) || this.attackSequence) return false;
     if ((this.cooldowns[id] || 0) > 0) return false;
     if (this.state === 'attack') { this.buffer = id; this.bufferAim = aim; this.bufferPoint = this.aimPoint?.clone(); this.bufferT = 0.5; return false; }
     if (!['free', 'block', 'blockEnd'].includes(this.state)) return false;
@@ -174,7 +184,11 @@ export class Combatant {
   }
 
   // ---- State machine --------------------------------------------------
-  _setState(s) { this.state = s; this.stateT = 0; }
+  _setState(s) {
+    this.state = s; this.stateT = 0;
+    // Hits, knockdown, dodge, KO and match end all cancel pending stages.
+    if (s !== 'attack') this.attackSequence = null;
+  }
 
   _toFree(fade = 0.18) {
     this.character.endAction(fade);
@@ -213,11 +227,15 @@ export class Combatant {
     }
   }
 
-  _startAttack(id, aim) {
+  _startAttack(id, aim, sequenceIndex = 0) {
     this.dodgeBuffer = null;
     this.crouching = false; this.mover.crouching = false;
-    let m = this.moves[id];
-    if (m.chain) {
+    const definition = this.moves[id];
+    const sequence = definition.sequence;
+    let m = sequence ? this.moves[sequence[sequenceIndex]] : definition;
+    this.attackSequence = sequence ? { id, index: sequenceIndex, total: sequence.length, aim } : null;
+    if (sequence) { this.buffer = null; this.bufferT = 0; }
+    if (m.chain && !sequence) {
       const index = this.comboRemaining > 0 ? this.comboStage % m.chain.length : 0;
       m = m.chain[index]; this.comboStage = index + 1; this.comboRemaining = 0.85;
     } else { this.comboStage = 0; this.comboRemaining = 0; }
@@ -252,7 +270,7 @@ export class Combatant {
       const delta = this.castPoint.clone().sub(this.position).setY(0).clampLength(0, m.castRange);
       this.castPoint.copy(this.position).add(delta).setY(0);
     }
-    this.cooldowns[id] = m.cooldown || 0;
+    if (!sequence || sequenceIndex === 0) this.cooldowns[id] = (sequence ? definition : m).cooldown || 0;
     this.attackEvents = new Set();
     this.hitTargets = m.windows.map(() => new Set());
     this.strikeProgress = 0;
@@ -299,8 +317,15 @@ export class Combatant {
       case 'attack': {
         const m = this.move;
         // Heading is committed once the first strike is active.
-        if (p >= m.windows[0][0]) this.mover.facingTarget = null;
-        if (this.buffer && p >= m.cancelAt && !(this.cooldowns[this.buffer] > 0)) {
+        if (p >= (m.windows[0]?.[0] ?? 1)) this.mover.facingTarget = null;
+        if (this.attackSequence) {
+          // No extra key press: advance only after the current stage recovers.
+          if (p >= m.endAt) {
+            const { id, index, total, aim } = this.attackSequence;
+            if (index + 1 < total) this._startAttack(id, aim, index + 1);
+            else this._toFree(0.18);
+          }
+        } else if (this.buffer && p >= m.cancelAt && !(this.cooldowns[this.buffer] > 0)) {
           const b = this.buffer, aim = this.bufferAim; this.buffer = null;
           if (this.bufferPoint) this.aimPoint = this.bufferPoint.clone();
           this._startAttack(b, aim);

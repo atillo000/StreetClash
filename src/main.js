@@ -226,14 +226,14 @@ async function boot() {
     player.wantBlock = input.down('KeyF');
     player.wantCrouch = input.down('KeyC');
     player.mover.sprinting = input.down('KeyZ') && player.character.hasClip('Sprint');
-    if (input.pressed('KeyX')) player.tryJump();
+    if (input.pressed('Space')) player.tryJump();
 
-    for (const id of requestedAttacks(input)) {
+    for (const id of requestedAttacks(input, player.moves)) {
       const move = player.moves[id];
       const heading = move?.kind === 'mobility' ? moveAim ?? player.mover.facing + Math.PI : aim;
       if (player.tryAttack(id, heading)) sound.play('swing');
     }
-    if (input.pressed('Space')) { if (player.tryDodge(moveAim)) sound.play('dodge'); }
+    if (input.pressed('KeyE')) { if (player.tryDodge(moveAim)) sound.play('dodge'); }
 
     if (input.pressed('KeyT') && match.state === 'practice') { ai.enabled = !ai.enabled; }
     if (input.pressed('KeyB') && player.bat) player.bat.setGrip(player.bat.grip + 1);

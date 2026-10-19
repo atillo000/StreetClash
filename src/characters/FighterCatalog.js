@@ -18,7 +18,9 @@ export const FIGHTERS = {
       StrafeLeftWalk: cap('ginga sideways 2'), StrafeRightWalk: cap('ginga sideways 1'),
       StrafeLeftRun: cap('ginga sideways 2'), StrafeRightRun: cap('ginga sideways 1'),
       Light: cap('meia lua de frente'), Kick: cap('bencao'), Heavy: cap('armada'), Roll: cap('au'),
-      Jump: './assets/animations/locomotion/jump.fbx', IdleFidget: cap('ginga variation 3') },
+      Jump: './assets/animations/locomotion/jump.fbx', IdleFidget: cap('ginga variation 3'),
+      // Ultimate aliases must be inside clips to be embedded by asset preparation.
+      UltimateStart: cap('au'), UltimateStrike: cap('armada'), UltimateFinisher: cap('martelo 2') },
     moveLabels: ['Meia lua', 'Bencao', 'Armada'],
   },
   magic: {

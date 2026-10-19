@@ -1,4 +1,4 @@
-import { ATTACK_BINDINGS } from '../core/controls.js';
+import { attackBindings } from '../core/controls.js';
 // Presentation only: read combat state; never change input, cooldowns or damage.
 const paths={
   fist:'M7 13V6a2 2 0 0 1 4 0v5-7a2 2 0 0 1 4 0v7-5a2 2 0 0 1 4 0v9l-3 6H9l-5-7a2 2 0 0 1 3-2Z',
@@ -13,20 +13,28 @@ const paths={
   dash:'M3 7h8 M1 12h7 M3 17h8 M11 4l9 8-9 8 M19 12H9',
 };
 const roleIcon={capoeira:'boot',magic:'magic',soldier:'rifle',archer:'bow',greatsword:'sword',axe:'axe',mutant:'claw'};
-const bindings=ATTACK_BINDINGS.map(({move,label})=>[move,label]);
 const icon=name=>`<svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name]||paths.fist}"/></svg>`;
 
 export class CombatHud {
   constructor(){
     this.signature='';this.slots=new Map();
+  }
+  syncSlots(bindings) {
+    const ids=new Set(bindings.map(([id])=>id));
+    for(const[id,slot]of this.slots)if(!ids.has(id)){slot.el.remove();this.slots.delete(id);}
     for(const[id,key]of bindings){
-      const el=document.getElementById('ability-'+id);el.className='skill-slot';
+      if(this.slots.has(id))continue;
+      let el=document.getElementById('ability-'+id);
+      if(!el){el=document.createElement('span');el.id='ability-'+id;document.querySelector('#skillHud .abilities').appendChild(el);}
+      el.className='skill-slot';
       el.innerHTML='<i class="cooldown-shade"></i><kbd></kbd><span class="skill-icon"></span><span class="skill-name"></span><b class="skill-time"></b>';
       el.querySelector('kbd').textContent=key;
       this.slots.set(id,{el,key,label:el.querySelector('.skill-name'),graphic:el.querySelector('.skill-icon'),time:el.querySelector('.skill-time'),shade:el.querySelector('.cooldown-shade')});
     }
   }
   update(player,enemy,match,world,lock){
+    const bindings=attackBindings(player.moves).map(({move,label})=>[move,label]);
+    this.syncSlots(bindings);
     for(const[c,suffix]of [[player,'P'],[enemy,'E']]){
       const ratio=Math.max(0,Math.min(1,c.hp/c.maxHp)),panel=document.getElementById('bar'+suffix);
       document.getElementById('hp'+suffix).style.width=ratio*100+'%';
@@ -39,22 +47,27 @@ export class CombatHud {
       panel.classList.toggle('low-health',ratio>0&&ratio<=.3);
       const bar=panel.querySelector('[role="progressbar"]');bar.setAttribute('aria-valuenow',Math.ceil(c.hp));bar.setAttribute('aria-valuemax',c.maxHp);
     }
-    const signature=player.profile.id+bindings.map(([id])=>player.moves[id].label).join('|');
+    const signature=player.profile.id+bindings.map(([id,key])=>id+key+player.moves[id].label).join('|');
     if(signature!==this.signature){
       this.signature=signature;
-      for(const[id]of bindings){const slot=this.slots.get(id),move=player.moves[id];
-        slot.label.textContent=move.label;
+      for(const[id,key]of bindings){const slot=this.slots.get(id),move=player.moves[id];
+        slot.key=key;slot.el.querySelector('kbd').textContent=key;
+        slot.el.classList.toggle('ultimate-slot',!!move.sequence);slot.label.textContent=move.label;
         const glyph=move.kind==='area'?'area':move.kind==='mobility'?'dash':id==='kick'?'boot':roleIcon[player.profile.id];
         slot.graphic.innerHTML=icon(glyph);
       }
     }
     for(const[id]of bindings){const slot=this.slots.get(id),remaining=player.cooldowns[id]||0,move=player.moves[id],cooling=remaining>.05;
-      slot.el.classList.toggle('cooling',cooling);slot.time.textContent=cooling?remaining.toFixed(1):'';
+      const unavailable=!!move.sequence&&!player.canPlayAttack(id);
+      slot.el.classList.toggle('unavailable',unavailable);
+      slot.el.title=unavailable?'Prepare this fighter’s animation assets to enable the ultimate.':'';
+      slot.el.classList.toggle('cooling',cooling);slot.time.textContent=unavailable?'—':cooling?remaining.toFixed(1):'';
       slot.shade.style.height=Math.min(100,100*remaining/(move.cooldown||1))+'%';
-      slot.el.setAttribute('aria-label',`${slot.key}: ${move.label}, ${cooling?remaining.toFixed(1)+' seconds':'ready'}`);
+      slot.el.setAttribute('aria-label',`${slot.key}: ${move.label}, ${unavailable?'animation preparation required':cooling?remaining.toFixed(1)+' seconds':'ready'}`);
     }
     const names={block:'GUARDING',blockEnd:'GUARDING',dodge:'EVADING',hit:'STAGGERED',down:'KNOCKED DOWN',getup:'RECOVERING',dead:'KNOCKED OUT',jump:'AIRBORNE',land:'LANDING'};
     const state=document.getElementById('phase');state.textContent=player.state==='attack'?(player.move?.label||'ATTACK').toUpperCase():names[player.state]||(player.crouching?'CROUCHING':'');
+    if(player.attackSequence){const step=player.attackSequence;state.textContent += ' · '+(step.index+1)+'/'+step.total;}
     state.hidden=!state.textContent;state.dataset.state=player.state;
     document.getElementById('lock').textContent=lock.target?'LOCKED ON':'LOCK ON';
     document.getElementById('lock').classList.toggle('engaged',!!lock.target);

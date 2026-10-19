@@ -5,7 +5,7 @@
   "maximumBindDifference": 0,
   "height": 1.8,
   "scale": 0.009993452866756966,
-  "bytes": 9937224,
+  "bytes": 10213752,
   "clips": [
     {
       "name": "Hit",
@@ -128,8 +128,23 @@
       "tracks": 53
     },
     {
+      "name": "UltimateStart",
+      "duration": 2.9000000953674316,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateStrike",
+      "duration": 1.6333333253860474,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateFinisher",
+      "duration": 1.2999999523162842,
+      "tracks": 53
+    },
+    {
       "name": "Sprint",
-      "duration": 0.5793103349619898,
+      "duration": 0.5743589645776994,
       "tracks": 47
     }
   ],
@@ -157,6 +172,9 @@
     "Kick": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/bencao.fbx",
     "Heavy": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/armada.fbx",
     "Jump": "./assets/animations/locomotion/jump.fbx",
-    "IdleFidget": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/ginga variation 3.fbx"
+    "IdleFidget": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/ginga variation 3.fbx",
+    "UltimateStart": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/au.fbx",
+    "UltimateStrike": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/armada.fbx",
+    "UltimateFinisher": "./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/martelo 2.fbx"
   }
 }

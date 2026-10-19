@@ -42,6 +42,58 @@ cap.skill1 = move('Rush kick', 'Kick', { speed: 2.2, windows: [[0.32, 0.65]], ca
 cap.skill2 = move('Roda sweep', 'Heavy', { kind: 'area', strikers: [], events: [0.77], windows: [[0.65, 0.88]],
   speed: 2.15, cancelAt: 0.92, dodgeCancelAt: 0.9, endAt: 0.97, damage: 23, knock: 5, power: 'heavy',
   range: 2.4, lunge: 0, cooldown: 8, color: 0xffa84e, skill: true });
+cap.ultimateStart = move('Ultimate Wind-up', 'UltimateStart', {
+  sequenceOnly: true, // Internal stage; activated by cap.ultimate.
+  skill: true,
+  windows: [],
+  strikers: [],
+  damage: 0,
+  knock: 0,
+  lunge: 0,
+  cooldown: 0,
+  speed: 1.0,
+  endAt: 0.97,
+  cancelAt: 0.97,
+  dodgeCancelAt: 0.97,
+});
+
+cap.ultimateStrike = move('Ultimate Strike', 'UltimateStrike', {
+  sequenceOnly: true, // Internal stage; activated by cap.ultimate.
+  windows: [[0.32, 0.55]],
+  damage: 12,
+  knock: 2.5,
+  power: 'light',
+  lunge: 2.5,
+  cooldown: 0,
+  endAt: 0.97,
+  cancelAt: 0.97,
+  dodgeCancelAt: 0.97,
+});
+
+cap.ultimateFinisher = move('Ultimate Finisher', 'UltimateFinisher', {
+  sequenceOnly: true, // Internal stage; activated by cap.ultimate.
+  windows: [[0.52, 0.82]],
+  damage: 22,
+  knock: 7,
+  power: 'heavy',
+  lunge: 4,
+  cooldown: 0,
+  endAt: 0.98,
+  cancelAt: 0.98,
+  dodgeCancelAt: 0.98,
+});
+// CAPOEIRA ULTIMATE: edit the key and ordered stage list here.
+// One press automatically plays every stage. Repeat or append stage IDs for more.
+// Stage animations/timings are the three definitions above; aliases live in clips.
+cap.ultimate = {
+  label: 'Ginga ultimate',
+  input: { label: '4', codes: ['Digit4'] }, // Example: label: 'U', codes: ['KeyU']
+  sequence: ['ultimateStart', 'ultimateStrike', 'ultimateFinisher'],
+  cooldown: 20, // Seconds; charged once when the complete sequence starts.
+  skill: true,
+  playerOnly: true, // Placeholder is manual; existing bot behaviour stays the same.
+};
+
 mage.skill1 = move('Astral seal', 'Heavy', { kind: 'area', targeted: true, castRange: 9, strikers: [], events: [0.52],
   windows: [[0.46, 0.62]], speed: 1.9, dodgeCancelAt: 0.64, range: 2.3, damage: 23, knock: 3,
   lunge: 0, cooldown: 6, color: 0xb494ff, skill: true });

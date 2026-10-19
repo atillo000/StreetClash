@@ -76,7 +76,7 @@ export class SparringAI {
       else c.mover.steer(_dir.set(0, 0, 0), 0);
       this.behavior = 'engage';
       if (this.cool <= 0 && c.state === 'free') {
-        const options = c.moves ? Object.entries(c.moves).filter(([id, move]) => move.kind !== 'mobility' && e.dist <= (move.castRange || move.range || 1.3) && !(c.cooldowns[id] > 0)).map(([id]) => id) : ['punch', 'kick'];
+        const options = c.moves ? Object.entries(c.moves).filter(([id, move]) => !move.sequenceOnly && !move.playerOnly && move.kind !== 'mobility' && e.dist <= (move.castRange || move.range || 1.3) && !(c.cooldowns[id] > 0)).map(([id]) => id) : ['punch', 'kick'];
         if (options.length) c.tryAttack(options[Math.min(options.length - 1, Math.floor(this.random() * options.length))], e.angle);
         this.cool = 1.15 + this.random() * 0.85;
       }

@@ -4,7 +4,8 @@ export const CLIP_TRIMS = { Punch: [0.14, 0.78], Kick: [0.12, 0.75], Heavy: [0.3
 
 export function attackPhase(move, progress) {
   if (move.windows.some(([from, to]) => progress >= from && progress < to)) return 'active';
-  return progress < move.windows[0][0] ? 'startup' : 'recovery';
+  // A non-damaging wind-up deliberately has no hit windows.
+  return !move.windows.length || progress < move.windows[0][0] ? 'startup' : 'recovery';
 }
 
 export const MOVES = {
