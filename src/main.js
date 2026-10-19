@@ -17,7 +17,8 @@ import { shortestAngle } from './characters/Mover.js';
 import { Match } from './game/Match.js';
 import { Aim } from './combat/Aim.js';
 import { CombatSignals } from './combat/CombatSignals.js';
-import { ATTACK_BINDINGS, requestedAttacks } from './core/controls.js';
+import { requestedAttacks } from './core/controls.js';
+import { CombatHud } from './ui/CombatHud.js';
 
 const statusEl = document.getElementById('status');
 const qEl = document.getElementById('q');
@@ -235,16 +236,12 @@ async function boot() {
     if (input.pressed('Space')) { if (player.tryDodge(moveAim)) sound.play('dodge'); }
 
     if (input.pressed('KeyT') && match.state === 'practice') { ai.enabled = !ai.enabled; }
-    if (input.pressed('F1')) { debug = !debug; debugEl.style.display = debug ? 'block' : 'none'; for (const m of debugMarks) m.visible = debug; }
     if (input.pressed('KeyB') && player.bat) player.bat.setGrip(player.bat.grip + 1);
     if (input.pressed('KeyV') && player.bat) player.bat.setVisible(!player.bat.holder.visible);
   }
 
   // ---- HUD ------------------------------------------------------------
-  const bars = {
-    p: { fill: document.getElementById('hpP'), name: 'YOU' },
-    e: { fill: document.getElementById('hpE') },
-  };
+  const combatHud = new CombatHud();
   const aiEl = document.getElementById('ai');
   const debugEl = document.getElementById('debug');
   let debug = false;
@@ -254,47 +251,43 @@ async function boot() {
     m.visible = false; scene.add(m); debugMarks.push(m);
   }
 
+  // Diagnostics can be opened in gameplay, the lobby or pause without consuming
+  // a simulated combat frame. The same shortcuts and debug markers are retained.
+  function setDebug(value) {
+    debug=value;document.getElementById('devTools').hidden=!debug;
+    document.documentElement.classList.toggle('debug-mode',debug);world.debugEnabled=debug;
+    for(const marker of debugMarks)marker.visible=debug;
+    updateHud();
+  }
+  window.addEventListener('keydown',event=>{if(event.code==='F1'&&!event.repeat){event.preventDefault();setDebug(!debug);}});
+  world.debugEnabled=false;
+
   function updateHud() {
+    combatHud.update(player,dummy,match,world,lock);
     input.combatEnabled = match.canFight && !world.paused;
-    bars.p.fill.style.width = (100 * player.hp / player.maxHp) + '%';
-    bars.e.fill.style.width = (100 * dummy.hp / dummy.maxHp) + '%';
     aiEl.textContent = ai.enabled ? 'ON' : 'OFF (dummy)';
     document.getElementById('grip').textContent = player.bat ? player.bat.gripLabel() : '-';
     document.getElementById('defeat').style.display = player.state === 'dead' && match.state === 'practice' ? 'flex' : 'none';
-    document.getElementById('lock').textContent = lock.target ? 'LOCKED - Tab to release' : 'FREE - Tab to lock';
-    document.getElementById('phase').textContent = player.phase.toUpperCase();
-    document.getElementById('dodge').textContent = player.state === 'dodge' ? 'ROLLING' : player.dodgeCd > 0 ? `${player.dodgeCd.toFixed(1)}s` : 'READY';
     document.getElementById('sound').textContent = sound.muted ? 'OFF' : 'ON';
-    document.getElementById('playerName').textContent = player.profile.name.toUpperCase();
-    document.getElementById('opponentName').textContent = dummy.profile.name.toUpperCase();
     document.getElementById('fighterDescription').textContent = player.profile.description;
     for (const button of document.querySelectorAll('[data-fighter]')) button.setAttribute('aria-pressed', String(button.dataset.fighter === player.profile.id));
     document.getElementById('opponentChoice').value = dummy.profile.id;
-    for (const { move: id, label: key } of ATTACK_BINDINGS) {
-      const cooldown = player.cooldowns[id] || 0;
-      const element = document.getElementById(`ability-${id}`);
-      element.textContent = `${key} · ${player.moves[id].label}${cooldown > 0.05 ? ' / ' + cooldown.toFixed(1) + 's' : ''}`;
-      element.classList.toggle('cooling', cooldown > 0.05);
-    }
     const reticle = document.getElementById('crosshair');
     reticle.hidden = !match.canFight || world.paused;
     reticle.classList.toggle('on-target', !!aimTrace.target || !!lock.target);
     reticle.classList.toggle('confirmed', world.hitMarkerT > 0);
     document.getElementById('hitConfirm').textContent = world.hitMarkerT > 0 ? world.hitMessage : '';
-    document.getElementById('chain').textContent = match.canFight && player.comboRemaining > 0 ? `GINGA CHAIN ${player.comboStage}/3 · J to follow up` : '';
     document.getElementById('lobby').hidden = match.state !== 'lobby';
     document.getElementById('results').hidden = match.state !== 'results';
     document.getElementById('matchHud').hidden = ['lobby', 'results'].includes(match.state);
     document.getElementById('matchHud').classList.toggle('practice', match.state === 'practice');
     document.getElementById('fightHud').hidden = ['lobby', 'results'].includes(match.state);
-    document.getElementById('timer').textContent = match.state === 'practice' ? 'PRACTICE' : `${Math.floor(Math.ceil(match.remaining) / 60)}:${String(Math.ceil(match.remaining) % 60).padStart(2, '0')}`;
-    document.getElementById('matchMode').textContent = match.state === 'practice' ? 'TRAINING / T TO TOGGLE AI' : '1V1 / KNOCKOUT OR HIGHER HEALTH';
+    document.getElementById('timer').textContent = match.state === 'practice' ? '∞' : `${Math.floor(Math.ceil(match.remaining) / 60)}:${String(Math.ceil(match.remaining) % 60).padStart(2, '0')}`;
+    document.getElementById('matchMode').textContent = match.state === 'practice' ? 'TRAINING' : 'DUEL';
     const banner = document.getElementById('countdown');
     banner.hidden = !['countdown', 'ending'].includes(match.state);
     banner.textContent = match.state === 'countdown' ? String(Math.max(1, Math.ceil(match.countdownRemaining))) : match.result?.outcome === 'victory' ? 'KNOCKOUT · YOU WIN' : match.result?.outcome === 'defeat' ? 'RIVAL WINS' : 'DRAW';
     if (match.state === 'ending' && match.result?.reason.startsWith('Time')) banner.textContent = 'TIME UP';
-    document.getElementById('hpPText').textContent = `${Math.ceil(player.hp)} / ${player.maxHp}`;
-    document.getElementById('hpEText').textContent = `${Math.ceil(dummy.hp)} / ${dummy.maxHp}`;
     if (match.result) {
       document.getElementById('resultTitle').textContent = match.result.outcome.toUpperCase();
       document.getElementById('resultReason').textContent = match.result.reason;
@@ -308,6 +301,10 @@ async function boot() {
       const line = c => `${c.name}: ${c.phase}${c.move ? ' / ' + c.move.label : ''}  clip=${c.character.actionName || '-'}  p=${c.character.actionProgress().toFixed(2)}`
         + (c.strikers.length ? '\n   strikers: ' + c.strikers.map(s => s.name.replace('mixamorig', '') + ' ' + s.speed.toFixed(1) + 'm/s').join(', ') : '');
       debugEl.textContent = world.combatants.map(line).join('\n') + `\n${match.state} | AI: ${ai.behavior} | ${renderer.info.render.calls} draw calls | ${Math.round(renderer.info.render.triangles / 1000)}k triangles | particles ${effects.items.length}/${effects.budget}`;
+      debugEl.textContent += `
+Physics: swept capsules / AABB · ${world.arena.obstacles.length} cover colliders
+Arena: ${world.arena.halfSize*2}m · Camera: ${cam.clearDistance.toFixed(2)}m
+Projectiles: ${projectiles.items.length} · Fixed step: 60 Hz`;
       let i = 0;
       for (const c of world.combatants) for (const s of c.strikers) if (i < debugMarks.length) { s.obj.getWorldPosition(debugMarks[i].position); debugMarks[i].material.color.set(s.armed ? 0xff3366 : 0x33ff99); i++; }
       for (; i < debugMarks.length; i++) debugMarks[i].position.set(0, -10, 0);
@@ -318,6 +315,7 @@ async function boot() {
   window.__lock = lock; window.__effects = effects; window.__ai = ai;
   world.renderInfo = renderer.info;
   statusEl.textContent = 'Ready';
+  document.getElementById('debugFps').appendChild(statusEl);
   startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, match);
   document.getElementById('startMatch').disabled = false;
   document.getElementById('startMatch').textContent = 'Enter the arena  ↗';

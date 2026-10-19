@@ -18,7 +18,6 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px soli
 #fighterDescription { color: #bdcdd0; font-size: 11px; line-height: 1.6; margin: 9px 0; min-height: 18px; }
 .fighter-select label { font-size: 9px; letter-spacing: 1px; color: var(--accent); margin-right: 12px; }
 #opponentChoice { background: #172f3b; color: var(--paper); border: 1px solid #abc4ca44; padding: 7px; font-size: 11px; max-width: 290px; }
-.abilities { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; padding-bottom: 6px; color: var(--accent); }
 .menu-card, .result-card { margin-block: auto; }
 .eyebrow { color: var(--accent); font-size: 10px; font-weight: 800; letter-spacing: 2.5px; }
 .menu-card h1 { margin: 22px 0 16px; font-size: clamp(58px, 7vw, 100px); line-height: .87; letter-spacing: -5px; font-weight: 950; font-style: italic; }
@@ -49,34 +48,6 @@ kbd { font: bold 10px 'Segoe UI', sans-serif; color: var(--paper); border: 1px s
 .location-stamp { position: absolute; right: 5vw; bottom: 55px; display: flex; flex-direction: column; align-items: flex-end; border-right: 4px solid var(--accent); padding-right: 18px; text-shadow: 0 2px 12px #000; }
 .location-stamp span, .location-stamp small { font-size: 10px; letter-spacing: 3px; }
 .location-stamp strong { font-size: 36px; line-height: 1.6; font-weight: 900; }
-#status { z-index: 6; left: 16px; bottom: 10px; font-size: 10px; color: #c3d1d0; opacity: .7; }
-#hud { left: 20px; top: auto; bottom: 20px; max-width: 350px; background: #0c2029bb; border-radius: 3px; border-left: 2px solid #7fa1aa; font-size: 10px; line-height: 1.9; padding: 10px 14px; pointer-events: none; }
-#hud b { color: var(--accent); }
-#barP, #barE { top: 26px; bottom: auto; transform: none; width: min(27vw, 320px); text-align: left; font-size: 12px; letter-spacing: 1px; background: #0c2029c9; padding: 13px 16px; border-radius: 2px; box-sizing: border-box; }
-#barP { left: 26px; border-left: 3px solid #7ccab9; }
-#barE { left: auto; right: 26px; border-right: 3px solid #e58b67; }
-.fighter-label { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 8px; font-weight: 800; }
-.fighter-label small { font-size: 10px; color: #adc1c4; font-weight: 400; letter-spacing: 0; }
-.skills { margin-block: 4px; color: #bfe8ec; }
-.abilities .cooling { opacity: 0.45; }
-#chain { color: #ffcf70; min-height: 14px; font-weight: 750; }
-#crosshair { position: fixed; left: 50%; top: 44%; transform: translate(-50%, -50%); pointer-events: none; color: #f5eee0; z-index: 2; }
-#crosshair span { display: block; width: 16px; height: 16px; border: 2px solid currentColor; border-radius: 50%; box-shadow: 0 1px 5px #000; }
-#crosshair span::after { content: ''; position: absolute; width: 3px; height: 3px; background: currentColor; left: 8px; top: 8px; }
-#crosshair.on-target { color: #ffcb68; }
-#crosshair.confirmed span { border-radius: 0; transform: rotate(45deg); color: #fff; }
-#hitConfirm { position: absolute; top: 27px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 11px; font-weight: 800; text-shadow: 0 2px 5px #000; }
-#barP .bar, #barE .bar { width: 100%; height: 10px; border: 0; border-radius: 1px; background: #ffffff13; }
-#hpP { background: #7ccab9; } #hpE { background: #e58b67; }
-#matchHud { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; text-shadow: 0 2px 10px #000; pointer-events: none; }
-#matchHud span { display: block; color: #d3dedd; font-size: 8px; letter-spacing: 1.5px; }
-#matchHud strong { display: block; font-size: 34px; font-weight: 900; letter-spacing: 2px; line-height: 1.25; color: var(--paper); }
-#matchHud.practice strong { font-size: 22px; line-height: 1.9; }
-#matchHud small { color: var(--accent); font-size: 9px; letter-spacing: 2px; }
-#combat { bottom: 30px; padding: 8px 20px; background: #0c2029bb; border: 1px solid #9db6bf44; border-radius: 3px; font-size: 10px; pointer-events: none; }
-#lock { color: #bed4d7; }
-#debug { top: 112px; max-width: 96vw; font-size: 10px; z-index: 2; }
-#countdown { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--accent); text-shadow: 0 4px 40px #000; font-size: clamp(32px, 8vw, 100px); font-weight: 950; font-style: italic; pointer-events: none; z-index: 2; }
 .results { justify-content: center; background: #0b1d29cf; backdrop-filter: blur(5px); }
 .result-card { width: 540px; max-width: 100%; text-align: center; }
 .result-card h1 { color: var(--accent); font-size: clamp(44px, 7vw, 78px); letter-spacing: -3px; font-style: italic; margin: 20px 0 8px; }
@@ -94,13 +65,6 @@ kbd { font: bold 10px 'Segoe UI', sans-serif; color: var(--paper); border: 1px s
 #error { z-index: 10; background: #0b1d29f5; }
 #error button { margin-top: 20px; padding: 12px 32px; background: var(--accent); color: var(--ink); border: none; font-weight: 800; }
 @media (max-width: 850px) {
-  #hud { max-width: 290px; font-size: 9px; bottom: 12px; left: 12px; }
-  #barP, #barE { top: 15px; padding: 10px; width: 29vw; }
-  #barP { left: 12px; } #barE { right: 12px; }
-  .fighter-label small { display: none; }
-  #matchHud span { font-size: 6px; letter-spacing: .5px; }
-  #matchHud small { font-size: 7px; letter-spacing: .6px; }
-  #combat { left: auto; right: 12px; transform: none; bottom: 24px; }
   .location-stamp { display: none; }
 }
 @media (max-height: 700px) {
