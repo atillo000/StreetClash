@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { StatusEffects, grantUltimateReward } from './StatusEffects.js';
+import { directDamage } from './CombatBalance.js';
 import { PACE } from '../core/Pacing.js';
 import { MOVES, DEFENSE, HIT_MAX_ANGLE, attackPhase } from './moves.js';
 import { shortestAngle } from '../characters/Mover.js';
@@ -85,6 +86,7 @@ export class Combatant {
   }
 
   reset() {
+    this.hitContext=null;this.lastHitInfo=null;
     this.statuses.clear();
     this.hp = this.maxHp;
     this.height = this.profile?.height || 1.7;
@@ -268,6 +270,7 @@ export class Combatant {
 
     this.character.playAction(m.clip, { fade: m.fade, timeScale: m.speed });
     this.move = m;
+    this.hitContext={criticalTargets:new Set()};
     this.moveId = id;
     // Ranged attacks commit their aim during startup; moving targets can evade.
     this.castTarget = m.kind === 'projectile' && this.manualAim && this.aimPoint ? this.aimPoint.clone() : m.kind === 'projectile' && e && Math.abs(shortestAngle(ang, e.angle)) < Math.PI / 3
@@ -457,7 +460,7 @@ export class Combatant {
           const point = new THREE.Vector3();
           if (!sweepHurtCapsule(activeFrom, activeTo, t, m.strikeRadius, point, (a - previousProgress) / span, (b - previousProgress) / span)) continue;
           const dir = _q.set(dx, 0, dz).normalize().clone();
-          const res = t.takeHit({ damage: m.damage, knock: m.knock, power: m.power, dir, attacker: this, point });
+          const res = t.takeHit({ damage: m.damage, knock: m.knock, power: m.power, dir, attacker: this, point, move:m, context:this.hitContext });
           if (res !== 'miss') {
             this.hitTargets[index].add(t);
             this.world.onHit?.(this, t, res, m, point);
@@ -468,7 +471,7 @@ export class Combatant {
   }
 
   // Returns 'miss' (no effect), 'blocked', 'hit', 'down', or 'dead'.
-  takeHit({ damage, knock, power, dir, attacker }) {
+  takeHit({ damage, knock, power, dir, attacker, move=null, context=null }) {
     if (this.world.combatEnabled === false) return 'miss';
     if (this.state === 'dead' || this.state === 'down' || this.state === 'getup') return 'miss';
     if (this.iframes > 0) return 'miss';
@@ -478,16 +481,18 @@ export class Combatant {
       if (p >= start && p < end) return 'miss';
     }
 
-    damage *= (attacker?.statuses?.multiplier('damage') ?? 1) * this.statuses.multiplier('defense');
     knock *= this.statuses.multiplier('knockTaken');
     const toAttacker = Math.atan2(-dir.x, -dir.z);
     const B = this.defense.block;
     const facingAttacker = Math.abs(shortestAngle(this.mover.facing, toAttacker)) < B.arc * Math.PI / 180;
 
-    if (this.state === 'block' && facingAttacker && power !== 'heavy') {
+    const guarding=this.state==='block'&&facingAttacker;
+    const resolved=directDamage({damage,attacker,target:this,move,context,guarded:guarding});damage=resolved.damage;
+    if (guarding && power !== 'heavy') {
       const before = this.hp;
       this.hp = Math.max(Math.min(1, this.hp), this.hp - damage * B.damageTaken);
       this.lastDamage = before - this.hp;
+      this.lastHitInfo={damage:this.lastDamage,critical:false,blocked:true};
       this.mover.addImpulse(dir.clone().multiplyScalar(knock * B.pushback), 6);
       this._flash(0.08, 0.3, 0.55, 1.0);
       if (this.character.hasClip('BlockHit')) { this.guardPhase = 'react'; this.character.playAction('BlockHit', { fade: 0.05, timeScale: 2 * PACE.reaction }); }
@@ -495,8 +500,10 @@ export class Combatant {
     }
 
     // Heavy hits break a guard but do reduced damage to it.
-    const dmg = this.state === 'block' ? damage * 0.6 : damage;
+    const dmg = guarding ? damage * 0.6 : damage;
     this.lastDamage = Math.min(this.hp, dmg);
+    this.lastHitInfo={damage:this.lastDamage,critical:resolved.critical,blocked:false,guardBroken:guarding&&power==='heavy'};
+    if(resolved.critical)context.criticalTargets.add(this);
     this.hp -= dmg;
     this._flash(0.1, 1.0, 0.4, 0.25);
     this.buffer = null;
@@ -532,6 +539,7 @@ export class Combatant {
   takeStatusDamage(amount,source,type) {
     if(!this.alive || this.hp<=0 || this.world.combatEnabled===false)return 0;
     const damage=Math.min(this.hp,amount);this.hp-=damage;this.lastDamage=damage;
+    this.lastHitInfo={damage,critical:false,periodic:true,statusLabel:type.label.toUpperCase(),color:type.color};
     this.world.onStatusTick?.(source,this,damage,type);
     if(this.hp<=0){
       this.move=null;this.strikers=[];this.buffer=null;this.dodgeBuffer=null;

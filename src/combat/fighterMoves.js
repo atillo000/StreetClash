@@ -2,6 +2,7 @@ import { DEFENSE } from './moves.js';
 import { applyCombatKits } from './CombatKits.js';
 import { configureStatuses } from './StatusEffects.js';
 import { paceMoves, paceDefense } from '../core/Pacing.js';
+import { applyCombatBalance } from './CombatBalance.js';
 import { configureEnemyMoves } from './EnemyMoves.js';
 import { configureEnvironmentMoves } from './EnvironmentMoves.js';
 import { IMPORTED_MOVES } from './ImportedMoves.js';
@@ -138,6 +139,7 @@ rifle.ultimate = {
 // Combat skill slots and click chains; uses existing embedded attack clips.
 applyCombatKits(FIGHTER_MOVES);
 configureEnemyMoves(FIGHTER_MOVES);
+applyCombatBalance(FIGHTER_MOVES);
 configureStatuses(FIGHTER_MOVES);
 paceMoves(FIGHTER_MOVES);
 configureEnvironmentMoves(FIGHTER_MOVES);

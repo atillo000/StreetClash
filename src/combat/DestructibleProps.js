@@ -90,6 +90,7 @@ export class DestructibleProps{
     else{const magic=move.environment?.groundStyle==='scorch';this.effects.wreck.mark(point,normal,magic?'scorch':'chip',move.damage,magic?.18+Math.sqrt(move.damage||1)*.035:undefined);this.effects.wreck.fragments(point,box?.surfaceMaterial||'stone',(move.damage||5)*.25);}
   }
   update(dt){
+    this.arena.terrain.update(dt);
     // Settle surviving stacked props when their support is destroyed. No floating
     // upper crates; collider and visual bounds move together. Debris is cosmetic.
     const alive=this.props.filter(p=>p.alive).sort((a,b)=>a.bounds.min.y-b.bounds.min.y);
@@ -102,7 +103,7 @@ export class DestructibleProps{
         if(Math.min(b.max.x,other.max.x)-Math.max(b.min.x,other.min.x)>.08&&Math.min(b.max.z,other.max.z)-Math.max(b.min.z,other.min.z)>.08)support=Math.max(support,other.max.y);
       }
       if(b.min.y>support+.002){prop.fallSpeed+=10*dt;const dy=-Math.min(prop.fallSpeed*dt,b.min.y-support);prop.root.position.y+=dy;b.translate(new THREE.Vector3(0,dy,0));}
-      else prop.fallSpeed=0;
+      else {prop.fallSpeed=0;if(b.min.y<support-.002){const rise=support-b.min.y;prop.root.position.y+=rise;b.translate(new THREE.Vector3(0,rise,0));}}
     }
     this.arena.syncBreakables();
   }

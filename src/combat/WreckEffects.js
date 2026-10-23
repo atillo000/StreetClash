@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GROUND_WRECK_LIFETIME, GROUND_RESTORE_DURATION } from '../core/DeformableGround.js';
 
 function markTexture(kind){
   const canvas=document.createElement('canvas');canvas.width=canvas.height=512;const g=canvas.getContext('2d');
@@ -38,7 +39,7 @@ export class WreckEffects{
     const batch=this.batches.find(b=>b.kind===kind)||this.batches[0],slots=batch.slots.slice(0,this.markLimit);
     const slot=slots.find(s=>s.life<=0)||slots.reduce((a,b)=>a.life<b.life?a:b);
     slot.ground=normal.y>.25&&Math.abs(point.y-(this.groundHeight?.(point.x,point.z)??0))<.08;
-    slot.life=slot.max=kind==='chip'?12:22;slot.p.copy(point).addScaledVector(normal,.022);
+    slot.life=slot.max=slot.ground?GROUND_WRECK_LIFETIME:kind==='chip'?12:22;slot.p.copy(point).addScaledVector(normal,.022);
     slot.q.setFromUnitVectors(new THREE.Vector3(0,0,1),normal).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),Math.random()*Math.PI*2));
     slot.radius=radius??(kind==='chip'?.1+Math.sqrt(Math.max(1,damage))*.015:Math.min(2.4,.55+Math.sqrt(Math.max(1,damage))*.13));
     this.syncMarks();
@@ -55,13 +56,13 @@ export class WreckEffects{
         d.scale.set(width,.14+Math.random()*.25,width*(.65+Math.random()*.6));
         d.v.multiplyScalar(1.15);d.v.y=3+Math.random()*3;
       }
-      d.color.set(material==='wood'?0x967047:material==='metal'?0x626964:0x8e8b7e);d.life=d.max=material==='rubble'?9:broken?3:1.6;this.debris.push(d);
+      d.color.set(material==='wood'?0x967047:material==='metal'?0x626964:0x8e8b7e);d.life=d.max=material==='rubble'?GROUND_WRECK_LIFETIME:broken?3:1.6;this.debris.push(d);
     }
   }
   clear(){this.free.push(...this.debris);this.debris.length=0;this.mesh.count=0;for(const b of this.batches){for(const s of b.slots)s.life=0;b.mesh.count=0;}}
   syncMarks(){
     for(const b of this.batches){let count=0;
-      b.slots.forEach((s,i)=>{if(s.ground&&s.life>0)s.p.y=(this.groundHeight?.(s.p.x,s.p.z)??0)+.022;const visible=s.life>0&&i<this.markLimit;this.dummy.position.copy(s.p);this.dummy.quaternion.copy(s.q);this.dummy.scale.setScalar(visible?s.radius:0);this.dummy.updateMatrix();b.mesh.setMatrixAt(i,this.dummy.matrix);b.opacity.setX(i,visible?Math.min(1,s.life/4):0);if(visible)count=i+1;});
+      b.slots.forEach((s,i)=>{if(s.ground&&s.life>0)s.p.y=(this.groundHeight?.(s.p.x,s.p.z)??0)+.022;const visible=s.life>0&&i<this.markLimit;this.dummy.position.copy(s.p);this.dummy.quaternion.copy(s.q);this.dummy.scale.setScalar(visible?s.radius:0);this.dummy.updateMatrix();b.mesh.setMatrixAt(i,this.dummy.matrix);b.opacity.setX(i,visible?Math.min(1,s.life/(s.ground?GROUND_RESTORE_DURATION:4)):0);if(visible)count=i+1;});
       b.mesh.count=count;b.mesh.instanceMatrix.needsUpdate=true;b.opacity.needsUpdate=true;
     }
   }

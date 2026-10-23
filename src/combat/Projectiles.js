@@ -24,7 +24,7 @@ export class Projectiles {
 
   emit(owner, move) {
     const it = this.free.pop(); if (!it) return;
-    it.owner = owner; it.move = move;
+    it.owner = owner; it.move = move; it.context=owner.hitContext;
     const source = owner.equipment?.muzzle || owner.character.bone('mixamorigRightHand');
     source.getWorldPosition(it.position);
     const target = owner.target?.alive ? owner.target : owner._nearestEnemy()?.c;
@@ -54,7 +54,7 @@ export class Projectiles {
       const dir = target.position.clone().sub(center).setY(0).normalize();
       if (dir.lengthSq() < 0.001) dir.set(Math.sin(owner.mover.facing), 0, Math.cos(owner.mover.facing));
       const point = target.position.clone().add(new THREE.Vector3(0, 0.7, 0));
-      const result = target.takeHit({ damage: move.damage, knock: move.knock, power: move.power, dir, attacker: owner, point });
+      const result = target.takeHit({ damage: move.damage, knock: move.knock, power: move.power, dir, attacker: owner, point, move, context:owner.hitContext });
       if (result !== 'miss') this.world.onHit(owner, target, result, move, point);
     }
   }
@@ -82,7 +82,7 @@ export class Projectiles {
       }
       candidates.sort((a,b)=>a.distance-b.distance);let spent=false;
       for(const candidate of candidates){
-        const result=candidate.target.takeHit({damage:it.move.damage,knock:it.move.knock,power:it.move.power,dir:it.velocity.clone().setY(0).normalize(),attacker:it.owner,point:candidate.point});
+        const result=candidate.target.takeHit({damage:it.move.damage,knock:it.move.knock,power:it.move.power,dir:it.velocity.clone().setY(0).normalize(),attacker:it.owner,point:candidate.point,move:it.move,context:it.context});
         if(result==='miss')continue;
         this.world.onHit(it.owner,candidate.target,result,it.move,candidate.point);spent=true;break;
       }

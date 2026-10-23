@@ -19,6 +19,7 @@ import { Match } from './game/Match.js';
 import { Aim } from './combat/Aim.js';
 import { CombatSignals } from './combat/CombatSignals.js';
 import { requestedAttacks } from './core/controls.js';
+import { CombatFeedback } from './ui/CombatFeedback.js';
 import { CombatHud } from './ui/CombatHud.js';
 import { ArenaCircuit } from './game/ArenaCircuit.js';
 import { resolveStatusHit } from './combat/StatusEffects.js';
@@ -62,6 +63,7 @@ const { key, portraitFill } = createArcadeLighting(scene);
 let arena;
 const effects = new Effects(scene);
 const sound = new Sound();
+let feedback=null;
 window.addEventListener('keydown', () => sound.unlock());
 renderer.domElement.addEventListener('pointerdown', () => sound.unlock());
 
@@ -71,11 +73,12 @@ let qIndex = qualityOrder.indexOf('medium');
 function setQuality(name) {
   applyQuality(name, renderer, key);
   effects.setBudget(QUALITY[name].particles);
+  feedback?.setBudget(QUALITY[name].particles);
   qEl.textContent = name;
 }
 setQuality(qualityOrder[qIndex]);
 window.addEventListener('keydown', e => {
-  if (e.code === 'KeyQ' && !e.repeat) {
+  if (e.code === 'F2' && !e.repeat && world.debugEnabled) {
     qIndex = (qIndex + 1) % qualityOrder.length;
     setQuality(qualityOrder[qIndex]);
     resize();
@@ -119,12 +122,14 @@ const world = {
   },
   onTrail(from, to, color) { effects.trail(from, to, color); },
   onHit(attacker, target, result, move, point) {
+    const critical=!!target.lastHitInfo?.critical;
+    feedback?.damage(attacker,target,point,result);
     resolveStatusHit(attacker,target,result,move);
     this.match?.recordHit(attacker, target, result, target.lastDamage);
     effects.contact(attacker,target,result,move,point);
     const heavy = move.power === 'heavy';
-    effects.impact(point, move.color ?? attacker.profile?.color ?? 0xffd58a, heavy && result !== 'blocked');
-    if (attacker.team === 'p') { this.hitMarkerT = 0.22; this.hitMessage = result === 'blocked' ? 'GUARDED' : `${Math.round(target.lastDamage)}${attacker.comboStage ? ' / CHAIN ' + attacker.comboStage : ''}`; }
+    effects.impact(point, move.color ?? attacker.profile?.color ?? 0xffd58a, (heavy||critical) && result !== 'blocked');
+    if (attacker.team === 'p') { this.hitMarkerT = 0.22; this.hitMessage = result === 'blocked' ? 'GUARDED' : `${critical?'CRITICAL ':''}${Math.round(target.lastDamage)}${attacker.comboStage ? ' / CHAIN ' + attacker.comboStage : ''}`; }
     sound.play(result === 'blocked' ? 'block' : heavy ? 'heavy' : 'hit');
     if (result === 'blocked') {
       effects.spark(point, 0x7fb4ff, 6, 3);
@@ -132,13 +137,17 @@ const world = {
       this.hitstop = Math.max(this.hitstop, 0.03);
     } else {
       effects.spark(point, move.color ?? attacker.profile?.color ?? (heavy ? 0xff9a3c : 0xffe08a), heavy ? 16 : 9, heavy ? 6 : 4);
-      cam.shake(heavy ? 0.14 : 0.045);
-      this.hitstop = Math.max(this.hitstop, heavy ? 0.075 : 0.035);
+      cam.shake(heavy ? 0.14 : critical ? .085 : 0.045);
+      this.hitstop = Math.max(this.hitstop, heavy ? 0.075 : critical ? .05 : 0.035);
       // Body/air contacts stay at the actual hit; ground wreckage uses surface events.
     }
   },
-  onStatusApplied(c,type) { effects.shockwave(c.position,type.color,.9); },
+  onStatusApplied(c,type,duration) { effects.shockwave(c.position,type.color,.9);feedback?.status(c,type,duration); },
+  onStatusEnded(c,type){feedback?.ended(c,type);},
+  onStatusCleansed(c,count){feedback?.cleansed(c,count);},
+  onHeal(c,amount){feedback?.heal(c,amount);},
   onStatusTick(source,target,damage,type) {
+    feedback?.damage(source,target,target.position.clone().add(new THREE.Vector3(0,target.height*.55,0)),'hit',target.lastHitInfo);
     if(source)this.match?.recordHit(source,target,'periodic',damage);
     effects.spark(target.position.clone().add(new THREE.Vector3(0,.8,0)),type.color,3,1);
   },
@@ -159,6 +168,7 @@ async function boot() {
   arena = warehouse; world.arena = arena;
   world.destruction = new DestructibleProps(world,effects);
   world.library = library;
+  feedback=world.feedback=new CombatFeedback(world);feedback.setBudget(QUALITY[qualityOrder[qIndex]].particles);
 
   function makeFighter(id, opts) {
     const setup = library.create(id, opts.facing);
@@ -180,7 +190,7 @@ async function boot() {
   const lockRing = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.57, 32), new THREE.MeshBasicMaterial({ color: 0xffcf40, side: THREE.DoubleSide, depthWrite: false }));
   lockRing.rotation.x = -Math.PI / 2; lockRing.visible = false; scene.add(lockRing);
   function resetArena() {
-    world.destruction.reset();
+    world.destruction.reset();feedback?.clear();
     player.reset(); dummy.reset(); lock.clear(); effects.clear(); projectiles.clear(); ai.reset();
     input.clear(); world.hitstop = 0;
     world.hitMarkerT = 0; world.hitMessage = '';
@@ -449,6 +459,7 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
     world.statusPresentation.render(world.paused?0:raw,match.canFight);
     world.circuit.render(camera);
     effects.render(camera);
+    feedback.render(camera,world.paused?0:raw,match.canFight||match.state==='ending');
     renderer.render(scene, camera);
     world.combatants.forEach((c, i) => { c.position.copy(renderPositions[i]); c.character.root.rotation.y = c.mover.facing; });
 

@@ -80,13 +80,13 @@ export class ArcadeVFX {
     return slot;
   }
   contact(attacker,target,result,move,point){
-    const blocked=result==='blocked',heavy=move.power==='heavy';
-    const color=blocked?0x8ddcff:heavy?0xffc57c:0xffe4b5;
+    const blocked=result==='blocked',heavy=move.power==='heavy',critical=!!target.lastHitInfo?.critical;
+    const color=blocked?0x8ddcff:critical?0xffc34e:heavy?0xffc57c:0xffe4b5;
     const shell=this.emit('shell',target.position,color,blocked?.38:heavy?.28:.2);
     shell.follow=target;shell.scale.set(target.radius*1.75,target.height*.51,target.radius*1.75);
-    shell.mesh.material.uniforms.uStrength.value=blocked?1.2:.55;
+    shell.mesh.material.uniforms.uStrength.value=blocked?1.2:critical?.7:.55;
     const impact=this.emit('impact',point,blocked?0xc0eeff:color,heavy?.32:.22);
-    impact.scale.setScalar(blocked?.72:heavy?.9:.52);
+    impact.scale.setScalar(blocked?.72:critical?1.15:heavy?.9:.52);
     this.direction.subVectors(attacker.position,target.position).setY(0).normalize();
     impact.position.addScaledVector(this.direction,.12);impact.mesh.position.copy(impact.position);
   }

@@ -12,13 +12,13 @@ export const STATUS_TYPES={
   poise:{label:'Poise',positive:true,color:0xa3c7d6,duration:4,knockTaken:.65,description:'35% less knockback. Does not prevent stagger or knockdown.'},
   sundered:{label:'Sundered',positive:false,color:0xcf986f,duration:4,defense:1.15,description:'Takes 15% more direct attack damage.'},
   fury:{label:'Fury',positive:true,color:0xe5a16e,duration:4,damage:1.18,defense:1.10,description:'+18% direct damage, but takes 10% more direct damage.'},
-  bleeding:{label:'Bleeding',positive:false,color:0xc9695a,duration:4,dot:2,description:'Loses 2 HP each second for 4 seconds; no repeated stagger.'},
+  bleeding:{label:'Bleeding',positive:false,color:0xc9695a,duration:4,dot:1.5,description:'Loses 1.5 HP each second for 4 seconds; no repeated stagger.'},
   enraged:{label:'Enraged',positive:true,color:0xc2cb84,duration:4,damage:1.15,knockTaken:.7,moveSpeed:.9,description:'+15% direct damage, 30% less knockback, but 10% slower movement.'},
   crushed:{label:'Crushed',positive:false,color:0xa6ad7b,duration:3,moveSpeed:.8,description:'Movement speed reduced by 20%.'},
   bulwark:{label:'Bulwark',positive:true,color:0xe0ce91,duration:4,defense:.8,description:'Takes 20% less direct attack damage.'},
   judged:{label:'Judged',positive:false,color:0xc1b084,duration:4,damage:.9,description:'Deals 10% less direct attack damage.'},
-  hunger:{label:'Hunger',positive:true,color:0xb4ce84,duration:4,leech:.2,description:'Heals for 20% of subsequent unblocked direct damage dealt.'},
-  infected:{label:'Infected',positive:false,color:0xa6b85e,duration:4,dot:2,healing:.5,description:'Loses 2 HP per second and receives 50% less healing for 4 seconds.'},
+  hunger:{label:'Hunger',positive:true,color:0xb4ce84,duration:4,leech:.15,description:'Heals for 15% of subsequent unblocked direct damage dealt.'},
+  infected:{label:'Infected',positive:false,color:0xa6b85e,duration:3,dot:1,healing:.75,description:'Loses 1 HP per second and receives 25% less healing for 3 seconds.'},
 };
 
 // Triggers belong to the actual move, so delayed projectiles retain their effects.
@@ -56,20 +56,20 @@ export class StatusEffects{
     const type=STATUS_TYPES[id];if(!type||!this.owner.alive||this.owner.hp<=0||!(duration>0))return false;
     const old=this.entries.get(id);
     if(old){old.remaining=Math.max(old.remaining,duration);old.source=source;}
-    else{this.entries.set(id,{id,type,remaining:duration,source,tick:0});this.owner.world.onStatusApplied?.(this.owner,type);}
+    else{this.entries.set(id,{id,type,remaining:duration,source,tick:0});this.owner.world.onStatusApplied?.(this.owner,type,duration);}
     return true;
   }
   clear(){this.entries.clear();this.owner.mover.statusSpeed=1;}
-  cleanse(){for(const[id,e]of this.entries)if(!e.type.positive)this.entries.delete(id);}
+  cleanse(){let count=0;for(const[id,e]of this.entries)if(!e.type.positive){this.entries.delete(id);count++;}if(count)this.owner.world.onStatusCleansed?.(this.owner,count);}
   multiplier(stat){
     let value=1;for(const e of this.entries.values())value*=e.type[stat]??1;
-    const bounds={moveSpeed:[.6,1.25],damage:[.65,1.4],defense:[.65,1.35],knockTaken:[.4,1.4],healing:[.25,1.25]};
+    const bounds={moveSpeed:[.7,1.2],damage:[.75,1.25],defense:[.75,1.2],knockTaken:[.4,1.4],healing:[.25,1.25]};
     const [low,high]=bounds[stat]||[.25,2];return Math.max(low,Math.min(high,value));
   }
   get leech(){let value=0;for(const e of this.entries.values())value=Math.max(value,e.type.leech||0);return value;}
   heal(amount){
     const c=this.owner;if(!c.alive||c.hp<=0||amount<=0)return 0;
-    const before=c.hp;c.hp=Math.min(c.maxHp,c.hp+amount*this.multiplier('healing'));return c.hp-before;
+    const before=c.hp;c.hp=Math.min(c.maxHp,c.hp+amount*this.multiplier('healing'));const actual=c.hp-before;if(actual>0)c.world.onHeal?.(c,actual);return actual;
   }
   update(dt){
     if(!this.owner.alive){this.clear();return;}
@@ -79,7 +79,7 @@ export class StatusEffects{
         e.tick+=active;
         while(e.tick>=1-1e-8&&this.owner.alive){e.tick=Math.max(0,e.tick-1);this.owner.takeStatusDamage(e.type.dot,e.source,e.type);}
       }
-      if(e.remaining<=1e-8)this.entries.delete(id);
+      if(e.remaining<=1e-8){this.entries.delete(id);if(this.owner.alive)this.owner.world.onStatusEnded?.(this.owner,e.type);}
     }
   }
 }

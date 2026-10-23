@@ -1,5 +1,9 @@
 import * as THREE from 'three';
 
+export const GROUND_WRECK_LIFETIME=9;
+export const GROUND_RESTORE_DURATION=2;
+const recovery=life=>{const t=THREE.MathUtils.clamp(life/GROUND_RESTORE_DURATION,0,1);return t*t*(3-2*t);};
+
 // One fixed heightfield is shared by rendering, feet and projectile contacts.
 // Damage changes vertices in place: repeated impacts never allocate new floors.
 export class DeformableGround {
@@ -8,7 +12,8 @@ export class DeformableGround {
     this.floorTint=floor.material.color.clone();this.courtTint=floor.userData.courtColor.clone();floor.material.color.set(0xffffff);
     this.size=18.1;this.steps=144;this.cell=this.size/this.steps;
     this.vertices=floor.geometry.attributes.position;this.vertices.setUsage(THREE.DynamicDrawUsage);
-    this.heights=new Float32Array(this.vertices.count);this.burnt=new Uint8Array(this.vertices.count);
+    this.heights=new Float32Array(this.vertices.count);this.burnt=new Float32Array(this.vertices.count);
+    this.remaining=new Float32Array(this.vertices.count);this.damageHeights=new Float32Array(this.vertices.count);this.damageBurnt=new Float32Array(this.vertices.count);this.updateTime=0;this.damaged=false;
     this.originals=new Map(decorations.map(mesh=>[mesh,new Float32Array(mesh.geometry.attributes.position.array)]));
     this.color=new THREE.Color();this.slabs=[];this.serial=0;
     const outline=new THREE.Shape();outline.moveTo(-.55,-.42);outline.lineTo(.28,-.54);outline.lineTo(.62,.1);outline.lineTo(.14,.5);outline.lineTo(-.5,.28);outline.closePath();
@@ -60,12 +65,13 @@ export class DeformableGround {
       if(q>1&&q<1.17&&seam<.1&&y>=0)y=Math.max(y,.075*Math.sin((q-1)/.17*Math.PI));
       this.heights[i]=Math.max(-.95,y);this.vertices.setY(i,this.heights[i]);
       if(scorched&&q<1.2)this.burnt[i]=1;
+      this.remaining[i]=GROUND_WRECK_LIFETIME;this.damageHeights[i]=this.heights[i];this.damageBurnt[i]=this.burnt[i];
     }
-    this.refresh();
+    this.damaged=true;this.refresh();
     for(let i=0;i<9;i++){
       const angle=i*Math.PI*2/9+phase*.12,r=radius*(.94+(i%3)*.065),x=point.x+Math.cos(angle)*r,z=point.z+Math.sin(angle)*r;
       if(Math.max(Math.abs(x),Math.abs(z))>8.5)continue;
-      const slab={x,z,yaw:angle+Math.sin(i*7+phase)*.65,tilt:.14+(i%3)*.07,scale:(.3+radius*.13)*(.7+.5*Math.abs(Math.sin(i*11+phase)))};
+      const slab={life:GROUND_WRECK_LIFETIME,x,z,yaw:angle+Math.sin(i*7+phase)*.65,tilt:.14+(i%3)*.07,scale:(.3+radius*.13)*(.7+.5*Math.abs(Math.sin(i*11+phase)))};
       if(this.slabs.length<64)this.slabs.push(slab);else this.slabs[(this.serial*9+i)%64]=slab;
     }
     this.syncSlabs();return {depth,radius};
@@ -76,7 +82,7 @@ export class DeformableGround {
       this.color.copy(Math.abs(x)<6&&Math.abs(z)<6?this.courtTint:this.floorTint);
       // Dark exposed aggregate at depth, with a bright fractured concrete lip.
       const shade=y<-.035?.34+Math.max(0,1+y)*.22:1;
-      this.color.multiplyScalar(shade*(this.burnt[i]?.8:1));this.floor.geometry.attributes.color.setXYZ(i,this.color.r,this.color.g,this.color.b);
+      this.color.multiplyScalar(shade*(1-this.burnt[i]*.2));this.floor.geometry.attributes.color.setXYZ(i,this.color.r,this.color.g,this.color.b);
     }
     this.vertices.needsUpdate=true;this.floor.geometry.attributes.color.needsUpdate=true;
     this.floor.geometry.computeVertexNormals();this.floor.geometry.computeBoundingSphere();this.floor.geometry.computeBoundingBox();
@@ -92,10 +98,27 @@ export class DeformableGround {
     this.syncSlabs();
   }
   syncSlabs() {
-    this.slabs.forEach((s,i)=>{this.dummy.position.set(s.x,this.heightAt(s.x,s.z)+.04,s.z);this.dummy.rotation.set(s.tilt,s.yaw,-s.tilt*.6);this.dummy.scale.set(s.scale,1,s.scale*.85);this.dummy.updateMatrix();this.rubble.setMatrixAt(i,this.dummy.matrix);});
+    this.slabs.forEach((s,i)=>{this.dummy.position.set(s.x,this.heightAt(s.x,s.z)+.04,s.z);this.dummy.rotation.set(s.tilt,s.yaw,-s.tilt*.6);const fade=recovery(s.life);this.dummy.scale.set(s.scale*fade,fade,s.scale*.85*fade);this.dummy.updateMatrix();this.rubble.setMatrixAt(i,this.dummy.matrix);});
     this.rubble.count=this.slabs.length;this.rubble.instanceMatrix.needsUpdate=true;
   }
+  update(dt) {
+    if(!this.damaged||!(dt>0))return;
+    // Rebuild normals/decorations only while restoring, at most 20 times/sec.
+    this.updateTime+=dt;if(this.updateTime<.05)return;
+    const elapsed=this.updateTime;this.updateTime=0;let changed=false,active=false;
+    for(let i=0;i<this.remaining.length;i++){
+      if(this.remaining[i]<=0)continue;
+      const life=this.remaining[i]=Math.max(0,this.remaining[i]-elapsed),fade=recovery(life);
+      active ||= life>0;
+      const height=this.damageHeights[i]*fade,burnt=this.damageBurnt[i]*fade;
+      if(height!==this.heights[i]||burnt!==this.burnt[i]){this.heights[i]=height;this.burnt[i]=burnt;this.vertices.setY(i,height);changed=true;}
+    }
+    for(let i=this.slabs.length-1;i>=0;i--){const slab=this.slabs[i];slab.life=Math.max(0,slab.life-elapsed);if(slab.life<1e-6)this.slabs.splice(i,1);}
+    this.damaged=active||this.slabs.length>0;
+    if(changed)this.refresh();else this.syncSlabs();
+  }
   reset() {
+    this.remaining.fill(0);this.damageHeights.fill(0);this.damageBurnt.fill(0);this.updateTime=0;this.damaged=false;
     this.heights.fill(0);this.burnt.fill(0);for(let i=0;i<this.vertices.count;i++)this.vertices.setY(i,0);
     this.floor.geometry.attributes.color.array.fill(1);this.slabs.length=0;this.serial=0;this.refresh();
   }

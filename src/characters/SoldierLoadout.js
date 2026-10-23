@@ -16,7 +16,7 @@ export function soldierLoadout(weapons,character,profile,rifleMoves){
   const rifle=weapons.create('rifle',character);pose(true);
   const pistol=weapons.create('pistol',character);pose(false);
   const pistolMoves=structuredClone(rifleMoves);
-  const rename=(m,label)=>{m.label=label;if(m.kind==='projectile'){m.range=Math.min(m.range,12);m.projectileRadius=.045;}return m;};
+  const rename=(m,label)=>{m.label=label;if(m.kind==='projectile'){m.damage*=.8;m.range=Math.min(m.range,12);m.projectileRadius=.045;}return m;};
   rename(pistolMoves.punch,'Pistol combination');
   pistolMoves.punch.chain.forEach((m,i)=>rename(m,['Pistol shot I','Pistol shot II','Stopping shot III'][i]));
   rename(pistolMoves.heavy,'Pistol burst');rename(pistolMoves.skill1,'Rapid pistol fire');rename(pistolMoves.skill2,'Piercing pistol shot');

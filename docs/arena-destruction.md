@@ -93,7 +93,7 @@ background apron leaves the combat deck open underneath, so it cannot fill holes
 Heavy floor impacts lower real vertices by roughly 0.48–0.86 m according to damage,
 with jagged edges, narrow depressed radial fractures and a slightly raised lip.
 These are walkable craters with a solid bottom, not bottomless pits or tunnels.
-Repeated impacts modify the same fixed-size buffers; terrain persists until reset.
+Repeated impacts modify the same fixed-size buffers; terrain lasts 9 seconds and smoothly returns to flat ground during its final 2 seconds.
 
 Movement, jumps, respawns, crosshair aiming and projectile floor sweeps use the
 same triangle-interpolated height. Horizontal shots can strike rising crater walls.
@@ -102,7 +102,7 @@ markers use the current ground elevation. Crates sample their footprint for grou
 support; surviving stacks still settle when lower props break. No physics engine
 or combat timings were replaced.
 
-Up to 64 solid-looking broken slabs remain around crater rims. Larger angular
+Up to 64 solid-looking broken slabs appear around crater rims and shrink away with the recovering floor. Larger angular
 rocks fly outward, bounce against the sampled floor and fade after nine seconds.
 These debris/slab meshes are cosmetic and do not add character collision bodies;
 the crater floor itself changes the playable surface. Wood and metal breakup
@@ -129,3 +129,6 @@ below the old floor, projectiles reaching the bottom and striking the lip,
 deformed floor paint, large debris settling, bounded repeated impacts and reset. Combat regression checks confirmed all nine
 click chains and all 27 skills still deal damage. No production builds or
 permanent test files were generated.
+
+
+Ground recovery: `GROUND_WRECK_LIFETIME` (9 seconds) and `GROUND_RESTORE_DURATION` (2 seconds) in `src/core/DeformableGround.js` control automatic restoration. Each affected patch has its own timer; another impact renews only its affected vertices. Height, scorch tint, painted floor markings and collision restore together. Ground decals share the same lifetime, and surviving props rise with their supporting floor. Pausing freezes recovery; arena reset clears it immediately.
