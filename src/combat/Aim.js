@@ -13,8 +13,12 @@ export class Aim {
     const ray = this.raycaster.ray, hit = new THREE.Vector3();
     let distance = 40; this.target = null;
     this.point.copy(ray.origin).addScaledVector(ray.direction, distance);
-    if (ray.intersectPlane(this.floor, hit) && ray.origin.distanceTo(hit) < distance) {
-      distance = ray.origin.distanceTo(hit); this.point.copy(hit);
+    const terrain=world.arena.terrain;
+    if(terrain){
+      const contact=terrain.intersectSegment(ray.origin,this.point,0);
+      if(contact){distance=contact.distance;this.point.copy(contact.point);}
+    }else if(ray.intersectPlane(this.floor,hit)&&ray.origin.distanceTo(hit)<distance){
+      distance=ray.origin.distanceTo(hit);this.point.copy(hit);
     }
     for (const box of world.arena.cameraBlockers || world.arena.obstacles || []) {
       if (ray.intersectBox(box, hit) && ray.origin.distanceTo(hit) < distance) {

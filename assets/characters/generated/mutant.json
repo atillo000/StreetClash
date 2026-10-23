@@ -5,7 +5,7 @@
   "maximumBindDifference": 0,
   "height": 2.25,
   "scale": 1.2088043926212206,
-  "bytes": 9153568,
+  "bytes": 9564736,
   "clips": [
     {
       "name": "Hit",
@@ -34,8 +34,8 @@
     },
     {
       "name": "Defeat",
-      "duration": 4.583333492279053,
-      "tracks": 31
+      "duration": 4.75,
+      "tracks": 29
     },
     {
       "name": "Victory",
@@ -84,7 +84,7 @@
     },
     {
       "name": "AimIdle",
-      "duration": 5.300000190734863,
+      "duration": 14.216666221618652,
       "tracks": 31
     },
     {
@@ -109,7 +109,7 @@
     },
     {
       "name": "Heavy",
-      "duration": 2.6666667461395264,
+      "duration": 1.100000023841858,
       "tracks": 31
     },
     {
@@ -118,13 +118,28 @@
       "tracks": 31
     },
     {
+      "name": "UltimateStart",
+      "duration": 5.400000095367432,
+      "tracks": 31
+    },
+    {
+      "name": "UltimateStrike",
+      "duration": 2.6666667461395264,
+      "tracks": 31
+    },
+    {
+      "name": "UltimateFinisher",
+      "duration": 3.700000047683716,
+      "tracks": 31
+    },
+    {
       "name": "Slam",
-      "duration": 3.1666667461395264,
+      "duration": 3.700000047683716,
       "tracks": 31
     },
     {
       "name": "Roar",
-      "duration": 4.666666507720947,
+      "duration": 5.400000095367432,
       "tracks": 31
     },
     {
@@ -149,26 +164,29 @@
     "GetUp": "./assets/animations/Boxing Animation/Getting Up.fbx",
     "Block": "./assets/animations/Boxing Animation/Outward Block.fbx",
     "Roll": "./assets/animations/Boxing Animation/Stand To Roll.fbx",
-    "Defeat": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant dying.fbx",
-    "Victory": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant flexing muscles.fbx",
-    "Jump": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant jumping.fbx",
-    "BackWalk": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant walking.fbx",
-    "BackRun": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant run.fbx",
+    "Defeat": "./assets/animations/Boxing Animation/Defeat.fbx",
+    "Victory": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant flexing muscles.fbx",
+    "Jump": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant jumping.fbx",
+    "BackWalk": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant walking.fbx",
+    "BackRun": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant run.fbx",
     "StrafeLeftWalk": "./assets/animations/locomotion/left strafe walking.fbx",
     "StrafeRightWalk": "./assets/animations/locomotion/right strafe walking.fbx",
     "StrafeLeftRun": "./assets/animations/locomotion/left strafe.fbx",
     "StrafeRightRun": "./assets/animations/locomotion/right strafe.fbx",
-    "Idle": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant breathing idle.fbx",
-    "AimIdle": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant idle.fbx",
-    "IdleFidget": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant flexing muscles.fbx",
-    "Walk": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant walking.fbx",
-    "Run": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant run.fbx",
-    "Light": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant swiping.fbx",
-    "Heavy": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant swiping.fbx",
-    "Kick": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant jumping.fbx",
-    "Slam": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant jumping.fbx",
-    "Roar": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant flexing muscles.fbx",
-    "TurnLeft": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant left turn 45.fbx",
-    "TurnRight": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature NPC Pack/mutant right turn 45.fbx"
+    "Idle": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant breathing idle.fbx",
+    "AimIdle": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant idle.fbx",
+    "IdleFidget": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant flexing muscles.fbx",
+    "Walk": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant walking.fbx",
+    "Run": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant run.fbx",
+    "Light": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant swiping.fbx",
+    "Heavy": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant punch.fbx",
+    "Kick": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant jumping.fbx",
+    "UltimateStart": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant roaring.fbx",
+    "UltimateStrike": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant swiping.fbx",
+    "UltimateFinisher": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant jump attack.fbx",
+    "Slam": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant jump attack.fbx",
+    "Roar": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant roaring.fbx",
+    "TurnLeft": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant left turn 45.fbx",
+    "TurnRight": "./assets/animations/Mutant Boss Enemy Animation Pack/Creature Pack/mutant right turn 45.fbx"
   }
 }

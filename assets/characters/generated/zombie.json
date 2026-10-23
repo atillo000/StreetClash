@@ -1,0 +1,174 @@
+{
+  "id": "zombie",
+  "originalBones": 69,
+  "uniqueBones": 69,
+  "maximumBindDifference": 0,
+  "height": 1.95,
+  "scale": 0.9613122651911434,
+  "bytes": 7629252,
+  "clips": [
+    {
+      "name": "Hit",
+      "duration": 1.5833333730697632,
+      "tracks": 47
+    },
+    {
+      "name": "Down",
+      "duration": 2.133333444595337,
+      "tracks": 47
+    },
+    {
+      "name": "GetUp",
+      "duration": 2.700000047683716,
+      "tracks": 47
+    },
+    {
+      "name": "Block",
+      "duration": 2.5166666507720947,
+      "tracks": 47
+    },
+    {
+      "name": "Roll",
+      "duration": 2.366666555404663,
+      "tracks": 47
+    },
+    {
+      "name": "Defeat",
+      "duration": 2.9666666984558105,
+      "tracks": 53
+    },
+    {
+      "name": "Victory",
+      "duration": 2.7833333015441895,
+      "tracks": 53
+    },
+    {
+      "name": "Jump",
+      "duration": 2.1666667461395264,
+      "tracks": 47
+    },
+    {
+      "name": "BackWalk",
+      "duration": 4.0333333015441895,
+      "tracks": 53
+    },
+    {
+      "name": "BackRun",
+      "duration": 0.800000011920929,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeLeftWalk",
+      "duration": 1.0333333015441895,
+      "tracks": 47
+    },
+    {
+      "name": "StrafeRightWalk",
+      "duration": 1.0333333015441895,
+      "tracks": 47
+    },
+    {
+      "name": "StrafeLeftRun",
+      "duration": 0.6666666865348816,
+      "tracks": 47
+    },
+    {
+      "name": "StrafeRightRun",
+      "duration": 0.6666666865348816,
+      "tracks": 47
+    },
+    {
+      "name": "Idle",
+      "duration": 4.333333492279053,
+      "tracks": 53
+    },
+    {
+      "name": "AimIdle",
+      "duration": 4.333333492279053,
+      "tracks": 53
+    },
+    {
+      "name": "Walk",
+      "duration": 4.0333333015441895,
+      "tracks": 53
+    },
+    {
+      "name": "Run",
+      "duration": 0.800000011920929,
+      "tracks": 53
+    },
+    {
+      "name": "Light",
+      "duration": 1.933333396911621,
+      "tracks": 53
+    },
+    {
+      "name": "Heavy",
+      "duration": 2.683333396911621,
+      "tracks": 53
+    },
+    {
+      "name": "Kick",
+      "duration": 2.7833333015441895,
+      "tracks": 53
+    },
+    {
+      "name": "Frenzy",
+      "duration": 1.649999976158142,
+      "tracks": 53
+    },
+    {
+      "name": "Crawl",
+      "duration": 0.6666666865348816,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateStart",
+      "duration": 2.7833333015441895,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateStrike",
+      "duration": 1.933333396911621,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateFinisher",
+      "duration": 2.066666603088379,
+      "tracks": 53
+    },
+    {
+      "name": "Sprint",
+      "duration": 0.6646153945189256,
+      "tracks": 53
+    }
+  ],
+  "sources": {
+    "Hit": "./assets/animations/Boxing Animation/Hit Reaction.fbx",
+    "Down": "./assets/animations/Boxing Animation/Knocked Down.fbx",
+    "GetUp": "./assets/animations/Boxing Animation/Getting Up.fbx",
+    "Block": "./assets/animations/Boxing Animation/Outward Block.fbx",
+    "Roll": "./assets/animations/Boxing Animation/Stand To Roll.fbx",
+    "Defeat": "./assets/animations/Scary Zombie Animation Pack/Scary Zombie Pack/zombie death.fbx",
+    "Victory": "./assets/animations/Scary Zombie Animation Pack/Scary Zombie Pack/zombie scream.fbx",
+    "Jump": "./assets/animations/locomotion/jump.fbx",
+    "BackWalk": "./assets/animations/Scary Zombie Animation Pack/Scary Zombie Pack/zombie walk.fbx",
+    "BackRun": "./assets/animations/Scary Zombie Animation Pack/Scary Zombie Pack/zombie run.fbx",
+    "StrafeLeftWalk": "./assets/animations/locomotion/right strafe walking.fbx",
+    "StrafeRightWalk": "./assets/animations/locomotion/left strafe walking.fbx",
+    "StrafeLeftRun": "./assets/animations/locomotion/right strafe.fbx",
+    "StrafeRightRun": "./assets/animations/locomotion/left strafe.fbx",
+    "Idle": "./assets/animations/Scary Zombie Animation Pack/Scary Zombie Pack/zombie idle.fbx",
+    "AimIdle": "./assets/animations/Scary Zombie Animation Pack/Scary Zombie Pack/zombie idle.fbx",
+    "Walk": "./assets/animations/Scary Zombie Animation Pack/Scary Zombie Pack/zombie walk.fbx",
+    "Run": "./assets/animations/Scary Zombie Animation Pack/Scary Zombie Pack/zombie run.fbx",
+    "Light": "./assets/animations/generated/zombie-attack.glb",
+    "Heavy": "./assets/animations/Scary Zombie Animation Pack/Scary Zombie Pack/zombie neck bite.fbx",
+    "Kick": "./assets/animations/Scary Zombie Animation Pack/Scary Zombie Pack/zombie scream.fbx",
+    "Frenzy": "./assets/animations/Scary Zombie Animation Pack/Scary Zombie Pack/zombie neck bite.fbx",
+    "Crawl": "./assets/animations/Scary Zombie Animation Pack/Scary Zombie Pack/running crawl.fbx",
+    "UltimateStart": "./assets/animations/Scary Zombie Animation Pack/Scary Zombie Pack/zombie scream.fbx",
+    "UltimateStrike": "./assets/animations/generated/zombie-attack.glb",
+    "UltimateFinisher": "./assets/animations/Scary Zombie Animation Pack/Scary Zombie Pack/zombie neck bite.fbx"
+  }
+}

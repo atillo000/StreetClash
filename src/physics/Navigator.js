@@ -9,8 +9,13 @@ export class Navigator {
     this.radius = radius;
     this.margin = radius + 0.06;
     this.edge = arena.halfSize - this.margin;
+    this.rebuild();
+  }
+
+  rebuild(){
+    this.revision=this.arena.revision||0;
     this.nodes = [];
-    for (const b of arena.obstacles) {
+    for (const b of this.arena.obstacles) {
       for (const x of [b.min.x - this.margin - 0.05, b.max.x + this.margin + 0.05]) {
         for (const z of [b.min.z - this.margin - 0.05, b.max.z + this.margin + 0.05]) {
           const p = new THREE.Vector3(x, 0, z);
@@ -56,6 +61,7 @@ export class Navigator {
   }
 
   findPath(from, to) {
+    if(this.revision!==(this.arena.revision||0))this.rebuild();
     const start = this.project(from), goal = this.project(to);
     const prefix = start.distanceTo(from) > 0.025 ? [start] : [];
     if (this.clear(start, goal)) return [...prefix, goal];

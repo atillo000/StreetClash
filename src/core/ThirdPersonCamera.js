@@ -28,7 +28,7 @@ export class ThirdPersonCamera {
     this.probe.projectionMatrix.copy(this.camera.projectionMatrix);
     this.probe.position.copy(this.focus).addScaledVector(direction,distance);
     this.probe.lookAt(this.focus);this.probe.updateMatrixWorld(true);
-    for(const actor of enemy?[player,enemy]:[player])for(const y of [0,2.3]){
+    for(const actor of enemy?[player,enemy]:[player])for(const y of [0,actor===enemy?(this.enemyHeight||2.3):2.3]){
       this.screenPoint.copy(actor);this.screenPoint.y+=y;this.screenPoint.project(this.probe);
       if(Math.abs(this.screenPoint.x)>.94||Math.abs(this.screenPoint.y)>.94||this.screenPoint.z< -1||this.screenPoint.z>1)return false;
     }
@@ -47,8 +47,8 @@ export class ThirdPersonCamera {
     this.applyLook(look);
     const step=Math.min(Math.max(dt,0),.1),snap=this._first;
     if(snap)this.renderYaw=this.yaw;
-    this.anchor.set(targetPos.x,targetPos.y+this.height,targetPos.z);this.want.copy(this.anchor);
-    let distance=THREE.MathUtils.clamp(this.distance,this.minDistance,this.maxDistance);
+    this.anchor.set(targetPos.x,targetPos.y+this.height+(this.bossLift||0),targetPos.z);this.want.copy(this.anchor);
+    let distance=THREE.MathUtils.clamp(this.distance+Math.min(.6,(this.bossLift||0)*.6),this.minDistance,this.maxDistance);
     if(lockPos){
       this.offset.subVectors(lockPos,targetPos).setY(0);
       const separation=this.offset.length();

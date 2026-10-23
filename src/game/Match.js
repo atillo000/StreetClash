@@ -33,7 +33,7 @@ export class Match {
 
   recordHit(attacker, target, outcome, damage) {
     if (this.state !== 'active') return;
-    if (attacker === this.player) { this.stats.damageDealt += damage; if (outcome !== 'blocked') this.stats.hits++; }
+    if (attacker === this.player) { this.stats.damageDealt += damage; if (outcome !== 'blocked' && outcome !== 'periodic') this.stats.hits++; }
     if (target === this.player) { this.stats.damageTaken += damage; if (outcome === 'blocked') this.stats.blocks++; }
   }
 

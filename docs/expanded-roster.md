@@ -43,7 +43,7 @@ for the supplied character's main combat and locomotion style.
 
 The Mutant uses a larger capsule and 140 HP; other fighters use 100 HP. Balance is
 provisional. Re-selecting a normal fighter restores its normal capsule and health.
-All seven fighters are available as player or rival; there are no interchangeable
+All nine fighters are available as player or rival; there are no interchangeable
 class/body/costume overrides.
 
 ## Assets and preparation
@@ -90,3 +90,37 @@ lighting makes character faces and outfits easier to inspect in the menu.
 The static build includes the runtime assets and excludes source FBXs, intermediate
 conversions, ZIPs and the original dense sword. Physical MX130 performance still
 needs an on-device check.
+
+## Paladin and Parasite Zombie (2026-10-19)
+
+The roster now has nine selectable fighters. Paladin / Aegis (115 HP) uses the
+Pro Sword and Shield Pack, a one-handed reuse of the existing optimized sword,
+and an original shield attached to the left hand. Guard uses the dedicated block
+animations and takes 8% chip damage from ordinary light attacks. It has sword cuts,
+a kick, Radiant advance, Consecration and the three-stage Judgment ultimate.
+
+Parasite Zombie / Blight (110 HP; original source filename spells it Paraiste)
+uses the Scary Zombie Pack for lurching walk/run, claws, neck bite, scream and
+running crawl. The long feeding animations are not used for standing attacks.
+Neck-bite lead-ins/recoveries are trimmed for responsiveness. Skills are Frenzied
+bite and Grave crawl; the latter is a mobility skill with an early invulnerability
+window, not a damaging attack. Parasite feast chains a scream, two rakes and a bite.
+
+Both use standard LMB/RMB/1/2/3 inputs and 4 for ultimate; their keys, clips and
+moves remain editable in ImportedFighters.js and ImportedMoves.js. Shared reactions,
+strafe/jump/roll clips fill gaps where the dedicated packs contain no equivalent.
+New gait calibration entries were measured from the supplied soles and planted-foot
+speeds; the existing seven entries are preserved. Strafe directions were checked
+from actual foot motion rather than numbered animation filenames.
+
+Source models use FBX 6100 and are converted to ignored GLB intermediates in
+assets/characters/source-converted with FBX2glTF before the normal preparation step.
+The Zombie attack FBX fails FBXLoader; its preserved recovered GLB is in
+assets/animations/generated/zombie-attack.glb. The preparation script supports
+these metre-based GLB clips by normalizing them to the centimetre convention of
+the supplied Mixamo FBXs before retargeting. No runtime converter is needed.
+
+Prepare only paladin or zombie using the existing scripts/prepare.html workflow.
+The local preparation receiver now accepts those two IDs as well as the original
+seven. The existing deployment script already copies their generated assets; no
+build output is needed for local development.

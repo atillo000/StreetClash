@@ -2,7 +2,7 @@
 export const ATTACK_BINDINGS = [
   { move: 'punch', label: 'LMB', codes: ['Mouse0', 'KeyJ'] },
   { move: 'heavy', label: 'RMB', codes: ['Mouse2', 'KeyL'] },
-  { move: 'kick', label: '1', codes: ['Digit1', 'KeyE', 'KeyK'] },
+  { move: 'kick', label: '1', codes: ['Digit1', 'KeyK'] },
   { move: 'skill1', label: '2', codes: ['Digit2'] },
   { move: 'skill2', label: '3', codes: ['Digit3'] },
 ];

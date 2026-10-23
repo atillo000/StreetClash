@@ -5,7 +5,7 @@
   "maximumBindDifference": 0,
   "height": 1.85,
   "scale": 1.0274674616304542,
-  "bytes": 10713892,
+  "bytes": 10941048,
   "clips": [
     {
       "name": "Hit",
@@ -138,6 +138,26 @@
       "tracks": 53
     },
     {
+      "name": "UltimateStart",
+      "duration": 1.0166666507720947,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateStrike",
+      "duration": 0.6833333373069763,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateCharge",
+      "duration": 3.7666666507720947,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateFinisher",
+      "duration": 0.6833333373069763,
+      "tracks": 53
+    },
+    {
       "name": "Volley",
       "duration": 1.0166666507720947,
       "tracks": 53
@@ -185,6 +205,10 @@
     "Light": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing aim recoil.fbx",
     "Heavy": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing draw arrow.fbx",
     "Kick": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing melee kick.fbx",
+    "UltimateStart": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing draw arrow.fbx",
+    "UltimateStrike": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing aim recoil.fbx",
+    "UltimateCharge": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing aim overdraw.fbx",
+    "UltimateFinisher": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing aim recoil.fbx",
     "Volley": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing draw arrow.fbx",
     "DefeatBack": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/standing death forward 01.fbx",
     "Land": "./assets/animations/Archer Character Animation Pack/Pro Longbow Pack/fall a land to standing idle 01.fbx"

@@ -1,0 +1,18 @@
+[
+  {
+    "name": "rifle",
+    "bytes": 6913200,
+    "sha256": "386230cdc30febe8bb630d5c2628f1410033f6e2fdc702899720174ee663201b",
+    "source": "https://polyhaven.com/a/bolt_action_rifle_7_62",
+    "license": "CC0-1.0",
+    "changes": "Embedded original geometry and 1K PBR maps in GLB."
+  },
+  {
+    "name": "pistol",
+    "bytes": 3290524,
+    "sha256": "9ef75316dd352c242f2135ebc76f45fc8477c7cafe4484d1526d433fb4bdfae2",
+    "source": "https://polyhaven.com/a/service_pistol",
+    "license": "CC0-1.0",
+    "changes": "Embedded original geometry and 1K PBR maps in GLB."
+  }
+]

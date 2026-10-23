@@ -5,7 +5,7 @@
   "maximumBindDifference": 0,
   "height": 1.85,
   "scale": 0.010188597927557335,
-  "bytes": 13459596,
+  "bytes": 15481600,
   "clips": [
     {
       "name": "Hit",
@@ -243,6 +243,151 @@
       "tracks": 47
     },
     {
+      "name": "UltimateStart",
+      "duration": 2.0999999046325684,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateStrike",
+      "duration": 1.1666666269302368,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateFinisher",
+      "duration": 1.1666666269302368,
+      "tracks": 53
+    },
+    {
+      "name": "PistolIdle",
+      "duration": 1.3333333730697632,
+      "tracks": 53
+    },
+    {
+      "name": "PistolAimIdle",
+      "duration": 1.3333333730697632,
+      "tracks": 53
+    },
+    {
+      "name": "PistolWalk",
+      "duration": 0.7833333611488342,
+      "tracks": 53
+    },
+    {
+      "name": "PistolRun",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "PistolSprint",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "PistolCombatWalk",
+      "duration": 0.7833333611488342,
+      "tracks": 53
+    },
+    {
+      "name": "PistolCombatRun",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "PistolBackWalk",
+      "duration": 1.0166666507720947,
+      "tracks": 53
+    },
+    {
+      "name": "PistolBackRun",
+      "duration": 0.5333333611488342,
+      "tracks": 53
+    },
+    {
+      "name": "PistolStrafeLeftWalk",
+      "duration": 0.5666666626930237,
+      "tracks": 53
+    },
+    {
+      "name": "PistolStrafeRightWalk",
+      "duration": 0.6000000238418579,
+      "tracks": 53
+    },
+    {
+      "name": "PistolStrafeLeftRun",
+      "duration": 0.5666666626930237,
+      "tracks": 53
+    },
+    {
+      "name": "PistolStrafeRightRun",
+      "duration": 0.6000000238418579,
+      "tracks": 53
+    },
+    {
+      "name": "PistolForwardLeftWalk",
+      "duration": 0.7333333492279053,
+      "tracks": 53
+    },
+    {
+      "name": "PistolForwardRightWalk",
+      "duration": 0.7666666507720947,
+      "tracks": 53
+    },
+    {
+      "name": "PistolBackLeftWalk",
+      "duration": 0.6000000238418579,
+      "tracks": 53
+    },
+    {
+      "name": "PistolBackRightWalk",
+      "duration": 0.5833333134651184,
+      "tracks": 53
+    },
+    {
+      "name": "PistolForwardLeftRun",
+      "duration": 0.6000000238418579,
+      "tracks": 53
+    },
+    {
+      "name": "PistolForwardRightRun",
+      "duration": 0.6333333253860474,
+      "tracks": 53
+    },
+    {
+      "name": "PistolBackLeftRun",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "PistolBackRightRun",
+      "duration": 0.5,
+      "tracks": 53
+    },
+    {
+      "name": "PistolCrouchIdle",
+      "duration": 3.799999952316284,
+      "tracks": 53
+    },
+    {
+      "name": "PistolCrouchStart",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "PistolCrouchEnd",
+      "duration": 1.350000023841858,
+      "tracks": 53
+    },
+    {
+      "name": "PistolJump",
+      "duration": 2,
+      "tracks": 53
+    },
+    {
+      "name": "PistolJumpRun",
+      "duration": 0.800000011920929,
+      "tracks": 53
+    },
+    {
       "name": "DefeatBack",
       "duration": 2.950000047683716,
       "tracks": 53
@@ -250,6 +395,101 @@
     {
       "name": "DefeatLeft",
       "duration": 3.2833333015441895,
+      "tracks": 53
+    },
+    {
+      "name": "PistolCrouchWalk",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "PistolCrouchBack",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "PistolCrouchLeft",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "PistolCrouchRight",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "PistolCrouchForwardLeft",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "PistolCrouchForwardRight",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "PistolCrouchBackLeft",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "PistolCrouchBackRight",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "PistolTurnLeft",
+      "duration": 0.9833333492279053,
+      "tracks": 53
+    },
+    {
+      "name": "PistolTurnRight",
+      "duration": 0.9833333492279053,
+      "tracks": 53
+    },
+    {
+      "name": "PistolMoveStart",
+      "duration": 1.4500000476837158,
+      "tracks": 53
+    },
+    {
+      "name": "PistolMoveStop",
+      "duration": 2.6666667461395264,
+      "tracks": 53
+    },
+    {
+      "name": "PistolJumpLoop",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "PistolLand",
+      "duration": 0.6666666865348816,
+      "tracks": 53
+    },
+    {
+      "name": "PistolLight",
+      "duration": 0.75,
+      "tracks": 53
+    },
+    {
+      "name": "PistolHeavy",
+      "duration": 0.75,
+      "tracks": 53
+    },
+    {
+      "name": "PistolUltimateStart",
+      "duration": 0.75,
+      "tracks": 53
+    },
+    {
+      "name": "PistolUltimateStrike",
+      "duration": 0.75,
+      "tracks": 53
+    },
+    {
+      "name": "PistolUltimateFinisher",
+      "duration": 0.75,
       "tracks": 53
     }
   ],
@@ -301,6 +541,35 @@
     "Light": "./assets/animations/Soldier Character Animation Pack/Shooter Locomotion Pack/firing rifle.fbx",
     "Heavy": "./assets/animations/Soldier Character Animation Pack/Shooter Locomotion Pack/firing rifle.fbx",
     "Kick": "./assets/animations/Boxing Animation/Mma Kick.fbx",
+    "UltimateStart": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/idle aiming.fbx",
+    "UltimateStrike": "./assets/animations/Soldier Character Animation Pack/Shooter Locomotion Pack/firing rifle.fbx",
+    "UltimateFinisher": "./assets/animations/Soldier Character Animation Pack/Shooter Locomotion Pack/firing rifle.fbx",
+    "PistolIdle": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol idle.fbx",
+    "PistolAimIdle": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol idle.fbx",
+    "PistolWalk": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol walk.fbx",
+    "PistolRun": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol run.fbx",
+    "PistolSprint": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol run.fbx",
+    "PistolCombatWalk": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol walk.fbx",
+    "PistolCombatRun": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol run.fbx",
+    "PistolBackWalk": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol walk backward.fbx",
+    "PistolBackRun": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol run backward.fbx",
+    "PistolStrafeLeftWalk": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol strafe.fbx",
+    "PistolStrafeRightWalk": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol strafe (2).fbx",
+    "PistolStrafeLeftRun": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol strafe.fbx",
+    "PistolStrafeRightRun": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol strafe (2).fbx",
+    "PistolForwardLeftWalk": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol walk arc.fbx",
+    "PistolForwardRightWalk": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol walk arc (2).fbx",
+    "PistolBackLeftWalk": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol walk backward arc.fbx",
+    "PistolBackRightWalk": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol walk backward arc (2).fbx",
+    "PistolForwardLeftRun": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol run arc.fbx",
+    "PistolForwardRightRun": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol run arc (2).fbx",
+    "PistolBackLeftRun": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol run backward arc.fbx",
+    "PistolBackRightRun": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol run backward arc (2).fbx",
+    "PistolCrouchIdle": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol kneeling idle.fbx",
+    "PistolCrouchStart": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol stand to kneel.fbx",
+    "PistolCrouchEnd": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol kneel to stand.fbx",
+    "PistolJump": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol jump.fbx",
+    "PistolJumpRun": "./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol jump (2).fbx",
     "DefeatBack": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/death from the back.fbx",
     "DefeatLeft": "./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/death from right.fbx"
   }

@@ -3,11 +3,15 @@ import crypto from 'node:crypto';
 const files = [
   'characters/Archer Type Character.fbx', 'characters/Great Sword Type Character.fbx',
   'characters/Melee Axe Type Character.fbx', 'characters/Mutant Boss Enemy Character.fbx',
-  ...['archer', 'greatsword', 'axe', 'mutant'].map(id => `characters/generated/${id}.glb`),
+  'characters/Paladin Type Character.fbx', 'characters/Paraiste Zombie Character.fbx',
+  'animations/Paladin Animation Pack/Pro Sword and Shield Pack.zip',
+  'animations/Scary Zombie Animation Pack/Scary Zombie Pack.zip',
+  'animations/generated/zombie-attack.glb',
+  ...['archer', 'greatsword', 'axe', 'mutant', 'paladin', 'zombie'].map(id => `characters/generated/${id}.glb`),
   'Weapons/long-bow.glb', 'Weapons/battle-axe.glb', 'Weapons/great-sword.glb', 'Weapons/generated/great-sword.glb',
   'environment/old-barrel.glb', 'environment/wooden-crate.glb',
 ];
-const record = { date: '2026-10-16', source: 'User-supplied local files; original download URLs and licenses were not supplied.',
+const record = { date: '2026-10-19', source: 'User-supplied local files; original download URLs and licenses were not supplied.',
   licenseStatus: 'Unconfirmed; no CC0/CC-BY claim is made for these files.',
   derivatives: 'Prepared character GLBs embed their dedicated supplied animation clips. The generated sword is a simplified copy of the supplied sword.',
   assets: files.map(file => { const data = fs.readFileSync('assets/' + file); return { file, bytes: data.length,

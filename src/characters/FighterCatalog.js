@@ -3,6 +3,7 @@ const shared = file => `./assets/animations/Boxing Animation/${file}.fbx`;
 const cap = file => `./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/${file}.fbx`;
 const magic = file => `./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/${file}.fbx`;
 const rifle = file => `./assets/animations/Soldier Character Animation Pack/Pro Rifle Locomotion Pack/${file}.fbx`;
+const pistol = file => `./assets/animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/${file}.fbx`;
 const shooter = file => `./assets/animations/Soldier Character Animation Pack/Shooter Locomotion Pack/${file}.fbx`;
 const common = { Hit: shared('Hit Reaction'), Down: shared('Knocked Down'), GetUp: shared('Getting Up'),
   Block: shared('Outward Block'), Roll: shared('Stand To Roll'), Defeat: shared('Defeat'), Victory: shared('Victory') };
@@ -20,7 +21,7 @@ export const FIGHTERS = {
       Light: cap('meia lua de frente'), Kick: cap('bencao'), Heavy: cap('armada'), Roll: cap('au'),
       Jump: './assets/animations/locomotion/jump.fbx', IdleFidget: cap('ginga variation 3'),
       // Ultimate aliases must be inside clips to be embedded by asset preparation.
-      UltimateStart: cap('au'), UltimateStrike: cap('armada'), UltimateFinisher: cap('martelo 2') },
+      UltimateStart: cap('armada trim start'), UltimateStrike: cap('martelo 2'), UltimateFinisher: cap('meia lua de compasso') },
     moveLabels: ['Meia lua', 'Bencao', 'Armada'],
   },
   magic: {
@@ -41,11 +42,13 @@ export const FIGHTERS = {
       BlockStart: magic('Standing Block Start'), Block: magic('Standing Block Idle'), BlockEnd: magic('Standing Block End'), BlockHit: magic('Standing Block React Large'),
       Hit: magic('Standing React Small From Front'), HitBack: magic('Standing React Small From Back'), HitLeft: magic('Standing React Small From Left'), HitRight: magic('Standing React Small From Right'),
       Defeat: magic('Standing React Death Backward'), DefeatBack: magic('Standing React Death Forward'), DefeatLeft: magic('Standing React Death Right'), DefeatRight: magic('Standing React Death Left'),
-      Light: magic('Standing 1H Magic Attack 01'), Kick: magic('Standing 2H Magic Attack 02'), Heavy: magic('Standing 2H Magic Area Attack 02') },
+      Light: magic('Standing 1H Magic Attack 01'), Kick: magic('Standing 2H Magic Attack 02'), Heavy: magic('Standing 2H Magic Area Attack 02'),
+      UltimateStart: magic('Standing 2H Cast Spell 01'), UltimateStrike: magic('Standing 2H Magic Attack 03'),
+      UltimateFinisher: magic('Standing 2H Magic Area Attack 02') },
     moveLabels: ['Arc bolt', 'Twin-hand blast', 'Arcane pulse'],
   },
   soldier: {
-    id: 'soldier', name: 'Rook', role: 'Soldier', description: 'Disciplined rifle movement, aimed fire and a close-range kick.', color: '#86cbb7',
+    id: 'soldier', name: 'Rook', role: 'Soldier', description: 'Textured rifle and pistol loadouts. Press Q while ready to switch weapon and dedicated movement.', color: '#86cbb7',
     source: './assets/characters/Soldier Type Character.fbx', url: './assets/characters/generated/soldier.glb',
     height: 1.85, walkSpeed: 1.9, runSpeed: 5.5, sprintSpeed: 6.7, lockSpeed: 3.5, crouchSpeed: 1.35, accel: 36, turnRate: 20, gaitRate: 1.2, weapon: 'rifle',
     clipTrims: { Kick: [0.12, 0.75] },
@@ -64,6 +67,19 @@ export const FIGHTERS = {
       Jump: rifle('jump up'), JumpLoop: rifle('jump loop'), Land: rifle('jump down'),
       MoveStart: shooter('start walking'), MoveStop: shooter('stop walking'),
       Light: shooter('firing rifle'), Heavy: shooter('firing rifle'), Kick: shared('Mma Kick'),
+      UltimateStart: rifle('idle aiming'), UltimateStrike: shooter('firing rifle'), UltimateFinisher: shooter('firing rifle'),
+      PistolIdle: pistol('pistol idle'), PistolAimIdle: pistol('pistol idle'),
+      PistolWalk: pistol('pistol walk'), PistolRun: pistol('pistol run'), PistolSprint: pistol('pistol run'),
+      PistolCombatWalk: pistol('pistol walk'), PistolCombatRun: pistol('pistol run'),
+      PistolBackWalk: pistol('pistol walk backward'), PistolBackRun: pistol('pistol run backward'),
+      PistolStrafeLeftWalk: pistol('pistol strafe'), PistolStrafeRightWalk: pistol('pistol strafe (2)'),
+      PistolStrafeLeftRun: pistol('pistol strafe'), PistolStrafeRightRun: pistol('pistol strafe (2)'),
+      PistolForwardLeftWalk: pistol('pistol walk arc'), PistolForwardRightWalk: pistol('pistol walk arc (2)'),
+      PistolBackLeftWalk: pistol('pistol walk backward arc'), PistolBackRightWalk: pistol('pistol walk backward arc (2)'),
+      PistolForwardLeftRun: pistol('pistol run arc'), PistolForwardRightRun: pistol('pistol run arc (2)'),
+      PistolBackLeftRun: pistol('pistol run backward arc'), PistolBackRightRun: pistol('pistol run backward arc (2)'),
+      PistolCrouchIdle: pistol('pistol kneeling idle'), PistolCrouchStart: pistol('pistol stand to kneel'), PistolCrouchEnd: pistol('pistol kneel to stand'),
+      PistolJump: pistol('pistol jump'), PistolJumpRun: pistol('pistol jump (2)'),
       Defeat: rifle('death from the front'), DefeatBack: rifle('death from the back'), DefeatLeft: rifle('death from right') },
     moveLabels: ['Rifle shot', 'Close kick', 'Rifle burst'],
   },

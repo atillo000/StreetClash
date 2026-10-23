@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { boxSurfaceNormal } from './DestructibleProps.js';
 import { sweepHurtCapsule } from '../physics/collision.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
@@ -16,6 +17,7 @@ export class Projectiles {
     this.arrows.frustumCulled = false; this.arrows.count = 0; scene.add(this.arrows);
     this.dummy = new THREE.Object3D();
     this.point = new THREE.Vector3();
+    this.expandedBox = new THREE.Box3();
   }
 
   clear() { this.free.push(...this.items); this.items.length = 0; this.mesh.count = 0; this.arrows.count = 0; }
@@ -42,7 +44,9 @@ export class Projectiles {
   area(owner, move) {
     const center = move.targeted ? owner.castPoint : owner.position;
     if (!center || (move.targeted && !this.world.arena.hasLineOfSight(owner.position, center))) return;
-    this.effects.pulse(center, move.color, move.range);
+    const airborne=move.environment?.surface==='air'||center.y>(this.world.arena.groundHeight?.(center.x,center.z)??0)+.25;
+    if(airborne)this.effects.cast(center.clone().add(new THREE.Vector3(0,Math.max(.9,(owner.height||1.7)*.52),0)),move.color,'pulse');else this.effects.pulse(center.clone().setY(this.world.arena.groundHeight?.(center.x,center.z)??0),move.color,move.range);
+    this.world.destruction?.area(owner,move,center);
     for (const target of this.world.combatants) {
       if (target === owner || target.team === owner.team || !target.alive) continue;
       if (target.position.distanceTo(center) > move.range + target.radius || Math.abs(target.position.y - center.y) > 1) continue;
@@ -56,33 +60,39 @@ export class Projectiles {
   }
 
   update(dt) {
-    for (let i = this.items.length - 1; i >= 0; i--) {
-      const it = this.items[i], from = it.position.clone();
-      it.position.addScaledVector(it.velocity, dt); it.life -= dt;
-      it.trailT += dt;
-      if (['magic', 'archer'].includes(it.owner.profile?.id) && it.trailT >= 0.05) {
-        it.trailT = 0; this.effects.projectileTrail?.(it.position, it.move.color, it.move.projectileStyle);
+    for(let i=this.items.length-1;i>=0;i--){
+      const it=this.items[i],from=it.position.clone();it.position.addScaledVector(it.velocity,dt);it.life-=dt;it.trailT+=dt;
+      if(['magic','archer'].includes(it.owner.profile?.id)&&it.trailT>=.05){it.trailT=0;this.effects.projectileTrail?.(it.position,it.move.color,it.move.projectileStyle);}
+      const delta=it.position.clone().sub(from),distance=delta.length(),direction=delta.clone().normalize(),ray=new THREE.Ray(from,direction);
+      let surfaceDistance=Infinity,surfaceBox=null;
+      for(const box of this.world.arena.cameraBlockers||this.world.arena.obstacles){
+        this.expandedBox.copy(box).expandByScalar(it.move.projectileRadius);
+        const hit=this.expandedBox.containsPoint(from)?from:ray.intersectBox(this.expandedBox,this.point);
+        if(hit){const d=from.distanceTo(hit);if(d<surfaceDistance){surfaceDistance=d;surfaceBox=box;}}
       }
-      const direction = it.position.clone().sub(from), distance = direction.length();
-      const ray = new THREE.Ray(from, direction.normalize());
-      let wallDistance = Infinity;
-      for (const box of this.world.arena.cameraBlockers || this.world.arena.obstacles) {
-        if (box.containsPoint(from)) { wallDistance = 0; break; }
-        const hit = ray.intersectBox(box, this.point);
-        if (hit) wallDistance = Math.min(wallDistance, from.distanceTo(hit));
+      const terrainHit=this.world.arena.terrain.intersectSegment(from,it.position,it.move.projectileRadius);
+      if(terrainHit&&terrainHit.distance<surfaceDistance){surfaceDistance=terrainHit.distance;surfaceBox=null;}
+      // Resolve the nearest actual contact first; a victim in front of a wall
+      // must not also spawn a wall/floor impact behind them.
+      const candidates=[];
+      for(const target of this.world.combatants){
+        if(target===it.owner||target.team===it.owner.team||!target.alive)continue;
+        if(!sweepHurtCapsule(from,it.position,target,it.move.projectileRadius,this.point))continue;
+        const d=from.distanceTo(this.point);if(d<=surfaceDistance+.001)candidates.push({target,point:this.point.clone(),distance:d});
       }
-      let spent = wallDistance <= distance;
-      if (spent) this.effects.impact?.(from.clone().addScaledVector(ray.direction, wallDistance), it.move.color);
-      for (const target of this.world.combatants) {
-        if (target === it.owner || target.team === it.owner.team || !target.alive) continue;
-        if (!sweepHurtCapsule(from, it.position, target, it.move.projectileRadius, this.point)) continue;
-        if (from.distanceTo(this.point) > wallDistance) continue;
-        const dir = it.velocity.clone().setY(0).normalize();
-        const result = target.takeHit({ damage: it.move.damage, knock: it.move.knock, power: it.move.power, dir, attacker: it.owner, point: this.point });
-        if (result === 'miss') continue;
-        this.world.onHit(it.owner, target, result, it.move, this.point.clone()); spent = true; break;
+      candidates.sort((a,b)=>a.distance-b.distance);let spent=false;
+      for(const candidate of candidates){
+        const result=candidate.target.takeHit({damage:it.move.damage,knock:it.move.knock,power:it.move.power,dir:it.velocity.clone().setY(0).normalize(),attacker:it.owner,point:candidate.point});
+        if(result==='miss')continue;
+        this.world.onHit(it.owner,candidate.target,result,it.move,candidate.point);spent=true;break;
       }
-      if (spent || it.life <= 0) { this.free.push(it); this.items[i] = this.items[this.items.length - 1]; this.items.pop(); }
+      if(!spent&&surfaceDistance<=distance){
+        const point=from.clone().addScaledVector(direction,surfaceDistance),normal=surfaceBox?boxSurfaceNormal(point,surfaceBox):terrainHit.normal;
+        if(surfaceBox)point.addScaledVector(normal,-it.move.projectileRadius);else point.copy(terrainHit.point);
+        if(this.world.destruction)this.world.destruction.surface(it.owner,it.move,point,surfaceBox,normal);else this.effects.impact(point,it.move.color);
+        spent=true;
+      }
+      if(spent||it.life<=0){this.free.push(it);this.items[i]=this.items[this.items.length-1];this.items.pop();}
     }
     this.sync();
   }

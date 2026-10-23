@@ -13,7 +13,7 @@ await mkdir(output, { recursive: true });
 for (const entry of ['src', 'assets/characters/generated', 'assets/environment/factory',
   'assets/environment/old-barrel.glb', 'assets/environment/wooden-crate.glb',
   'assets/Weapons/long-bow.glb', 'assets/Weapons/battle-axe.glb', 'assets/Weapons/generated/great-sword.glb',
-  'assets/Weapons/kenney/blaster-n-runtime.glb', 'assets/Weapons/kenney/License.txt',
+  'assets/Weapons/realistic',
   'assets/textures', 'assets/ASSET-LICENSES.md', 'assets/USER-ASSETS.json']) {
   await cp(path.join(root, entry), path.join(output, entry), { recursive: true });
 }

@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { StatusEffects, grantUltimateReward } from './StatusEffects.js';
+import { PACE } from '../core/Pacing.js';
 import { MOVES, DEFENSE, HIT_MAX_ANGLE, attackPhase } from './moves.js';
 import { shortestAngle } from '../characters/Mover.js';
 import { sweepHurtCapsule } from '../physics/collision.js';
@@ -19,6 +21,7 @@ export class Combatant {
     this.bat = bat;
     this.moves = moves; this.defense = defense; this.profile = profile; this.equipment = equipment;
     this.cooldowns = {};
+    this.statuses = new StatusEffects(this);
     this.wantCrouch = false; this.crouching = false; this.jumpVelocity = 0;
     this.maxHp = profile?.maxHp || maxHp;
     this.hp = this.maxHp;
@@ -82,10 +85,12 @@ export class Combatant {
   }
 
   reset() {
+    this.statuses.clear();
     this.hp = this.maxHp;
     this.height = this.profile?.height || 1.7;
     this.character.root.position.copy(this.spawn);
-    this.previousPosition.copy(this.spawn);
+    this.position.y=this.world.arena.groundHeight?.(this.position.x,this.position.z)??this.spawn.y;
+    this.previousPosition.copy(this.position);
     this.previousFacing = this.spawnFacing;
     this.character.root.rotation.y = this.spawnFacing;
     this.mover.facing = this.spawnFacing;
@@ -129,7 +134,7 @@ export class Combatant {
   canPlayAttack(id) {
     const move = this.moves[id];
     if (!move || move.sequenceOnly) return false;
-    const stages = move.sequence ? move.sequence.map(key => this.moves[key]) : [move];
+    const stages = move.sequence ? move.sequence.map(key => this.moves[key]) : move.chain || [move];
     return stages.length > 0 && stages.every(stage => stage && !stage.sequence
       && this.character.hasClip(stage.clip)
       && (!stage.requiresBat || (this.bat && this.bat.holder.visible)));
@@ -138,8 +143,10 @@ export class Combatant {
   tryAttack(id, aim = null) {
     if (this.world.combatEnabled === false) return false;
     if (!this.canPlayAttack(id) || this.attackSequence) return false;
-    if ((this.cooldowns[id] || 0) > 0) return false;
-    if (this.state === 'attack') { this.buffer = id; this.bufferAim = aim; this.bufferPoint = this.aimPoint?.clone(); this.bufferT = 0.5; return false; }
+    if ((this.cooldowns[id] || 0) > 0 && !(this.state === 'attack' && id === 'punch' && this.moves.punch.chain)) return false;
+    if (this.state === 'attack') { this.buffer = id; this.bufferAim = aim; this.bufferPoint = this.aimPoint?.clone(); this.bufferT = id === 'punch' && this.moves.punch.chain
+      ? Math.max(.5, (1-this.character.actionProgress())*(this.character.action?.getClip().duration||1)/(this.move.speed||1)+.12) : .5;
+      return false; }
     if (!['free', 'block', 'blockEnd'].includes(this.state)) return false;
     this._startAttack(id, aim);
     return true;
@@ -172,20 +179,21 @@ export class Combatant {
   }
 
   tryJump() {
-    if (this.world.combatEnabled === false || this.state !== 'free' || this.position.y > 0.01 || !this.character.hasClip('Jump')) return false;
+    if (this.world.combatEnabled === false || this.state !== 'free' || this.position.y > (this.world.arena.groundHeight?.(this.position.x,this.position.z)??0)+0.01 || !this.character.hasClip('Jump')) return false;
     this.crouching = false; this.mover.crouching = false;
-    this.jumpVelocity = 5.2;
+    this.jumpVelocity = 5.2 * PACE.jump;
     const moving = this.mover.speed > 2 && this.character.hasClip('JumpRun');
     const clip = moving ? 'JumpRun' : 'Jump';
     this.jumpMoving = moving;
     const duration = this.character.actions.get(clip).getClip().duration;
-    this.character.playAction(clip, { fade: 0.07, timeScale: this.character.hasClip('JumpLoop') ? 1.4 : duration / 0.8 });
+    this.character.playAction(clip, { fade: 0.07, timeScale: this.character.hasClip('JumpLoop') ? 1.4 * PACE.jump : duration / (0.8 / PACE.jump) });
     this._setState('jump'); return true;
   }
 
   // ---- State machine --------------------------------------------------
   _setState(s) {
     this.state = s; this.stateT = 0;
+    if(s === 'dead') this.statuses.clear();
     // Hits, knockdown, dodge, KO and match end all cancel pending stages.
     if (s !== 'attack') this.attackSequence = null;
   }
@@ -268,7 +276,8 @@ export class Combatant {
     if (m.targeted) {
       this.castPoint = this.aimPoint?.clone() || e?.c.position.clone() || this.position.clone().add(new THREE.Vector3(Math.sin(ang), 0, Math.cos(ang)).multiplyScalar(m.castRange));
       const delta = this.castPoint.clone().sub(this.position).setY(0).clampLength(0, m.castRange);
-      this.castPoint.copy(this.position).add(delta).setY(0);
+      this.castPoint.copy(this.position).add(delta);
+      this.castPoint.y=this.world.arena.groundHeight?.(this.castPoint.x,this.castPoint.z)??0;
     }
     if (!sequence || sequenceIndex === 0) this.cooldowns[id] = (sequence ? definition : m).cooldown || 0;
     this.attackEvents = new Set();
@@ -289,8 +298,11 @@ export class Combatant {
   }
 
   update(dt) {
+    if(this.inactive)return;
     this.previousPosition.copy(this.position);
     this.previousFacing = this.mover.facing;
+    this.statuses.update(dt);
+    this.mover.statusSpeed = this.statuses.multiplier('moveSpeed');
     const ch = this.character;
     for (const id of Object.keys(this.cooldowns)) this.cooldowns[id] = Math.max(0, this.cooldowns[id] - dt);
     if (this.iframes > 0) this.iframes -= dt;
@@ -323,7 +335,7 @@ export class Combatant {
           if (p >= m.endAt) {
             const { id, index, total, aim } = this.attackSequence;
             if (index + 1 < total) this._startAttack(id, aim, index + 1);
-            else this._toFree(0.18);
+            else { this._toFree(0.18); grantUltimateReward(this,this.moves[id]); }
           }
         } else if (this.buffer && p >= m.cancelAt && !(this.cooldowns[this.buffer] > 0)) {
           const b = this.buffer, aim = this.bufferAim; this.buffer = null;
@@ -337,7 +349,7 @@ export class Combatant {
         this.mover.facingTarget = e ? e.angle : null;
         const B = this.defense.block;
         if (!this.wantBlock) {
-          if (ch.hasClip('BlockEnd')) { ch.playAction('BlockEnd', { fade: 0.08, timeScale: 2.5 }); this._setState('blockEnd'); }
+          if (ch.hasClip('BlockEnd')) { ch.playAction('BlockEnd', { fade: 0.08, timeScale: 2.5 * PACE.reaction }); this._setState('blockEnd'); }
           else this._toFree(0.15);
         } else if ((this.guardPhase === 'start' || this.guardPhase === 'react') && p >= 0.94) {
           this.guardPhase = 'hold'; ch.playAction(B.clip, { fade: 0.1, timeScale: B.speed, loop: !!B.loop });
@@ -381,20 +393,22 @@ export class Combatant {
     }
 
     this.height = this.crouching ? 1.12 : this.profile?.height || 1.7;
-    this.character.grounded = this.position.y <= 0.001 && ['free', 'block', 'blockEnd'].includes(this.state);
+    const groundBefore=this.world.arena.groundHeight?.(this.position.x,this.position.z)??0;
+    this.character.grounded = this.position.y <= groundBefore+0.001 && ['free', 'block', 'blockEnd'].includes(this.state);
     this.mover.enabled = this.state === 'free' || this.state === 'jump' || (this.state === 'land' && this.jumpMoving);
     this.mover.update(dt);
-    if (this.jumpVelocity !== 0 || this.position.y > 0) {
-      this.jumpVelocity -= 14 * dt; this.position.y += this.jumpVelocity * dt;
-      if (this.position.y <= 0) {
-        this.position.y = 0; this.jumpVelocity = 0;
+    const ground=this.world.arena.groundHeight?.(this.position.x,this.position.z)??0;
+    if (this.jumpVelocity !== 0 || this.state === 'jump') {
+      this.jumpVelocity -= 14 * PACE.gravity * dt; this.position.y += this.jumpVelocity * dt;
+      if (this.position.y <= ground) {
+        this.position.y = ground; this.jumpVelocity = 0;
         if (this.state === 'jump') {
           const clip = this.jumpMoving && ch.hasClip('LandRun') ? 'LandRun' : 'Land';
           if (ch.hasClip(clip)) { ch.playAction(clip, { fade: 0.07, timeScale: 2.8 }); this._setState('land'); }
           else this._toFree(0.12);
         }
       }
-    }
+    } else this.position.y=ground;
   }
 
   // Runs after the mixer has posed the skeleton, so strike points are current.
@@ -410,6 +424,13 @@ export class Combatant {
       this.world.onCast?.(this, m);
     }
 
+    // A single arc for each actual melee active window, never at button press.
+    if(this.strikers.length)for(const [index,[start]] of m.windows.entries()){
+      const key='swing:'+index;
+      if(previousProgress<=start&&p>=start&&!this.attackEvents.has(key)){
+        this.attackEvents.add(key);this.world.onSwing?.(this,m);
+      }
+    }
     for (const s of this.strikers) {
       s.obj.getWorldPosition(_p);
       s.speed = _p.distanceTo(s.prev) / dt;
@@ -427,6 +448,7 @@ export class Combatant {
         const activeFrom = from.clone().lerp(to, (a - previousProgress) / span);
         const activeTo = from.clone().lerp(to, (b - previousProgress) / span);
         this.world.onTrail?.(activeFrom, activeTo, m.color ?? this.profile?.color);
+        this.world.onEnvironmentSweep?.(this,m,activeFrom,activeTo,m.strikeRadius,this.hitTargets[index]);
         for (const t of this.world.combatants) {
           if (t === this || t.team === this.team || !t.alive || this.hitTargets[index].has(t)) continue;
           const dx = t.position.x - root.x, dz = t.position.z - root.z;
@@ -456,6 +478,8 @@ export class Combatant {
       if (p >= start && p < end) return 'miss';
     }
 
+    damage *= (attacker?.statuses?.multiplier('damage') ?? 1) * this.statuses.multiplier('defense');
+    knock *= this.statuses.multiplier('knockTaken');
     const toAttacker = Math.atan2(-dir.x, -dir.z);
     const B = this.defense.block;
     const facingAttacker = Math.abs(shortestAngle(this.mover.facing, toAttacker)) < B.arc * Math.PI / 180;
@@ -466,7 +490,7 @@ export class Combatant {
       this.lastDamage = before - this.hp;
       this.mover.addImpulse(dir.clone().multiplyScalar(knock * B.pushback), 6);
       this._flash(0.08, 0.3, 0.55, 1.0);
-      if (this.character.hasClip('BlockHit')) { this.guardPhase = 'react'; this.character.playAction('BlockHit', { fade: 0.05, timeScale: 2 }); }
+      if (this.character.hasClip('BlockHit')) { this.guardPhase = 'react'; this.character.playAction('BlockHit', { fade: 0.05, timeScale: 2 * PACE.reaction }); }
       return 'blocked';
     }
 
@@ -486,7 +510,7 @@ export class Combatant {
 
     if (this.hp <= 0) {
       this.hp = 0;
-      this.character.playAction(this.reactionClip('Defeat', toAttacker), { fade: 0.1, timeScale: 1.2 });
+      this.character.playAction(this.reactionClip('Defeat', toAttacker), { fade: 0.1, timeScale: 1.2 * PACE.reaction });
       this._setState('dead');
       this.deadT = 0;
       this.world.onKill?.(attacker, this);
@@ -501,6 +525,21 @@ export class Combatant {
     this.character.playAction(this.reactionClip(this.defense.hit.clip, toAttacker), { fade: 0.06, timeScale: this.defense.hit.speed });
     this._setState('hit');
     return 'hit';
+  }
+
+  // Damage over time bypasses guard/iframes once earned, without hitstop,
+  // repeated stagger, knockback, lifesteal, or re-applying on-hit statuses.
+  takeStatusDamage(amount,source,type) {
+    if(!this.alive || this.hp<=0 || this.world.combatEnabled===false)return 0;
+    const damage=Math.min(this.hp,amount);this.hp-=damage;this.lastDamage=damage;
+    this.world.onStatusTick?.(source,this,damage,type);
+    if(this.hp<=0){
+      this.move=null;this.strikers=[];this.buffer=null;this.dodgeBuffer=null;
+      this.comboStage=0;this.comboRemaining=0;this.mover.facingTarget=null;
+      this.character.playAction('Defeat',{fade:.1,timeScale:1.2 * PACE.reaction});this._setState('dead');this.deadT=0;
+      this.world.onKill?.(source,this);
+    }
+    return damage;
   }
 
   // ---- Visual feedback ------------------------------------------------

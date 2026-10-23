@@ -91,8 +91,9 @@ export class Character {
     this.groundSpeed = crouching ? 0 : speed;
     const { a, w, walkSpeed, runSpeed, lockSpeed, sprintSpeed, crouchSpeed } = L;
 
+    this.transitionBlockT=Math.max(0,(this.transitionBlockT||0)-dt);
     const transient = name => {
-      if (!this.hasClip(name)) return;
+      if (this.transitionBlockT>0 || !this.hasClip(name)) return;
       this.playAction(name, { fade: 0.1, timeScale: name === 'IdleFidget' ? 1 : 2.5 }); this.autoAction = true;
     };
     if (this.autoAction && speed > 0.1 && this.actionName === 'IdleFidget') this.endAction(0.12);

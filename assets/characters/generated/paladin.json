@@ -1,0 +1,210 @@
+{
+  "id": "paladin",
+  "originalBones": 67,
+  "uniqueBones": 67,
+  "maximumBindDifference": 0,
+  "height": 1.88,
+  "scale": 1.0895765893142664,
+  "bytes": 5561836,
+  "clips": [
+    {
+      "name": "Hit",
+      "duration": 0.949999988079071,
+      "tracks": 53
+    },
+    {
+      "name": "Down",
+      "duration": 2.133333444595337,
+      "tracks": 47
+    },
+    {
+      "name": "GetUp",
+      "duration": 2.700000047683716,
+      "tracks": 47
+    },
+    {
+      "name": "Block",
+      "duration": 1.3833333253860474,
+      "tracks": 53
+    },
+    {
+      "name": "Roll",
+      "duration": 2.366666555404663,
+      "tracks": 47
+    },
+    {
+      "name": "Defeat",
+      "duration": 2.2833333015441895,
+      "tracks": 53
+    },
+    {
+      "name": "Victory",
+      "duration": 2.366666555404663,
+      "tracks": 53
+    },
+    {
+      "name": "Jump",
+      "duration": 0.8333333134651184,
+      "tracks": 53
+    },
+    {
+      "name": "BackWalk",
+      "duration": 1.25,
+      "tracks": 53
+    },
+    {
+      "name": "BackRun",
+      "duration": 0.5333333611488342,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeLeftWalk",
+      "duration": 1.1333333253860474,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeRightWalk",
+      "duration": 1.2999999523162842,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeLeftRun",
+      "duration": 0.699999988079071,
+      "tracks": 53
+    },
+    {
+      "name": "StrafeRightRun",
+      "duration": 0.6499999761581421,
+      "tracks": 53
+    },
+    {
+      "name": "Idle",
+      "duration": 3.6666667461395264,
+      "tracks": 53
+    },
+    {
+      "name": "AimIdle",
+      "duration": 7.516666889190674,
+      "tracks": 53
+    },
+    {
+      "name": "IdleFidget",
+      "duration": 2.5333333015441895,
+      "tracks": 53
+    },
+    {
+      "name": "Walk",
+      "duration": 1.0833333730697632,
+      "tracks": 53
+    },
+    {
+      "name": "Run",
+      "duration": 0.699999988079071,
+      "tracks": 53
+    },
+    {
+      "name": "TurnLeft",
+      "duration": 0.9166666865348816,
+      "tracks": 53
+    },
+    {
+      "name": "TurnRight",
+      "duration": 0.9166666865348816,
+      "tracks": 53
+    },
+    {
+      "name": "Light",
+      "duration": 1.5,
+      "tracks": 53
+    },
+    {
+      "name": "Heavy",
+      "duration": 2.316666603088379,
+      "tracks": 53
+    },
+    {
+      "name": "Kick",
+      "duration": 1.1833332777023315,
+      "tracks": 53
+    },
+    {
+      "name": "Rush",
+      "duration": 1.6666666269302368,
+      "tracks": 53
+    },
+    {
+      "name": "Radiant",
+      "duration": 2.950000047683716,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateStart",
+      "duration": 2.366666555404663,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateStrike",
+      "duration": 1.3666666746139526,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateFinisher",
+      "duration": 1,
+      "tracks": 53
+    },
+    {
+      "name": "BlockStart",
+      "duration": 0.5666666626930237,
+      "tracks": 53
+    },
+    {
+      "name": "BlockHit",
+      "duration": 0.7666666507720947,
+      "tracks": 53
+    },
+    {
+      "name": "JumpRun",
+      "duration": 0.9666666388511658,
+      "tracks": 53
+    },
+    {
+      "name": "Sprint",
+      "duration": 0.5796874901279806,
+      "tracks": 53
+    }
+  ],
+  "sources": {
+    "Hit": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield impact (2).fbx",
+    "Down": "./assets/animations/Boxing Animation/Knocked Down.fbx",
+    "GetUp": "./assets/animations/Boxing Animation/Getting Up.fbx",
+    "Block": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield block idle.fbx",
+    "Roll": "./assets/animations/Boxing Animation/Stand To Roll.fbx",
+    "Defeat": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield death.fbx",
+    "Victory": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield power up.fbx",
+    "Jump": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield jump.fbx",
+    "BackWalk": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield walk (2).fbx",
+    "BackRun": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield run (2).fbx",
+    "StrafeLeftWalk": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield strafe.fbx",
+    "StrafeRightWalk": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield strafe (2).fbx",
+    "StrafeLeftRun": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield strafe (4).fbx",
+    "StrafeRightRun": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield strafe (3).fbx",
+    "Idle": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield idle.fbx",
+    "AimIdle": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield idle (2).fbx",
+    "IdleFidget": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield idle (4).fbx",
+    "Walk": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield walk.fbx",
+    "Run": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield run.fbx",
+    "TurnLeft": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield turn.fbx",
+    "TurnRight": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield turn (2).fbx",
+    "Light": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield slash.fbx",
+    "Heavy": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield attack.fbx",
+    "Kick": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield kick.fbx",
+    "Rush": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield slash (3).fbx",
+    "Radiant": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield casting.fbx",
+    "UltimateStart": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield power up.fbx",
+    "UltimateStrike": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield slash (5).fbx",
+    "UltimateFinisher": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield attack (4).fbx",
+    "BlockStart": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield block.fbx",
+    "BlockHit": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield impact.fbx",
+    "JumpRun": "./assets/animations/Paladin Animation Pack/Pro Sword and Shield Pack/sword and shield jump (2).fbx"
+  }
+}

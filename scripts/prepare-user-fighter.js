@@ -74,11 +74,50 @@
   const cache = new Map();
   for (const [key, url] of Object.entries(config.clips)) {
     let fbx = cache.get(url);
-    if (!fbx) { fbx = await new FBXLoader().loadAsync(encodeURI(url)); cache.set(url, fbx); }
+    if (!fbx) {
+      if (/\.(glb|gltf)$/i.test(url)) {
+        // glTF source clips use metres; normalize to the centimetres used by
+        // the supplied Mixamo FBXs before fitClips applies the model's ratio.
+        const gltf = await new GLTFLoader().loadAsync(encodeURI(url));
+        fbx = gltf.scene; fbx.animations = gltf.animations;
+        fbx.traverse(node => node.position.multiplyScalar(100));
+        for (const clip of fbx.animations) for (const track of clip.tracks) {
+          if (track.name.endsWith('.position')) for (let i=0;i<track.values.length;i++) track.values[i] *= 100;
+        }
+        fbx.updateMatrixWorld(true);
+      } else fbx = await new FBXLoader().loadAsync(encodeURI(url));
+      cache.set(url, fbx);
+    }
     if (!fbx.animations[0]) throw new Error('No animation: ' + url);
     bank.set(key, fbx.animations[0]); bank.roots.set(key, fbx);
   }
   const clips = fitClips(bank, { animations: [] }, model, { trims: config.clipTrims || {} });
+  if(id==='soldier'){
+    const idle=clips.find(c=>c.name==='PistolIdle');
+    // The pack has no travelling crouch/landing takes. Reuse the existing leg
+    // motion while preserving the pistol's authored upper-body aiming posture.
+    const aiming=new Map(idle.tracks.filter(t=>/(?:Left|Right)(?:Shoulder|Arm|ForeArm|Hand)/.test(t.name)).map(t=>[t.name,t]));
+    for(const name of ['CrouchWalk','CrouchBack','CrouchLeft','CrouchRight','CrouchForwardLeft','CrouchForwardRight','CrouchBackLeft','CrouchBackRight','TurnLeft','TurnRight','MoveStart','MoveStop','JumpLoop','Land']){
+      const source=clips.find(c=>c.name===name);if(!source)continue;
+      const clip=source.clone();clip.name='Pistol'+name;
+      clip.tracks=clip.tracks.map(track=>{const pose=aiming.get(track.name);if(!pose)return track;const first=Array.from(pose.createInterpolant().evaluate(0));return new track.constructor(track.name,[0,clip.duration],first.concat(first));});clips.push(clip);
+    }
+    // Original recoil over the supplied two-handed pistol stance. No rifle pose
+    // is reused for sidearm shooting. Peaks follow each move's release events.
+    for(const[name,events]of Object.entries({PistolLight:[.25],PistolHeavy:[.18,.45,.72],PistolUltimateStart:[],PistolUltimateStrike:[.18,.4,.62],PistolUltimateFinisher:[.25]})){
+      const duration=.75,times=Array.from({length:31},(_,i)=>i/30*duration);
+      const tracks=idle.tracks.map(track=>{
+        const size=track.getValueSize(),start=track.createInterpolant().evaluate(0).slice(),values=[];
+        for(const time of times){
+          const p=time/duration,recoil=Math.max(0,...events.map(at=>Math.max(0,1-Math.abs(p-at-.04)/.12)));
+          if(track.name.endsWith('.quaternion')&&/(Right|Left)(ForeArm|Hand)\./.test(track.name)){
+            const q=new T.Quaternion().fromArray(start).multiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(1,0,0),-.09*recoil));values.push(q.x,q.y,q.z,q.w);
+          }else values.push(...start);
+        }
+        return new track.constructor(track.name,times,values);
+      });clips.push(new T.AnimationClip(name,duration,tracks));
+    }
+  }
   if (!clips.some(c => c.name === 'Sprint')) {
     const sprint = clips.find(c => c.name === 'Run').clone(); sprint.name = 'Sprint';
     const ratio = config.runSpeed / config.sprintSpeed; sprint.duration *= ratio;
@@ -90,7 +129,7 @@
       const stride = track.getValueSize(), original = track.values.slice();
       for (let i = 0; i < track.times.length; i++) track.values.set(original.subarray((track.times.length - 1 - i) * stride, (track.times.length - i) * stride), i * stride);
     }
-    if (['Jump', 'JumpRun', 'JumpLoop'].includes(clip.name)) for (const track of clip.tracks) if (/Hips\.position$/.test(track.name)) {
+    if (['Jump', 'JumpRun', 'JumpLoop','PistolJump','PistolJumpRun'].includes(clip.name)) for (const track of clip.tracks) if (/Hips\.position$/.test(track.name)) {
       for (let i = 3; i < track.values.length; i += 3) {
         track.values[i] = track.values[0]; track.values[i + 1] = track.values[1]; track.values[i + 2] = track.values[2];
       }

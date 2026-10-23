@@ -1,4 +1,9 @@
 import { DEFENSE } from './moves.js';
+import { applyCombatKits } from './CombatKits.js';
+import { configureStatuses } from './StatusEffects.js';
+import { paceMoves, paceDefense } from '../core/Pacing.js';
+import { configureEnemyMoves } from './EnemyMoves.js';
+import { configureEnvironmentMoves } from './EnvironmentMoves.js';
 import { IMPORTED_MOVES } from './ImportedMoves.js';
 
 const feet = ['mixamorigRightFoot', 'mixamorigLeftFoot'];
@@ -42,45 +47,21 @@ cap.skill1 = move('Rush kick', 'Kick', { speed: 2.2, windows: [[0.32, 0.65]], ca
 cap.skill2 = move('Roda sweep', 'Heavy', { kind: 'area', strikers: [], events: [0.77], windows: [[0.65, 0.88]],
   speed: 2.15, cancelAt: 0.92, dodgeCancelAt: 0.9, endAt: 0.97, damage: 23, knock: 5, power: 'heavy',
   range: 2.4, lunge: 0, cooldown: 8, color: 0xffa84e, skill: true });
-cap.ultimateStart = move('Ultimate Wind-up', 'UltimateStart', {
-  sequenceOnly: true, // Internal stage; activated by cap.ultimate.
-  skill: true,
-  windows: [],
-  strikers: [],
-  damage: 0,
-  knock: 0,
-  lunge: 0,
-  cooldown: 0,
-  speed: 1.0,
-  endAt: 0.97,
-  cancelAt: 0.97,
-  dodgeCancelAt: 0.97,
+// All three stages now strike; the long non-damaging cartwheel is removed.
+cap.ultimateStart = move('Opening armada', 'UltimateStart', {
+  sequenceOnly: true, skill: true, speed: 2.4, fade: 0.045,
+  windows: [[0.32, 0.68]], damage: 12, knock: 0.7, power: 'light',
+  lunge: 3, cooldown: 0, endAt: 0.88, cancelAt: 0.88, dodgeCancelAt: 0.88, color: 0xffbd58,
 });
-
-cap.ultimateStrike = move('Ultimate Strike', 'UltimateStrike', {
-  sequenceOnly: true, // Internal stage; activated by cap.ultimate.
-  windows: [[0.32, 0.55]],
-  damage: 12,
-  knock: 2.5,
-  power: 'light',
-  lunge: 2.5,
-  cooldown: 0,
-  endAt: 0.97,
-  cancelAt: 0.97,
-  dodgeCancelAt: 0.97,
+cap.ultimateStrike = move('Martelo follow-up', 'UltimateStrike', {
+  sequenceOnly: true, skill: true, speed: 2.8, fade: 0.045,
+  windows: [[0.38, 0.72]], damage: 12, knock: 0.8, power: 'light',
+  lunge: 3, cooldown: 0, endAt: 0.88, cancelAt: 0.88, dodgeCancelAt: 0.88, color: 0xffbd58,
 });
-
-cap.ultimateFinisher = move('Ultimate Finisher', 'UltimateFinisher', {
-  sequenceOnly: true, // Internal stage; activated by cap.ultimate.
-  windows: [[0.52, 0.82]],
-  damage: 22,
-  knock: 7,
-  power: 'heavy',
-  lunge: 4,
-  cooldown: 0,
-  endAt: 0.98,
-  cancelAt: 0.98,
-  dodgeCancelAt: 0.98,
+cap.ultimateFinisher = move('Compasso finisher', 'UltimateFinisher', {
+  sequenceOnly: true, skill: true, speed: 2.8, fade: 0.045,
+  windows: [[0.3, 0.76]], damage: 22, knock: 7, power: 'heavy',
+  lunge: 3, cooldown: 0, endAt: 0.92, cancelAt: 0.92, dodgeCancelAt: 0.92, color: 0xffa84e,
 });
 // CAPOEIRA ULTIMATE: edit the key and ordered stage list here.
 // One press automatically plays every stage. Repeat or append stage IDs for more.
@@ -89,9 +70,9 @@ cap.ultimate = {
   label: 'Ginga ultimate',
   input: { label: '4', codes: ['Digit4'] }, // Example: label: 'U', codes: ['KeyU']
   sequence: ['ultimateStart', 'ultimateStrike', 'ultimateFinisher'],
-  cooldown: 20, // Seconds; charged once when the complete sequence starts.
+  cooldown: 2, // Seconds; charged once when the complete sequence starts.
   skill: true,
-  playerOnly: true, // Placeholder is manual; existing bot behaviour stays the same.
+  playerOnly: true, // Manual ultimate; bots keep their existing move choices.
 };
 
 mage.skill1 = move('Astral seal', 'Heavy', { kind: 'area', targeted: true, castRange: 9, strikers: [], events: [0.52],
@@ -107,6 +88,60 @@ rifle.skill2 = move('Tactical roll', 'Roll', { kind: 'mobility', strikers: [], e
   speed: 2.4, cancelAt: 0.72, dodgeCancelAt: 0.65, endAt: 0.84, damage: 0, range: 0, lunge: 14, lungeDecay: 5,
   invulnerable: [0.08, 0.35], cooldown: 5, color: 0x8be0c5, skill: true });
 
+// ULTIMATE SKILLS: change input for the key, sequence for order/repeats, and
+// each stage's clip for its animation alias. All release times are normalized.
+mage.ultimateStart = move('Astral charge', 'UltimateStart', {
+  sequenceOnly: true, skill: true, speed: 2.5, fade: 0.045,
+  windows: [], strikers: [], damage: 0, knock: 0, lunge: 0,
+  endAt: 0.4, cancelAt: 0.4, dodgeCancelAt: 0.4, color: 0xbd9bff,
+});
+mage.ultimateStrike = move('Astral lance', 'UltimateStrike', {
+  sequenceOnly: true, skill: true, kind: 'projectile', strikers: [], speed: 4,
+  events: [0.46], windows: [[0.38, 0.58]], damage: 22, knock: 0.8, power: 'light',
+  range: 15, projectileSpeed: 18, projectileRadius: 0.28, lunge: 0,
+  endAt: 0.86, cancelAt: 0.86, dodgeCancelAt: 0.86, color: 0xbd9bff,
+});
+mage.ultimateFinisher = move('Astral rupture', 'UltimateFinisher', {
+  sequenceOnly: true, skill: true, kind: 'area', strikers: [], speed: 3.8,
+  events: [0.52], windows: [[0.46, 0.64]], damage: 24, knock: 6, power: 'heavy',
+  range: 3.6, lunge: 0, endAt: 0.88, cancelAt: 0.88, dodgeCancelAt: 0.88, color: 0xd5b6ff,
+});
+mage.ultimate = {
+  label: 'Astral rupture', input: { label: '4', codes: ['Digit4'] },
+  sequence: ['ultimateStart', 'ultimateStrike', 'ultimateFinisher'],
+  cooldown: 2, skill: true, playerOnly: true,
+};
+
+rifle.ultimateStart = move('Acquire target', 'UltimateStart', {
+  sequenceOnly: true, skill: true, speed: 1, fade: 0.045,
+  windows: [], strikers: [], damage: 0, knock: 0, lunge: 0,
+  endAt: 0.1, cancelAt: 0.1, dodgeCancelAt: 0.1, color: 0xffd98a,
+});
+rifle.ultimateStrike = move('Focused burst', 'UltimateStrike', {
+  sequenceOnly: true, skill: true, kind: 'projectile', strikers: [], speed: 1.5,
+  events: [0.18, 0.4, 0.62], windows: [[0.12, 0.7]], damage: 7, knock: 0.25,
+  range: 17, projectileSpeed: 28, projectileRadius: 0.075, lunge: 0,
+  endAt: 0.78, cancelAt: 0.78, dodgeCancelAt: 0.78, color: 0xffd98a,
+});
+rifle.ultimateFinisher = move('Armor breaker', 'UltimateFinisher', {
+  sequenceOnly: true, skill: true, kind: 'projectile', strikers: [], speed: 1.8,
+  events: [0.25], windows: [[0.18, 0.36]], damage: 18, knock: 5, power: 'heavy',
+  range: 18, projectileSpeed: 30, projectileRadius: 0.11, lunge: 0,
+  endAt: 0.8, cancelAt: 0.8, dodgeCancelAt: 0.8, color: 0xffa568,
+});
+rifle.ultimate = {
+  label: 'Focused barrage', input: { label: '4', codes: ['Digit4'] },
+  sequence: ['ultimateStart', 'ultimateStrike', 'ultimateFinisher'],
+  cooldown: 2, skill: true, playerOnly: true,
+};
+
+// Combat skill slots and click chains; uses existing embedded attack clips.
+applyCombatKits(FIGHTER_MOVES);
+configureEnemyMoves(FIGHTER_MOVES);
+configureStatuses(FIGHTER_MOVES);
+paceMoves(FIGHTER_MOVES);
+configureEnvironmentMoves(FIGHTER_MOVES);
+
 export function fighterDefense(id) {
   const defense = Object.fromEntries(Object.entries(DEFENSE).map(([key, value]) => [key, { ...value }]));
   defense.dodge = { ...defense.dodge, speed: 2, impulse: 10, decay: 4.5, iframeUntil: 0.48, endAt: 0.82, cooldown: 0.55 };
@@ -114,6 +149,7 @@ export function fighterDefense(id) {
   defense.down = { ...defense.down, speed: 1.7, hold: 0.25 };
   defense.getUp = { ...defense.getUp, speed: 1.8, endAt: 0.9 };
   if (id === 'capoeira') defense.dodge = { ...defense.dodge, speed: 3, impulse: 12, decay: 4.5, endAt: 0.88, cooldown: 0.45 };
+  if (id === 'paladin') defense.block = { ...defense.block, speed: 1, loop: true, damageTaken: 0.08, arc: 110 };
   if (id === 'magic') defense.block = { ...defense.block, speed: 1, loop: true };
-  return defense;
+  return paceDefense(defense);
 }

@@ -10,7 +10,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px soli
 .lobby { background: linear-gradient(90deg, #0a1b24f5 0%, #0a1b24e8 29%, #0a1b2466 57%, #0a1b2400 80%); }
 .menu-card { width: 410px; max-width: 100%; }
 .fighter-select { margin: 16px 0; }
-#fighterChoices { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-top: 10px; }
+#fighterChoices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-top: 10px; }
 .fighter-choice { background: #10252ecc; border: 1px solid #abc4ca44; border-top: 3px solid var(--fighter-color); color: var(--paper); padding: 10px 5px; text-align: left; }
 .fighter-choice[aria-pressed="true"] { background: #34505bd9; border-color: var(--fighter-color); }
 .fighter-choice span { display: block; font-size: 13px; font-weight: 800; }
@@ -26,7 +26,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px soli
 .menu-intro { color: #c7d4d6; font-size: 15px; margin: 22px 0 30px; }
 .menu-intro { margin: 14px 0 18px; }
 .lobby { padding-block: 24px; }
-.lobby .menu-card h1 { font-size: clamp(45px, 4.5vw, 62px); }
+.lobby .menu-card h1 { font-size: clamp(43px, 4.2vw, 56px); margin-block: 10px; }
+.lobby #fighterChoices .fighter-choice { padding-block: 8px; }
 .lobby .arena-card { padding-block: 10px; }
 .lobby .match-rules { margin-block: 10px 14px; }
 .lobby .menu-controls { margin-top: 10px; }

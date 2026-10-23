@@ -1,6 +1,8 @@
 import { attackBindings } from '../core/controls.js';
+import { statusMoveDescription } from '../combat/StatusEffects.js';
 // Presentation only: read combat state; never change input, cooldowns or damage.
 const paths={
+  shield:'M4 3h16v8q0 7-8 11Q4 18 4 11Z M12 6v11 M8 10h8',
   fist:'M7 13V6a2 2 0 0 1 4 0v5-7a2 2 0 0 1 4 0v7-5a2 2 0 0 1 4 0v9l-3 6H9l-5-7a2 2 0 0 1 3-2Z',
   boot:'m8 3 7 1-2 10 6 3v4H5v-6l3-12Z M5 17h14',
   magic:'m12 2 2.8 6.2L22 11l-7.2 2.8L12 21l-2.8-7.2L2 11l7.2-2.8Z M19 3v4 M17 5h4',
@@ -12,7 +14,7 @@ const paths={
   area:'M12 4v4 M12 16v4 M4 12h4 M16 12h4 M6 6l3 3 M15 15l3 3 M18 6l-3 3 M9 15l-3 3',
   dash:'M3 7h8 M1 12h7 M3 17h8 M11 4l9 8-9 8 M19 12H9',
 };
-const roleIcon={capoeira:'boot',magic:'magic',soldier:'rifle',archer:'bow',greatsword:'sword',axe:'axe',mutant:'claw'};
+const roleIcon={capoeira:'boot',magic:'magic',soldier:'rifle',archer:'bow',greatsword:'sword',axe:'axe',mutant:'claw',paladin:'shield',zombie:'claw',chupacabra:'claw'};
 const icon=name=>`<svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name]||paths.fist}"/></svg>`;
 
 export class CombatHud {
@@ -41,9 +43,10 @@ export class CombatHud {
       document.getElementById('hp'+suffix+'Delay').style.width=ratio*100+'%';
       document.getElementById('hp'+suffix+'Text').textContent=`${Math.ceil(c.hp)} / ${c.maxHp}`;
       document.getElementById(suffix==='P'?'playerName':'opponentName').textContent=c.profile.name.toUpperCase();
-      document.getElementById(suffix==='P'?'playerClass':'opponentClass').textContent=c.profile.role;
+      document.getElementById(suffix==='P'?'playerClass':'opponentClass').textContent=c.profile.role+(c.profile.id==='soldier'?' / '+c.equipment.id.toUpperCase():'');
       const badge=document.getElementById('classBadge'+suffix);
       if(badge.dataset.fighter!==c.profile.id){badge.innerHTML=icon(roleIcon[c.profile.id]);badge.dataset.fighter=c.profile.id;}
+      if(suffix==='E')panel.querySelector('.fighter-copy small').textContent=c.profile.boss?'BOSS':c.profile.enemyOnly?'ENEMY':'RIVAL';
       panel.classList.toggle('low-health',ratio>0&&ratio<=.3);
       const bar=panel.querySelector('[role="progressbar"]');bar.setAttribute('aria-valuenow',Math.ceil(c.hp));bar.setAttribute('aria-valuemax',c.maxHp);
     }
@@ -53,14 +56,14 @@ export class CombatHud {
       for(const[id,key]of bindings){const slot=this.slots.get(id),move=player.moves[id];
         slot.key=key;slot.el.querySelector('kbd').textContent=key;
         slot.el.classList.toggle('ultimate-slot',!!move.sequence);slot.label.textContent=move.label;
-        const glyph=move.kind==='area'?'area':move.kind==='mobility'?'dash':id==='kick'?'boot':roleIcon[player.profile.id];
+        const glyph=move.icon||(move.kind==='area'?'area':move.kind==='mobility'?'dash':id==='kick'?'boot':roleIcon[player.profile.id]);
         slot.graphic.innerHTML=icon(glyph);
       }
     }
     for(const[id]of bindings){const slot=this.slots.get(id),remaining=player.cooldowns[id]||0,move=player.moves[id],cooling=remaining>.05;
       const unavailable=!!move.sequence&&!player.canPlayAttack(id);
       slot.el.classList.toggle('unavailable',unavailable);
-      slot.el.title=unavailable?'Prepare this fighter’s animation assets to enable the ultimate.':'';
+      slot.el.title=unavailable?'Prepare this fighter’s animation assets to enable the ultimate.':statusMoveDescription(move);
       slot.el.classList.toggle('cooling',cooling);slot.time.textContent=unavailable?'—':cooling?remaining.toFixed(1):'';
       slot.shade.style.height=Math.min(100,100*remaining/(move.cooldown||1))+'%';
       slot.el.setAttribute('aria-label',`${slot.key}: ${move.label}, ${unavailable?'animation preparation required':cooling?remaining.toFixed(1)+' seconds':'ready'}`);
@@ -73,7 +76,7 @@ export class CombatHud {
     document.getElementById('lock').classList.toggle('engaged',!!lock.target);
     document.getElementById('dodge').textContent=player.state==='dodge'?'EVADING':player.dodgeCd>.05?player.dodgeCd.toFixed(1)+'s':'EVADE READY';
     const chain=document.getElementById('chain');chain.hidden=!(match.canFight&&player.comboRemaining>0);
-    chain.textContent=chain.hidden?'':`${player.comboStage} / 3 CHAIN`;
+    chain.textContent=chain.hidden?'':`${player.comboStage} / ${player.moves.punch.chain?.length||1} CHAIN`;
     document.getElementById('timer').classList.toggle('urgent',match.state==='active'&&match.remaining<=15);
     document.getElementById('playerSound').textContent=world.sound.muted?'OFF':'ON';
   }

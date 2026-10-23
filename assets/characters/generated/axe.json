@@ -5,7 +5,7 @@
   "maximumBindDifference": 0,
   "height": 1.85,
   "scale": 0.00847690986226591,
-  "bytes": 17030560,
+  "bytes": 17357456,
   "clips": [
     {
       "name": "Hit",
@@ -113,6 +113,21 @@
       "tracks": 56
     },
     {
+      "name": "UltimateStart",
+      "duration": 4.666666507720947,
+      "tracks": 56
+    },
+    {
+      "name": "UltimateStrike",
+      "duration": 3.1666667461395264,
+      "tracks": 56
+    },
+    {
+      "name": "UltimateFinisher",
+      "duration": 2.2666666507720947,
+      "tracks": 56
+    },
+    {
       "name": "Kick",
       "duration": 1.850000023841858,
       "tracks": 56
@@ -185,6 +200,9 @@
     "Run": "./assets/animations/Melee Axe Animation Pack/Pro Melee Axe Pack/standing run forward.fbx",
     "Light": "./assets/animations/Melee Axe Animation Pack/Pro Melee Axe Pack/standing melee attack horizontal.fbx",
     "Heavy": "./assets/animations/Melee Axe Animation Pack/Pro Melee Axe Pack/standing melee attack downward.fbx",
+    "UltimateStart": "./assets/animations/Melee Axe Animation Pack/Pro Melee Axe Pack/standing melee combo attack ver. 1.fbx",
+    "UltimateStrike": "./assets/animations/Melee Axe Animation Pack/Pro Melee Axe Pack/standing melee attack 360 high.fbx",
+    "UltimateFinisher": "./assets/animations/Melee Axe Animation Pack/Pro Melee Axe Pack/standing melee attack downward.fbx",
     "Kick": "./assets/animations/Melee Axe Animation Pack/Pro Melee Axe Pack/standing melee attack kick ver. 1.fbx",
     "Spin": "./assets/animations/Melee Axe Animation Pack/Pro Melee Axe Pack/standing melee attack 360 high.fbx",
     "Rush": "./assets/animations/Melee Axe Animation Pack/Pro Melee Axe Pack/standing melee run jump attack.fbx",

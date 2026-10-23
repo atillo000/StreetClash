@@ -5,7 +5,7 @@
   "maximumBindDifference": 0,
   "height": 1.8,
   "scale": 0.01012826710823944,
-  "bytes": 9107160,
+  "bytes": 9505976,
   "clips": [
     {
       "name": "Hit",
@@ -236,6 +236,21 @@
       "name": "Heavy",
       "duration": 3.25,
       "tracks": 53
+    },
+    {
+      "name": "UltimateStart",
+      "duration": 2.1666667461395264,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateStrike",
+      "duration": 4.300000190734863,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateFinisher",
+      "duration": 3.25,
+      "tracks": 53
     }
   ],
   "sources": {
@@ -284,6 +299,9 @@
     "DefeatRight": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing React Death Left.fbx",
     "Light": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing 1H Magic Attack 01.fbx",
     "Kick": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing 2H Magic Attack 02.fbx",
-    "Heavy": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing 2H Magic Area Attack 02.fbx"
+    "Heavy": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing 2H Magic Area Attack 02.fbx",
+    "UltimateStart": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing 2H Cast Spell 01.fbx",
+    "UltimateStrike": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing 2H Magic Attack 03.fbx",
+    "UltimateFinisher": "./assets/animations/Magic Character Animation Pack/Pro Magic Locomotion Pack/Standing 2H Magic Area Attack 02.fbx"
   }
 }

@@ -79,7 +79,7 @@ export class ArenaCollision {
   }
 
   constrain(start, desired, radius) {
-    const height = Math.max(0, desired.y);
+    const height = desired.y;
     const pos = start.clone(), delta = new THREE.Vector3().subVectors(desired, start);
     // Resolve a spawn/reset inside a box before sweeping.
     for (const box of this.obstacles) {
@@ -112,6 +112,8 @@ export class ArenaCollision {
 
   resolve(fighters) {
     for (const c of fighters) this.constrain(c.previousPosition, c.position, c.radius);
+    // Walking follows the rendered heightfield; jumping retains vertical motion.
+    const followGround=c=>{const floor=this.groundHeight?.(c.position.x,c.position.z)??0;if(!c.jumpVelocity||c.position.y<floor)c.position.y=floor;};
     // Prevent fast opposing rolls/knockbacks crossing between fixed steps.
     for (let i = 0; i < fighters.length; i++) for (let j = i + 1; j < fighters.length; j++) {
       const a = fighters[i], b = fighters[j], radius = a.radius + b.radius;
@@ -141,5 +143,6 @@ export class ArenaCollision {
       }
       for (const c of fighters) this.constrain(c.previousPosition, c.position, c.radius);
     }
+    for(const c of fighters)followGround(c);
   }
 }

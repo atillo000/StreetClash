@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-16",
+  "date": "2026-10-23",
   "source": "User-supplied local files; original download URLs and licenses were not supplied.",
   "licenseStatus": "Unconfirmed; no CC0/CC-BY claim is made for these files.",
   "derivatives": "Prepared character GLBs embed their dedicated supplied animation clips. The generated sword is a simplified copy of the supplied sword.",
@@ -25,24 +25,59 @@
       "sha256": "478b98559f4bc0b7425e5a62f59e8169c7446e4503d1e5fb65f74e07cbe2f051"
     },
     {
+      "file": "characters/Paladin Type Character.fbx",
+      "bytes": 10546816,
+      "sha256": "dd70002e45398670324fe191dc1ab8233e699265b0d1193e49e97e86b9c4b607"
+    },
+    {
+      "file": "characters/Paraiste Zombie Character.fbx",
+      "bytes": 16472176,
+      "sha256": "b25686a4e71d1011e12e39044b3a7420d1f0e7e5b4fbe76bae1ec11a884f72fd"
+    },
+    {
+      "file": "animations/Paladin Animation Pack/Pro Sword and Shield Pack.zip",
+      "bytes": 14176104,
+      "sha256": "90c8cde9f48e1ffffc02cecc803a465f50fdd9dafc5c07e7fdd61beba5215cb1"
+    },
+    {
+      "file": "animations/Scary Zombie Animation Pack/Scary Zombie Pack.zip",
+      "bytes": 18285792,
+      "sha256": "01254a0f1d834ed495ff7c37a54120019adc133189f50fac5aa2196c1aa79901"
+    },
+    {
+      "file": "animations/generated/zombie-attack.glb",
+      "bytes": 98024,
+      "sha256": "37bc5278059bb71a2ed24f60947b47ef6ec79e5b08bb0a88eb40a4313e16cb7c"
+    },
+    {
       "file": "characters/generated/archer.glb",
-      "bytes": 10713892,
-      "sha256": "1ebe3a4be2855d7537a4c58eb280874fba8b9f2f804e35012c57174a3341dea4"
+      "bytes": 10941048,
+      "sha256": "bc070b0d8a13949654db986c300e9054aa5e9554a925429c90abe1b279e49082"
     },
     {
       "file": "characters/generated/greatsword.glb",
-      "bytes": 6219136,
-      "sha256": "ef0d2d8643c7c9356e60b25f28a4533cb34e68cc9090b710aea23346c98e75a0"
+      "bytes": 6495684,
+      "sha256": "51c697ac6d13a18cd3c9dc0fff3d35f6ecf68985044f05d5dbf61e4e24bca98e"
     },
     {
       "file": "characters/generated/axe.glb",
-      "bytes": 17030560,
-      "sha256": "da77235226575b8a6aa986d20a082e72a1e25acd39d671c5dd4282977ffecdba"
+      "bytes": 17357456,
+      "sha256": "30b0d2160cdaf5e33b85d0ce3716b36613c6d5edfde39b4f821283e712df1b94"
     },
     {
       "file": "characters/generated/mutant.glb",
-      "bytes": 9153568,
-      "sha256": "3030af4fb3ef19e1050eabf94e23574c7121df341408ed29037f55a3ddcf9d91"
+      "bytes": 9564736,
+      "sha256": "a146292865b802df17aa9ef6bf9e61b392e5a7684bf8ba88cfb4a8d21097dca1"
+    },
+    {
+      "file": "characters/generated/paladin.glb",
+      "bytes": 5561836,
+      "sha256": "5b95a632581d800f9ca25f2965388196c8a34bf1ce71b53529db613812a0823d"
+    },
+    {
+      "file": "characters/generated/zombie.glb",
+      "bytes": 7629252,
+      "sha256": "2378f7b9f845f5d9dfb23ceb0d5e4c1809d3ded5ad973a7e145ec5f2fcfff028"
     },
     {
       "file": "Weapons/long-bow.glb",
@@ -73,6 +108,121 @@
       "file": "environment/wooden-crate.glb",
       "bytes": 909948,
       "sha256": "9d69da0a6d46cb27432022685f1c7186ee694fc8f8427ad16e01c756c97adfcc"
+    },
+    {
+      "file": "characters/EL Chupacabra Type Character.fbx",
+      "bytes": 42980208,
+      "sha256": "d854fa8f8f11f471cca0a326bd28c85e24a4ffe0b5ee2d06da118beacfd8f71f"
+    },
+    {
+      "file": "characters/generated/chupacabra.glb",
+      "bytes": 7264120,
+      "sha256": "d063eb8098f30ce3e32299694041870fa3d726f6e2b2245e407a830cdc732786"
+    },
+    {
+      "file": "characters/generated/soldier.glb",
+      "bytes": 15481600,
+      "sha256": "5afb03fcecd20fccc15ad0a21b9ca4480c6a95c47f9d0cd223ae8b5948b17dbc"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol idle.fbx",
+      "bytes": 479265,
+      "sha256": "c08e4b2c056f0fd25e6376e99924e3930599f434d8e4e24edb65b8c2a0c5580e"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol jump (2).fbx",
+      "bytes": 397473,
+      "sha256": "aad5118652c1f65b68a4a44191faa9b1b6ae5fdd13fc1228ce3d2ead195eb40f"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol jump.fbx",
+      "bytes": 594465,
+      "sha256": "3bd9d3273e5bbb23600286eecb078760e75dcdd319c547ea20079243224a3416"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol kneel to stand.fbx",
+      "bytes": 487761,
+      "sha256": "41a841823fa738d81c81f985cba65ea3d265959d48aff1729eef6173a372454f"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol kneeling idle.fbx",
+      "bytes": 740001,
+      "sha256": "37001cffef2d05f204b37a4c5bb531a444d62a05d66adbd96b7381aea3bc9824"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol run arc (2).fbx",
+      "bytes": 370113,
+      "sha256": "06a6d659539a780a852de47785d7b5cf35c97339bbfd22aa6f8a1e5a1206f45c"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol run arc.fbx",
+      "bytes": 364641,
+      "sha256": "d1af1059e890601cb478e8eb82b2c782b2458dc0237b1dd6dc6780224210c5c2"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol run backward arc (2).fbx",
+      "bytes": 348225,
+      "sha256": "380c2d1f7f046188901da39684a2a0e14f973cc7f59a64ce415aaa58dd4e1708"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol run backward arc.fbx",
+      "bytes": 348225,
+      "sha256": "36419ab29604d7c245b770185ec751259c0dfc71a24c2844c8a0762059934915"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol run backward.fbx",
+      "bytes": 353697,
+      "sha256": "d5cf0a505d0ffcfe68def9782280c75963d0c117eeaa887076d33b1a32b6f5e1"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol run.fbx",
+      "bytes": 348225,
+      "sha256": "ee9cd0fac25d5d2f2aea326dd2439f0181a06875bba33a2ce0e43dcf2a2e6179"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol stand to kneel.fbx",
+      "bytes": 430305,
+      "sha256": "8f8808bd3f2006aef2b89a70a23944cfbea4792b73cf02f3156d7dd7087343c6"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol strafe (2).fbx",
+      "bytes": 364641,
+      "sha256": "3b44d2ca6c3eafff21e9364755f12076023db51c585a2f2b9cceeb3389d9d433"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol strafe.fbx",
+      "bytes": 359169,
+      "sha256": "8f304de46f1872054255be5b82a8e055d597d7d14e52956dadd60b4a35abfce3"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol walk arc (2).fbx",
+      "bytes": 392001,
+      "sha256": "70d8a922a5dc5b5cae4c1a81fe998a9217fcd07bb7da990f680847de03db8b63"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol walk arc.fbx",
+      "bytes": 386529,
+      "sha256": "d31b43ae684403fe520553188708bc925b0db64132a60a96d222293978ff99db"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol walk backward arc (2).fbx",
+      "bytes": 361905,
+      "sha256": "e2d087c86b56861ef0a01b5c3d33a350139375a12bdfea7a5aabd3f15037bc74"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol walk backward arc.fbx",
+      "bytes": 364641,
+      "sha256": "e3fa541ff22664f833fa62fe68047bb6c42fbf1fbd10fc00a622ed1f657429c2"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol walk backward.fbx",
+      "bytes": 433041,
+      "sha256": "682d52b2faf5bce72c7bc5c64599a1d84e45eb33c09e2de39299f25c037209f1"
+    },
+    {
+      "file": "animations/Soldier Character Animation Pack/Pistol or Handgun Locomotion Pack/pistol walk.fbx",
+      "bytes": 394737,
+      "sha256": "6255d7ba9fb2ea00593f57098dda5f31cada32fe25cc4f7e0494d6d88fd385c7"
     }
   ]
 }

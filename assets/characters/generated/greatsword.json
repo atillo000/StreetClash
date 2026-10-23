@@ -5,7 +5,7 @@
   "maximumBindDifference": 0,
   "height": 1.85,
   "scale": 1.0555893756463368,
-  "bytes": 6219136,
+  "bytes": 6495684,
   "clips": [
     {
       "name": "Hit",
@@ -118,6 +118,21 @@
       "tracks": 53
     },
     {
+      "name": "UltimateStart",
+      "duration": 3.5166666507720947,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateStrike",
+      "duration": 1.8666666746139526,
+      "tracks": 53
+    },
+    {
+      "name": "UltimateFinisher",
+      "duration": 2.1666667461395264,
+      "tracks": 53
+    },
+    {
       "name": "Spin",
       "duration": 1.8666666746139526,
       "tracks": 53
@@ -171,6 +186,9 @@
     "Light": "./assets/animations/Great Sword Character Animation Pack/Great Sword Pack/great sword slash.fbx",
     "Heavy": "./assets/animations/Great Sword Character Animation Pack/Great Sword Pack/great sword attack.fbx",
     "Kick": "./assets/animations/Great Sword Character Animation Pack/Great Sword Pack/great sword kick.fbx",
+    "UltimateStart": "./assets/animations/Great Sword Character Animation Pack/Great Sword Pack/great sword slash (2).fbx",
+    "UltimateStrike": "./assets/animations/Great Sword Character Animation Pack/Great Sword Pack/great sword high spin attack.fbx",
+    "UltimateFinisher": "./assets/animations/Great Sword Character Animation Pack/Great Sword Pack/great sword jump attack.fbx",
     "Spin": "./assets/animations/Great Sword Character Animation Pack/Great Sword Pack/great sword high spin attack.fbx",
     "Slide": "./assets/animations/Great Sword Character Animation Pack/Great Sword Pack/great sword slide attack.fbx",
     "JumpRun": "./assets/animations/Great Sword Character Animation Pack/Great Sword Pack/great sword jump (2).fbx",

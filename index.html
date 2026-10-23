@@ -16,6 +16,8 @@
 </style>
 <link rel="stylesheet" href="./src/ui/game.css">
 <link rel="stylesheet" href="./src/ui/hud.css">
+<link rel="stylesheet" href="./src/ui/urban.css">
+<link rel="stylesheet" href="./src/ui/status-effects.css">
 <script type="importmap">
 { "imports": {
   "three": "./node_modules/three/build/three.module.js",
@@ -29,19 +31,21 @@
 <section id="lobby" class="screen lobby" aria-label="Match setup">
   <div class="menu-card">
     <div class="eyebrow">STREET CLASH / UNDERGROUND CIRCUIT</div>
-    <h1>AFTER<br><span>HOURS.</span></h1>
-    <p class="menu-intro">Clock out. Square up. Own the loading bay.</p>
+    <h1>STREET<br><span>CLASH</span></h1>
+    <p class="menu-intro">IRONWORKS / LOCAL ARENA CIRCUIT</p>
     <div class="fighter-select"><div class="eyebrow">CHOOSE YOUR FIGHTER</div><div id="fighterChoices"></div><p id="fighterDescription"></p><label for="opponentChoice">RIVAL</label><select id="opponentChoice"></select></div>
+    <label class="mode-label" for="arenaMode">ENCOUNTER</label><select id="arenaMode"><option value="duel">Duel / chosen rival</option><option value="gauntlet">Gauntlet / zombies and two bosses</option><option value="boss">Boss Hunt / giant Mutant</option><option value="predator">Boss Hunt / El Chupacabra</option></select>
     <div class="arena-card"><span class="arena-number">09</span><div><strong>IRONWORKS</strong><small>DOCK 09 · INDUSTRIAL WAREHOUSE</small></div><span class="arena-tag">1V1</span></div>
-    <p class="match-rules">One rival. Two minutes. Win by knockout or finish with more health.</p>
+    <p class="match-rules" id="modeRules">One rival. Two minutes. Win by knockout or finish with more health.</p>
     <button id="startMatch" class="primary" type="button" disabled>Loading warehouse…</button>
     <button id="practice" class="secondary" type="button" disabled>Practice arena</button>
-    <p class="menu-controls"><kbd>WASD</kbd> move <kbd>LMB</kbd> basic <kbd>RMB</kbd> heavy <kbd>1 / 2 / 3</kbd> skills <kbd>Tab</kbd> lock on<br><kbd>F</kbd> guard <kbd>Space</kbd> evade <kbd>X</kbd> jump <kbd>C</kbd> crouch <kbd>Z</kbd> sprint<br>Click to capture mouse and aim. Capoeira: tap J to chain three strikes.</p>
-    <details class="credits"><summary>Asset credits</summary>Industrial props, Soldier blaster and particle sprites: Kenney Factory Kit, Blaster Kit and Particle Pack (CC0). Concrete: eye-candy.xyz / Poly Haven (CC0). Fighters: existing Three.js / Mixamo stand-ins. <a href="./assets/ASSET-LICENSES.md" target="_blank" rel="noopener">License record</a></details>
+    <p class="menu-controls"><kbd>WASD</kbd> move <kbd>LMB</kbd> basic <kbd>RMB</kbd> heavy <kbd>1 / 2 / 3</kbd> skills <kbd>Tab</kbd> lock on<br><kbd>F</kbd> guard <kbd>E</kbd> evade <kbd>Space</kbd> jump <kbd>C</kbd> crouch <kbd>Z</kbd> sprint<br><kbd>Q</kbd> Soldier rifle / pistol. Click to capture mouse and aim. Tap LMB three times to chain attacks.</p>
+    <details class="credits"><summary>Asset credits</summary>Industrial props and particle sprites: Kenney Factory Kit and Particle Pack (CC0). Textured Soldier rifle and service pistol: Poly Haven (CC0). Concrete: eye-candy.xyz / Poly Haven (CC0). Fighters: supplied rigged humanoid assets. Brick: Poly Haven (CC0). <a href="./assets/ASSET-LICENSES.md" target="_blank" rel="noopener">License record</a></details>
   </div>
-  <div class="location-stamp"><span>FREIGHT TERMINAL</span><strong>DOCK / 09</strong><small>WAREHOUSE DUEL</small></div>
+  <div class="location-stamp"><span>FREIGHT TERMINAL</span><strong>DOCK / 09</strong><small>SELECT YOUR FIGHTER</small></div>
 </section>
 <div id="fightHud" hidden>
+<span id="weaponLoadout" hidden></span>
 
 <section id="barE" aria-label="Enemy health">
   <div class="fighter-identity"><span class="class-badge" id="classBadgeE"></span><div class="fighter-copy"><small>RIVAL</small><strong id="opponentName"></strong><em id="opponentClass"></em></div><span class="health-value" id="hpEText">100 / 100</span></div>
@@ -53,7 +57,7 @@
 </section>
 
 <section id="skillHud" aria-label="Attacks and skills"><small class="skill-caption">MOVE SET</small><div class="abilities"><span id="ability-punch"></span><span id="ability-heavy"></span><span id="ability-kick"></span><span id="ability-skill1"></span><span id="ability-skill2"></span></div></section>
-<div id="combat"><div id="chain" hidden></div><span id="phase" hidden></span><div class="utility-row"><span class="utility-chip"><kbd>Tab</kbd><span id="lock">LOCK ON</span></span><span class="utility-chip"><kbd>Space</kbd><span id="dodge">EVADE READY</span></span></div></div>
+<div id="combat"><div id="chain" hidden></div><span id="phase" hidden></span><div class="utility-row"><span class="utility-chip"><kbd>Tab</kbd><span id="lock">LOCK ON</span></span><span class="utility-chip"><kbd>E</kbd><span id="dodge">EVADE READY</span></span></div></div>
 <div id="defeat">DEFEATED</div>
 </div>
 <div id="crosshair" hidden aria-hidden="true"><span></span><small id="hitConfirm"></small></div>
@@ -68,11 +72,11 @@
     <button id="rematch" class="primary" type="button">Fight again <span>↗</span></button><button id="returnMenu" class="secondary" type="button">Return to dock</button>
   </div>
 </section>
-<div id="pause"><div class="pause-card"><div class="eyebrow">TAKE A BREATHER</div><h1>PAUSED</h1><p>Your match timer is stopped.</p><button id="resume" class="primary" type="button">Resume fight</button><button id="restartMatch" class="secondary" type="button">Restart</button><button id="pauseMenu" class="secondary" type="button">Return to dock</button><details class="player-controls"><summary>Controls &amp; sound</summary><p><kbd>WASD</kbd> move · <kbd>Shift</kbd> walk · <kbd>Z</kbd> sprint<br><kbd>LMB / J</kbd> basic · <kbd>RMB / L</kbd> heavy<br><kbd>1 / E / K</kbd> secondary · <kbd>2 / 3</kbd> skills<br><kbd>F</kbd> guard · <kbd>Space</kbd> evade<br><kbd>X</kbd> jump · <kbd>C</kbd> crouch<br><kbd>Tab</kbd> target lock · <kbd>Wheel</kbd> camera zoom<br><kbd>Click</kbd> capture mouse · <kbd>Esc</kbd> release<br><kbd>P</kbd> pause · <kbd>M</kbd> sound: <span id="playerSound">ON</span></p></details></div></div>
+<div id="pause"><div class="pause-card"><div class="eyebrow">TAKE A BREATHER</div><h1>PAUSED</h1><p>Your match timer is stopped.</p><button id="resume" class="primary" type="button">Resume fight</button><button id="restartMatch" class="secondary" type="button">Restart</button><button id="pauseMenu" class="secondary" type="button">Return to dock</button><details class="player-controls"><summary>Controls &amp; sound</summary><p><kbd>WASD</kbd> move · <kbd>Shift</kbd> walk · <kbd>Z</kbd> sprint<br><kbd>LMB / J</kbd> basic · <kbd>RMB / L</kbd> heavy<br><kbd>1 / K</kbd> secondary · <kbd>2 / 3</kbd> skills<br><kbd>F</kbd> guard · <kbd>E</kbd> evade<br><kbd>Space</kbd> jump · <kbd>C</kbd> crouch<br><kbd>Tab</kbd> target lock · <kbd>Wheel</kbd> camera zoom<br><kbd>Click</kbd> capture mouse · <kbd>Esc</kbd> release<br><kbd>P</kbd> pause · <kbd>M</kbd> sound: <span id="playerSound">ON</span></p></details></div></div>
 <aside id="devTools" hidden aria-label="Developer diagnostics"><header><span>F1 / DEVELOPER MODE</span><span id="debugFps"></span></header><div class="dev-metrics"><span>Quality <b id="q">medium</b></span><span>Sound <b id="sound">ON</b></span><span>AI <b id="ai">ON</b></span><span>Grip <b id="grip">-</b></span></div><pre id="debug"></pre><details><summary>Controls &amp; development shortcuts</summary><div id="hud">
   <b>STREET CLASH</b> / IRONWORKS<br>
   <b>WASD</b> move &nbsp; <b>Shift</b> walk &nbsp; <b>Space</b> dodge roll<br>
-  <b>LMB / J</b> light &nbsp; <b>1 / E / K</b> secondary &nbsp; <b>RMB / L</b> heavy<br>
+  <b>LMB / J</b> light &nbsp; <b>1 / K</b> secondary &nbsp; <b>RMB / L</b> heavy<br>
   <b>2 / 3</b> skills &nbsp; Red rings warn of incoming attacks<br>
   <b>X</b> jump &nbsp; <b>C</b> crouch (caster / rifle) &nbsp; <b>Z</b> sprint<br>
   <b>Hold F</b> block &nbsp; AI: training toggle &nbsp; <b>R</b> restart<br>

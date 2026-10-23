@@ -1,0 +1,40 @@
+/* Original urban circuit presentation; gameplay diagnostics remain under F1. */
+:root{--ink:#191d1e;--paper:#e5dfd3;--accent:#b7a078;--line:#c4b89b33}
+.lobby{background:linear-gradient(90deg,#151918f5 0%,#181c1bed 30%,#161b1944 53%,transparent 78%);padding:24px 4vw}
+.menu-card{width:350px;border-left:2px solid #8d7957;padding-left:23px}
+.lobby .menu-card h1{font-family:'Arial Black','Segoe UI',sans-serif;font-size:48px;letter-spacing:-2px;line-height:.95;font-style:normal;margin:14px 0}
+.menu-intro{font-size:10px;letter-spacing:2px;color:#b5b6aa;margin:10px 0 19px}
+.eyebrow{letter-spacing:2px;color:#b5a587;font-size:9px}
+#fighterChoices{gap:5px}
+.fighter-choice{position:relative;background:linear-gradient(135deg,#343a38d9,#1e2423f0);border:1px solid #8d90813d;border-top:1px solid #c5b89d66;padding:10px 8px!important;min-height:49px}
+.fighter-choice span{font-size:11px;color:#c5c5b8}.fighter-choice small{font-size:10px;color:#8e978f;letter-spacing:1px}
+.fighter-choice[aria-pressed=true]{background:linear-gradient(125deg,#766a51,#3d4138);border-color:#c0b28d;box-shadow:inset 3px 0 #d6c398}.fighter-choice[aria-pressed=true] span{color:#fff3db}
+#fighterDescription{font-size:10px;line-height:1.5;color:#a8b0a9;min-height:30px;margin:8px 0}
+#opponentChoice,#arenaMode{background:#222a27;color:#ded7c7;border:1px solid #83867577;border-radius:0;font-size:11px;padding:6px;box-sizing:border-box}
+.fighter-select{margin:12px 0}.mode-label{display:block;font-size:9px;letter-spacing:2px;color:#b5a587;margin:10px 0 5px}#arenaMode{width:100%;margin-bottom:10px}
+.arena-card strong{font-size:16px;letter-spacing:3px}.arena-number{font-size:30px}.arena-card small{font-size:8px}.arena-tag{color:#cfbd94;border-color:#cfbd9455}
+.lobby .arena-card{padding:8px 0}.lobby .match-rules{font-size:10px;line-height:1.5;margin:9px 0;max-width:none;min-height:30px;color:#aaa99b}
+.primary,#resume.primary{background:linear-gradient(#c4b38d,#9c8861);color:#161c19;border:1px solid #d0c4a9;padding:13px 16px;font-size:13px;text-transform:uppercase;letter-spacing:1px;border-radius:0}.primary:hover:enabled{background:#d0bf9a}.secondary{background:#242d27d9;border-color:#92977d55;padding:9px 16px;font-size:11px;border-radius:0}
+.lobby .menu-controls{font-size:9px;line-height:2;margin-top:9px;color:#919c92}.credits{font-size:9px;color:#929a8e;margin-top:6px}
+.location-stamp{bottom:30px;right:4vw;border-color:#9a8964}.location-stamp strong{font-size:24px}.location-stamp span,.location-stamp small{font-size:8px}
+#featuredFighter{position:absolute;left:55%;bottom:14%;display:flex;flex-direction:column;gap:7px;text-shadow:0 2px 8px #000;pointer-events:none}#featuredFighter small{font-size:9px;letter-spacing:3px;color:#c8bfa8}#featuredFighter strong{font:900 48px/1 'Arial Black',sans-serif;letter-spacing:3px}#featuredFighter span{text-transform:uppercase;letter-spacing:4px;font-size:12px;color:#c2b090}
+#circuitBoard{position:absolute;right:3vw;top:32px;width:240px;background:#1c2420d9;border:1px solid #a59d8055;padding:15px;box-sizing:border-box}#circuitBoard h2{font-size:19px;letter-spacing:3px;margin:8px 0}#circuitBoard p{font-size:10px;color:#929e92;margin:0 0 13px}#circuitRecords{padding:0;list-style:none;margin:0}#circuitRecords li{display:flex;gap:9px;align-items:center;border-top:1px solid #b2af9026;padding:10px 0;font-size:9px}#circuitRecords li>b{color:#baaa85}#circuitRecords li>span{flex:1;color:#bec3b7}#circuitRecords li>strong{color:#e5d4ac}.empty-record{color:#8c978c;line-height:1.8}
+#barP,#barE,#matchHud,.skill-slot,.utility-chip,#phase{background:linear-gradient(160deg,#303a34f5,#19221ef0);border-radius:1px;border-color:#b6ac8a77;box-shadow:0 3px 8px #0004}#barP{border-top-color:#9cba93}#barE{border-top-color:#b87460}.class-badge{background:#252f29;color:#c0cfab;border-color:#97a08499}#barE .class-badge{color:#d4a68c;border-color:#b4886d88}
+#hpP{background:linear-gradient(#b1bf91,#708854)}#hpE{background:linear-gradient(#ce9784,#9b5b4c)}.bar{background:#131b17;border-color:#b3b09655}.fighter-copy strong{color:#eee5ce}.fighter-copy small{color:#b0b4a2}#matchHud{border-top-color:#b6a47f}#matchHud strong{color:#ece4d0}#matchHud span{color:#adb8a9}#matchHud small{color:#a8a892}.skill-caption{color:#e8e2d3;text-shadow:0 1px 3px #000}.skill-slot{border-bottom-color:#a7b38c}.skill-icon{color:#becbad}.skill-slot:nth-child(n+4){border-bottom-color:#b7a078}.skill-name{color:#dbdfcf}#phase{color:#e3cf9f}#combat{color:#ced6c3}
+#encounterDisplay{position:fixed;inset:0;pointer-events:none;z-index:2}#encounterProgress{position:absolute;top:112px;left:50%;transform:translateX(-50%);font-size:9px;letter-spacing:2px;color:#f1e8d1;text-shadow:0 2px 3px #000;white-space:nowrap}
+#bossDisplay{position:absolute;top:143px;left:50%;transform:translateX(-50%);width:min(460px,65vw);text-align:center;text-shadow:0 2px 4px #000}#bossDisplay small{font-size:8px;letter-spacing:3px;color:#e0b097}#bossDisplay strong{display:block;font-size:18px;letter-spacing:4px;margin:3px}.boss-track{height:13px;background:#241713;border:1px solid #b08e68;padding:2px;box-shadow:0 3px 8px #0005}.boss-track i{display:block;height:100%;background:linear-gradient(#bf7c5d,#884530);transition:width .15s}#bossDisplay>span{font-size:10px;font-variant-numeric:tabular-nums;color:#ded2ba}
+#spawnWarning{position:absolute;left:50%;top:37%;transform:translateX(-50%);padding:10px 20px;background:#251e16dd;border-block:1px solid #c19e62;color:#e8d7ac;font-size:12px;letter-spacing:2px;text-align:center}
+#enemyNameplate{position:absolute;transform:translate(-50%,-100%);text-align:center;min-width:88px;text-shadow:0 1px 3px #000}#enemyNameplate b{font-size:9px;letter-spacing:1px;color:#e5d6bc}#enemyNameplate>div{height:4px;border:1px solid #2b211a;background:#302822;box-shadow:0 1px 3px #000}#enemyNameplate i{display:block;background:#bca16e;height:100%}
+#runScore{font-size:12px;letter-spacing:2px;color:#c1b18d}.results{background:#151c17dc}.result-card h1{color:#cab88f}
+@media(min-height:900px){.lobby .menu-card h1{font-size:65px}.fighter-choice{min-height:59px}.menu-card{width:380px}}
+@media(max-width:1150px){#circuitBoard{width:180px;padding:12px;right:20px}#circuitRecords li{flex-wrap:wrap}#featuredFighter{left:57%}}
+@media(max-width:850px){#circuitBoard{display:none}.menu-card{width:320px;padding-left:15px}.lobby{padding:22px}.lobby .menu-card h1{font-size:40px}#featuredFighter{left:auto;right:24px;bottom:14%}#featuredFighter strong{font-size:29px}}
+@media(max-width:600px){.lobby{background:linear-gradient(90deg,#151c19f7,#151c19cc)}.menu-card{width:min(350px,100%);margin-inline:auto}#featuredFighter{display:none}#encounterProgress{top:96px;font-size:8px}#bossDisplay{top:119px;width:75vw}}
+@media(max-height:740px){.lobby{align-items:flex-start}.menu-card{margin-block:0}.lobby .menu-card h1{font-size:35px}.menu-intro{margin:7px 0}.fighter-choice{min-height:42px;padding-block:6px!important}.lobby .menu-controls{display:none}.fighter-select{margin:9px 0}.credits{margin-top:4px}}
+
+.minion-nameplate{position:fixed;z-index:12;pointer-events:none;transform:translate(-50%,-100%);width:76px;text-align:center;text-shadow:0 1px 3px #000}
+.minion-nameplate b{font:700 9px Arial;color:#d6dfb3;letter-spacing:1px}.minion-nameplate>div{height:5px;background:#282720;border:1px solid #181d15}.minion-nameplate i{display:block;height:100%;background:#a2b66b}
+#weaponLoadout{position:fixed;bottom:119px;left:27px;font-size:10px;letter-spacing:1px;padding:6px 9px;color:#d8d5be;background:#20291ee0;border-left:2px solid #b0b991;pointer-events:none}
+
+#bossDisplay{left:auto;right:24px;top:140px;transform:none;width:min(320px,31vw)}
+@media(max-width:600px){#bossDisplay{right:12px;top:118px;width:42vw}#bossDisplay strong{font-size:12px;letter-spacing:1px}}

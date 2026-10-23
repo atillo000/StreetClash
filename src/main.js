@@ -4,7 +4,8 @@ import { ART, createArcadeLighting, FighterPresentation } from './core/ArtDirect
 import { FighterLibrary } from './characters/FighterLibrary.js';
 import { FIGHTERS, FIGHTER_LIST } from './characters/FighterCatalog.js';
 import { Combatant } from './combat/Combatant.js';
-import { SparringAI } from './combat/SparringAI.js';
+import { EnemyAI } from './combat/EnemyAI.js';
+import { EnemyPool } from './game/EnemyPool.js';
 import { Effects } from './combat/Effects.js';
 import { Projectiles } from './combat/Projectiles.js';
 import { ThirdPersonCamera } from './core/ThirdPersonCamera.js';
@@ -19,6 +20,10 @@ import { Aim } from './combat/Aim.js';
 import { CombatSignals } from './combat/CombatSignals.js';
 import { requestedAttacks } from './core/controls.js';
 import { CombatHud } from './ui/CombatHud.js';
+import { ArenaCircuit } from './game/ArenaCircuit.js';
+import { resolveStatusHit } from './combat/StatusEffects.js';
+import { StatusPresentation } from './ui/StatusPresentation.js';
+import { DestructibleProps } from './combat/DestructibleProps.js';
 
 const statusEl = document.getElementById('status');
 const qEl = document.getElementById('q');
@@ -106,9 +111,17 @@ const world = {
     if (move.kind === 'area') projectiles.area(c, move); else projectiles.emit(c, move);
     sound.play(move.kind === 'area' ? 'heavy' : c.profile.id === 'soldier' ? 'rifle' : 'magic');
   },
+  onSwing(c,move) { effects.swing(c,move); },
+  onEnvironmentSweep(c,move,from,to,radius,seen){this.destruction?.sweep(c,move,from,to,radius,seen);},
+  onPropImpact(c,prop,damage,broken){
+    sound.play(broken?'heavy':'hit');
+    if(c.team==='p'){this.hitMarkerT=.2;this.hitMessage=prop.name.replaceAll('-',' ').toUpperCase()+(broken?' BROKEN':' / '+Math.ceil(damage));}
+  },
   onTrail(from, to, color) { effects.trail(from, to, color); },
   onHit(attacker, target, result, move, point) {
+    resolveStatusHit(attacker,target,result,move);
     this.match?.recordHit(attacker, target, result, target.lastDamage);
+    effects.contact(attacker,target,result,move,point);
     const heavy = move.power === 'heavy';
     effects.impact(point, move.color ?? attacker.profile?.color ?? 0xffd58a, heavy && result !== 'blocked');
     if (attacker.team === 'p') { this.hitMarkerT = 0.22; this.hitMessage = result === 'blocked' ? 'GUARDED' : `${Math.round(target.lastDamage)}${attacker.comboStage ? ' / CHAIN ' + attacker.comboStage : ''}`; }
@@ -121,8 +134,13 @@ const world = {
       effects.spark(point, move.color ?? attacker.profile?.color ?? (heavy ? 0xff9a3c : 0xffe08a), heavy ? 16 : 9, heavy ? 6 : 4);
       cam.shake(heavy ? 0.14 : 0.045);
       this.hitstop = Math.max(this.hitstop, heavy ? 0.075 : 0.035);
-      if (heavy) effects.slam(target.position);
+      // Body/air contacts stay at the actual hit; ground wreckage uses surface events.
     }
+  },
+  onStatusApplied(c,type) { effects.shockwave(c.position,type.color,.9); },
+  onStatusTick(source,target,damage,type) {
+    if(source)this.match?.recordHit(source,target,'periodic',damage);
+    effects.spark(target.position.clone().add(new THREE.Vector3(0,.8,0)),type.color,3,1);
   },
   onKill() {}, // Match resolves confirmed damage after both fighters' hit checks.
   onRespawn() {},
@@ -139,6 +157,7 @@ async function boot() {
     effects.loadSprites(),
   ]);
   arena = warehouse; world.arena = arena;
+  world.destruction = new DestructibleProps(world,effects);
   world.library = library;
 
   function makeFighter(id, opts) {
@@ -151,14 +170,17 @@ async function boot() {
 
   const player = makeFighter('capoeira', { name: 'YOU', team: 'p', spawn: new THREE.Vector3(0, 0, 5.5), facing: Math.PI });
   const dummy = makeFighter('magic', { name: 'RIVAL', team: 'e', spawn: new THREE.Vector3(0, 0, -3.8), facing: 0 });
+  world.effects=effects;world.enemyPool=new EnemyPool({world,scene,library,size:3});
   world.presentation = new FighterPresentation(scene, world.combatants);
-  const ai = new SparringAI(dummy);
+  world.statusPresentation = new StatusPresentation(scene,world.combatants);
+  const ai = new EnemyAI(dummy);
   const lock = new TargetLock(player, world);
   const aimTrace = new Aim(); world.aim = aimTrace;
   const signals = new CombatSignals(scene, world.combatants); world.signals = signals;
   const lockRing = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.57, 32), new THREE.MeshBasicMaterial({ color: 0xffcf40, side: THREE.DoubleSide, depthWrite: false }));
   lockRing.rotation.x = -Math.PI / 2; lockRing.visible = false; scene.add(lockRing);
   function resetArena() {
+    world.destruction.reset();
     player.reset(); dummy.reset(); lock.clear(); effects.clear(); projectiles.clear(); ai.reset();
     input.clear(); world.hitstop = 0;
     world.hitMarkerT = 0; world.hitMessage = '';
@@ -171,6 +193,7 @@ async function boot() {
       world.combatEnabled = match.canFight;
       ai.enabled = match.state === 'active';
       if (!match.canFight) {
+        for(const c of world.combatants)c.statuses.clear();
         projectiles.clear();
         input.clear(); lock.clear();
         for (const c of world.combatants) { c.mover.steer(_fwd.set(0, 0, 0), 0); c.mover.velocity.set(0, 0, 0); c.mover.impulse.set(0, 0, 0); c.mover.speed = 0; c.wantBlock = false; }
@@ -185,8 +208,10 @@ async function boot() {
     },
   });
   world.match = match;
+  world.circuit = new ArenaCircuit({world,match,player,enemy:dummy,ai,library,scene,effects,lock});
   world.selectFighter = (side, id) => {
-    if (match.state !== 'lobby' || !FIGHTERS[id]) return false;
+    if (match.state !== 'lobby' || !FIGHTERS[id] || side==='player'&&FIGHTERS[id].enemyOnly) return false;
+    if(side === 'opponent') world.circuit.rivalId=id;
     const c = side === 'opponent' ? dummy : player;
     c.replaceFighter(library.create(id, c.spawnFacing)); ai.reset();
     updateHud(); return true;
@@ -196,13 +221,14 @@ async function boot() {
     button.dataset.fighter = config.id; button.style.setProperty('--fighter-color', config.color);
     button.innerHTML = `<span>${config.role}</span><small>${config.name}</small>`;
     button.addEventListener('click', () => world.selectFighter('player', config.id));
-    document.getElementById('fighterChoices').appendChild(button);
+    if(!config.enemyOnly)document.getElementById('fighterChoices').appendChild(button);
     const option = document.createElement('option'); option.value = config.id; option.textContent = `${config.name} / ${config.role}`;
     document.getElementById('opponentChoice').appendChild(option);
   }
   document.getElementById('opponentChoice').value = dummy.profile.id;
   document.getElementById('opponentChoice').addEventListener('change', event => world.selectFighter('opponent', event.target.value));
-  world.onRespawn = c => { if (match.state === 'practice') c.reset(); };
+  world.onRespawn = c => { if (match.state === 'practice'&&!c.isMinion) c.reset(); };
+  world.switchSoldierWeapon=()=>{if(player.profile.id!=='soldier'||player.state!=='free'||world.paused)return false;player.equipment.toggle();player.moves=player.equipment.moves;player.comboStage=0;player.comboRemaining=0;player.buffer=null;updateHud();return player.equipment.id;};
 
   // ---- Player input ---------------------------------------------------
   const _fwd = new THREE.Vector3(), _right = new THREE.Vector3(), _dir = new THREE.Vector3();
@@ -226,6 +252,7 @@ async function boot() {
     player.wantBlock = input.down('KeyF');
     player.wantCrouch = input.down('KeyC');
     player.mover.sprinting = input.down('KeyZ') && player.character.hasClip('Sprint');
+    if (input.pressed('KeyQ')) world.switchSoldierWeapon();
     if (input.pressed('Space')) player.tryJump();
 
     for (const id of requestedAttacks(input, player.moves)) {
@@ -263,7 +290,11 @@ async function boot() {
   world.debugEnabled=false;
 
   function updateHud() {
+    const loadout=document.getElementById('weaponLoadout');loadout.hidden=player.profile.id!=='soldier';
+    loadout.textContent='Q · '+(player.equipment?.id==='pistol'?'PISTOL / SWITCH TO RIFLE':'RIFLE / SWITCH TO PISTOL');
     combatHud.update(player,dummy,match,world,lock);
+    world.circuit?.updateHud();
+    world.statusPresentation.updateHud();
     input.combatEnabled = match.canFight && !world.paused;
     aiEl.textContent = ai.enabled ? 'ON' : 'OFF (dummy)';
     document.getElementById('grip').textContent = player.bat ? player.bat.gripLabel() : '-';
@@ -283,7 +314,7 @@ async function boot() {
     document.getElementById('matchHud').classList.toggle('practice', match.state === 'practice');
     document.getElementById('fightHud').hidden = ['lobby', 'results'].includes(match.state);
     document.getElementById('timer').textContent = match.state === 'practice' ? '∞' : `${Math.floor(Math.ceil(match.remaining) / 60)}:${String(Math.ceil(match.remaining) % 60).padStart(2, '0')}`;
-    document.getElementById('matchMode').textContent = match.state === 'practice' ? 'TRAINING' : 'DUEL';
+    document.getElementById('matchMode').textContent = match.state === 'practice' ? 'TRAINING' : world.circuit.label;
     const banner = document.getElementById('countdown');
     banner.hidden = !['countdown', 'ending'].includes(match.state);
     banner.textContent = match.state === 'countdown' ? String(Math.max(1, Math.ceil(match.countdownRemaining))) : match.result?.outcome === 'victory' ? 'KNOCKOUT · YOU WIN' : match.result?.outcome === 'defeat' ? 'RIVAL WINS' : 'DRAW';
@@ -353,6 +384,7 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
   world.setPaused = pause;
   function simulate(dt) {
     match.update(dt);
+    world.destruction.update(dt);
     if (!match.canFight) {
       for (const c of world.combatants) {
         c.previousPosition.copy(c.position); c.previousFacing = c.mover.facing;
@@ -366,10 +398,11 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
       for (const c of world.combatants) { c.previousPosition.copy(c.position); c.previousFacing = c.mover.facing; }
       return;
     }
+    world.circuit.update(dt);
     playerBrain(); ai.update(dt);
     for (const c of world.combatants) c.update(dt);
-    arena.resolve(world.combatants);
-    for (const c of world.combatants) c.character.update(dt);
+    arena.resolve(world.combatants.filter(c=>!c.inactive&&c.alive));
+    for (const c of world.combatants) if(!c.inactive)c.character.update(dt);
     for (const c of world.combatants) c.equipment?.update(['block','blockEnd','dodge','hit','down','getup','dead','jump','land','victory'].includes(c.state) || (c.state === 'attack' && (c.move?.clip === 'Kick' || c.move?.kind === 'mobility')));
     for (const c of world.combatants) c.postAnimation(dt);
     projectiles.update(dt);
@@ -396,9 +429,13 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
       c.character.root.rotation.y = c.previousFacing + shortestAngle(c.previousFacing, c.mover.facing) * alpha;
     });
     lockRing.visible = !!lock.target;
-    if (lock.target) lockRing.position.set(lock.target.position.x, 0.025, lock.target.position.z);
-    if (match.state === 'lobby') { camera.position.set(3, 2.2, 0.5); camera.lookAt(1.2, 1, 5.5); }
-    else cam.update(world.paused ? 0 : raw, player.position, undefined, lock.target?.position, arena.cameraBlockers, input.locked);
+    if (lock.target) lockRing.position.set(lock.target.position.x, arena.groundHeight(lock.target.position.x,lock.target.position.z)+0.025, lock.target.position.z);
+    if (match.state === 'lobby') { camera.position.set(-1.8, 1.85, 2.5); camera.lookAt(.85, 1.05, 5.5); }
+    else {
+      const nearbyBoss=dummy.profile.boss&&dummy.alive&&dummy.position.distanceTo(player.position)<8;
+      cam.bossLift=nearbyBoss?Math.max(0,dummy.height-player.height)*.48:0;cam.enemyHeight=lock.target?.height||2.3;
+      cam.update(world.paused ? 0 : raw,player.position,undefined,lock.target?.position,arena.cameraBlockers,input.locked);
+    }
     world.signals.update(match.canFight, player);
     const lightFocus = player.position.clone().lerp(dummy.position, 0.5).setY(0);
     key.position.set(lightFocus.x + 5, 9, lightFocus.z + 4);
@@ -409,6 +446,9 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
       portraitFill.target.position.copy(player.position).add(new THREE.Vector3(0, 1, 0));
     }
     world.presentation.update();
+    world.statusPresentation.render(world.paused?0:raw,match.canFight);
+    world.circuit.render(camera);
+    effects.render(camera);
     renderer.render(scene, camera);
     world.combatants.forEach((c, i) => { c.position.copy(renderPositions[i]); c.character.root.rotation.y = c.mover.facing; });
 

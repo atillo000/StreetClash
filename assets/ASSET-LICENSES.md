@@ -57,3 +57,56 @@ Runtime character conversion, animation fitting and sword simplification are
 documented in [the roster guide](../docs/expanded-roster.md). Three.quarks and
 quarks.core are MIT licensed; their licenses are included in the deployment vendor
 folders. meshoptimizer is an MIT-licensed development-only preparation tool.
+
+## Paladin and Parasite Zombie additions
+
+The user supplied \assets/characters/Paladin Type Character.fbx and
+\assets/characters/Paraiste Zombie Character.fbx, plus Paladin Animation Pack /
+Pro Sword and Shield Pack.zip and Scary Zombie Animation Pack / Scary Zombie Pack.zip.
+Original download URLs and license terms were not supplied; no CC0 or CC-BY claim
+is made. Prepared derivatives are paladin.glb and zombie.glb in characters/generated.
+The original zombie attack FBX is preserved; animations/generated/zombie-attack.glb
+is a recovered conversion used during preparation because FBXLoader cannot parse
+the supplied source. Model conversion uses the official Godot FBX2glTF converter:
+https://github.com/godotengine/FBX2glTF/releases/tag/v0.13.1
+
+Paladin's sword reuses the existing supplied optimized sword. Its small shield is
+original procedural geometry implemented in src/characters/FighterWeapons.js.
+File hashes and sizes are recorded in USER-ASSETS.json.
+\n## Urban presentation update — 2026-10-22
+
+- Brick Wall 001, Poly Haven: https://polyhaven.com/a/brick_wall_001
+- License: CC0, https://polyhaven.com/license
+- Runtime: `textures/brick-wall-diffuse.jpg`, original 1K JPG (574381 bytes).
+- Official download: https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/brick_wall_001/brick_wall_001_diffuse_1k.jpg
+- MD5 verified against the official API: `955d2d4500eb549be0f2873305782798`.
+- Existing Concrete Floor maps and supplied textured barrel/crate assets are reused with their detail preserved. Original character texture maps and normal maps remain intact.
+
+## Combat presentation update — 2026-10-22
+
+The contact-shell, ripple, impact-ring and crescent-arc shaders in
+`src/combat/ArcadeVFX.js` are original project code. They reuse the already
+imported Kenney particle sprites through the existing Three.quarks integration.
+No new external assets were downloaded. Character GLBs and source animation files
+were not regenerated or replaced. See `docs/combat-skills.md`.
+
+
+## Textured Soldier firearms and enemy bosses — 2026-10-23
+
+The Soldier now uses Poly Haven's Bolt Action Rifle 7.62 and Service Pistol:
+- https://polyhaven.com/a/bolt_action_rifle_7_62
+- https://polyhaven.com/a/service_pistol
+- License: CC0, https://polyhaven.com/license
+- Files: Weapons/realistic/rifle.glb and pistol.glb; original geometry and 1K
+  textures embedded in GLB. Official API MD5s were checked before conversion.
+- Runtime file sizes, source links, transformations and SHA-256 hashes are in
+  Weapons/realistic/SOURCES.json. Source pistol variants/spare parts are hidden.
+
+These firearms replace the Soldier blaster at runtime. Existing Kenney asset
+licenses remain valid for their retained files and the particle/environment kits.
+
+El Chupacabra and the Soldier Pistol or Handgun Locomotion Pack are user-supplied;
+no external license claim is made for them. New derivatives are generated/chupacabra.glb
+and the updated generated/soldier.glb. Pistol recoil/posture composition is original
+project code. Other boss/zombie clips reuse supplied sources. See
+../docs/soldier-weapons-and-enemies.md for sources, roles and manual tuning.

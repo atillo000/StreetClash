@@ -9,7 +9,7 @@ http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.writeHead(204).end(); return; }
-  const match = /^\/(capoeira|magic|soldier|archer|greatsword|axe|mutant)\.(glb|json)$/.exec(req.url);
+  const match = /^\/(capoeira|magic|soldier|archer|greatsword|axe|mutant|paladin|zombie|chupacabra)\.(glb|json)$/.exec(req.url);
   if (req.method !== 'POST' || !match) { res.writeHead(404).end(); return; }
   try {
     const chunks = []; let length = 0;
