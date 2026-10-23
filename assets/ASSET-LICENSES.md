@@ -110,3 +110,25 @@ no external license claim is made for them. New derivatives are generated/chupac
 and the updated generated/soldier.glb. Pistol recoil/posture composition is original
 project code. Other boss/zombie clips reuse supplied sources. See
 ../docs/soldier-weapons-and-enemies.md for sources, roles and manual tuning.
+
+
+## Textured storm and barrier presentation — 2026-10-23
+
+Additional transparent sprites extracted from the user-supplied Kenney Particle
+Pack: smoke_04.png, twirl_01.png, flare_01.png and slash_02.png.
+Source: https://kenney.nl/assets/particle-pack
+License: CC0; existing assets/textures/kenney/License.txt is retained.
+No new character models, animations or third-party packages were added.
+Textured funnel, branching bolt ribbons and barrier shaders are original code.
+
+
+## Original elemental presentation — 2026-10-23
+
+textures/combat/elemental-atlas-v1.png is original AI-generated VFX artwork,
+created with the built-in image-generation tool. No reference screenshot or
+third-party game texture was copied into this image. It contains a flame strip,
+spectral dragon head, silver slash and mist. It is not labeled as a CC0 download.
+The exact generation prompt and usage are recorded in docs/elemental-combat.md.
+Existing Kenney CC0 sprites and the supplied optimized great-sword model are
+reused under their existing license records. New shaders/physics code are
+original project code; Rapier remains Apache-2.0.

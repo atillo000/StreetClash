@@ -46,6 +46,7 @@ export function styleFighterMaterial(material) {
 // This is a visual cue only; no animation, collision or gameplay state is changed.
 export class FighterPresentation {
   constructor(scene,combatants) {
+    this.contactPoint=new THREE.Vector3();
     const canvas=document.createElement('canvas');canvas.width=canvas.height=64;const g=canvas.getContext('2d');
     const glow=g.createRadialGradient(32,32,5,32,32,31);glow.addColorStop(0,'rgba(35,57,77,.5)');glow.addColorStop(1,'rgba(35,57,77,0)');
     g.fillStyle=glow;g.fillRect(0,0,64,64);const map=new THREE.CanvasTexture(canvas);
@@ -53,6 +54,6 @@ export class FighterPresentation {
     this.entries=combatants.map(c=>{const material=new THREE.MeshBasicMaterial({map,transparent:true,opacity:.55,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1});
       const mesh=new THREE.Mesh(geometry,material);mesh.name='fighter contact shadow';scene.add(mesh);return{c,mesh};});
   }
-  update(){for(const{c,mesh}of this.entries){const ground=c.world.arena.groundHeight?.(c.position.x,c.position.z)??0,height=Math.max(0,c.position.y-ground);mesh.visible=c.character.root.visible;
-    mesh.position.set(c.position.x,ground+.009,c.position.z);mesh.scale.setScalar((c.profile.height||1.85)/1.85*(1+height*.2));mesh.material.opacity=.55*Math.max(.1,1-height/3);}}
+  update(){for(const{c,mesh}of this.entries){const point=c.character.ragdoll?c.character.bone('mixamorigHips').getWorldPosition(this.contactPoint):c.position;const ground=c.world.arena.groundHeight?.(point.x,point.z)??0,height=Math.max(0,point.y-ground);mesh.visible=c.character.root.visible;
+    mesh.position.set(point.x,ground+.009,point.z);mesh.scale.setScalar((c.profile.height||1.85)/1.85*(1+height*.2));mesh.material.opacity=.55*Math.max(.1,1-height/3);}}
 }

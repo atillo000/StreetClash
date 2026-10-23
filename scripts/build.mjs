@@ -26,6 +26,10 @@ for (const [pkg, file] of [['three.quarks', 'three.quarks.esm.js'], ['quarks.cor
   await cp(path.join(root, 'node_modules', pkg, 'dist', file), path.join(output, 'vendor', pkg, 'dist', file));
   await cp(path.join(root, 'node_modules', pkg, 'LICENSE'), path.join(output, 'vendor', pkg, 'LICENSE'));
 }
+// Compatibility build embeds WASM, so the browser needs only this module.
+await mkdir(path.join(output,'vendor/@dimforge/rapier3d-compat/dist'),{recursive:true});
+await cp(path.join(root,'node_modules/@dimforge/rapier3d-compat/dist/rapier.mjs'),path.join(output,'vendor/@dimforge/rapier3d-compat/dist/rapier.mjs'));
+await cp(path.join(root,'node_modules/@dimforge/rapier3d-compat/LICENSE'),path.join(output,'vendor/@dimforge/rapier3d-compat/LICENSE'));
 const html = (await readFile(path.join(root, 'index.html'), 'utf8')).replaceAll('./node_modules/', './vendor/');
 await writeFile(path.join(output, 'index.html'), html);
 

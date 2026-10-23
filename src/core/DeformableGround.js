@@ -77,6 +77,7 @@ export class DeformableGround {
     this.syncSlabs();return {depth,radius};
   }
   refresh() {
+    this.physicsRevision=(this.physicsRevision??0)+1;
     for(let i=0;i<this.vertices.count;i++){
       const x=this.vertices.getX(i),z=this.vertices.getZ(i),y=this.heights[i];
       this.color.copy(Math.abs(x)<6&&Math.abs(z)<6?this.courtTint:this.floorTint);

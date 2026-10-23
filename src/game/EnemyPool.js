@@ -19,13 +19,13 @@ export class EnemyPool{
   }
   get living(){return this.entries.filter(({c})=>!c.inactive&&c.alive).length;}
   clear(){for(const{c,ai,tag}of this.entries){c.inactive=true;c.hp=0;c._setState('dead');c.statuses.clear();c.character.root.visible=false;c.mover.steer(new THREE.Vector3(),0);c.mover.velocity.set(0,0,0);c.mover.impulse.set(0,0,0);ai.enabled=false;tag.hidden=true;}}
-  spawn(count){
+  spawn(count,hpScale=1){
     this.clear();const player=this.world.combatants[0],main=this.world.combatants[1];
     const points=[[-4.5,-4.5],[4.5,-4.5],[-4.5,4.5],[4.5,4.5],[0,-5.4]];
     points.sort((a,b)=>Math.hypot(b[0]-player.position.x,b[1]-player.position.z)-Math.hypot(a[0]-player.position.x,a[1]-player.position.z));
     const usable=points.filter(p=>Math.hypot(p[0]-main.position.x,p[1]-main.position.z)>2);
     this.entries.slice(0,Math.min(count,this.entries.length)).forEach(({c,ai},i)=>{
-      c.inactive=false;c.character.root.visible=true;c.spawn.set(usable[i][0],this.world.arena.groundHeight(usable[i][0],usable[i][1]),usable[i][1]);c.reset();c.iframes=.8;ai.reset();
+      c.inactive=false;c.character.root.visible=true;c.spawn.set(usable[i][0],this.world.arena.groundHeight(usable[i][0],usable[i][1]),usable[i][1]);c.maxHp=Math.round((c.profile.maxHp||45)*hpScale);c.reset();c.iframes=.8;ai.reset();
       this.world.effects?.pulse(c.position,0x9dba6b,.7);
     });
   }

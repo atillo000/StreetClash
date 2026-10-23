@@ -50,7 +50,7 @@ export class Mover {
     const dir = mag > 0 ? this._dir : ZERO;
 
     const top = this.crouching ? this.crouchSpeed : this._walk ? this.walkSpeed : this.lockFacing !== null ? this.lockSpeed : this.sprinting ? this.sprintSpeed : this.runSpeed;
-    const targetSpeed = mag > 0 ? top * Math.min(1, mag) * (this.statusSpeed ?? 1) : 0;
+    const targetSpeed = mag > 0 ? top * Math.min(1, mag) * (this.statusSpeed ?? 1) * (this.actionSpeed ?? 1) : 0;
     const rate = (targetSpeed > this.speed ? this.accel : this.accel * 1.4) * dt;
     this.speed += THREE.MathUtils.clamp(targetSpeed - this.speed, -rate, rate);
 

@@ -56,7 +56,8 @@ export class CombatFeedback{
     slot.positive=type.positive;slot.el.dataset.positive=String(type.positive);slot.el.style.setProperty('--status-color',hex(type.color));
     if(target===this.world.combatants[0])this.notice((type.positive?'BUFF · ':'DEBUFF · ')+type.label.toUpperCase(),type.description,type.positive?'positive':'negative');
   }
-  ended(target,type){if(target===this.world.combatants[0])this.notice(type.label.toUpperCase()+' ENDED','Effect expired.','ended');}
+  ended(target,type,reason){if(reason==='cleansed')return;if(target===this.world.combatants[0])this.notice(type.label.toUpperCase()+(reason==='depleted'?' BROKEN':' ENDED'),reason==='depleted'?'Shield depleted.':'Effect expired.','ended');}
+  shield(target,amount){this.emit(target,target.position.clone().add(new THREE.Vector3(0,target.height*.65,0)),'guard',Math.round(amount),'SHIELD ABSORBED');}
   cleansed(target,count){const slot=this.emit(target,target.position.clone().add(new THREE.Vector3(0,target.height+.22,0)),'status','CLEANSED','DEBUFFS REMOVED',count+' effect'+(count===1?'':'s'));slot.el.dataset.positive='true';if(target===this.world.combatants[0])this.notice('CLEANSED',count+' negative effect'+(count===1?'':'s')+' removed.','positive');}
   heal(target,amount){
     if(amount<.05)return;this.emit(target,target.position.clone().add(new THREE.Vector3(0,target.height*.7,0)),'healing','+'+format(amount),'HEAL');

@@ -1,4 +1,5 @@
 import { attackBindings } from '../core/controls.js';
+import { POWER_DESCRIPTIONS } from '../combat/PowerMoves.js';
 import { statusMoveDescription } from '../combat/StatusEffects.js';
 // Presentation only: read combat state; never change input, cooldowns or damage.
 const paths={
@@ -63,7 +64,7 @@ export class CombatHud {
     for(const[id]of bindings){const slot=this.slots.get(id),remaining=player.cooldowns[id]||0,move=player.moves[id],cooling=remaining>.05;
       const unavailable=!!move.sequence&&!player.canPlayAttack(id);
       slot.el.classList.toggle('unavailable',unavailable);
-      slot.el.title=unavailable?'Prepare this fighter’s animation assets to enable the ultimate.':statusMoveDescription(move);
+      slot.el.title=unavailable?'Prepare this fighter’s animation assets to enable the ultimate.':[move.powerDescription||POWER_DESCRIPTIONS[move.specialPower]||'',statusMoveDescription(move)].filter(Boolean).join(' ');
       slot.el.classList.toggle('cooling',cooling);slot.time.textContent=unavailable?'—':cooling?remaining.toFixed(1):'';
       slot.shade.style.height=Math.min(100,100*remaining/(move.cooldown||1))+'%';
       slot.el.setAttribute('aria-label',`${slot.key}: ${move.label}, ${unavailable?'animation preparation required':cooling?remaining.toFixed(1)+' seconds':'ready'}`);

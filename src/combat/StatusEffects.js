@@ -1,6 +1,12 @@
 // Original combat balance. Durations use simulation time; duplicates refresh,
 // never stack. Multipliers are recomputed from active entries, not base stats.
 export const STATUS_TYPES={
+  stunned:{label:'Stunned',positive:false,color:0xffdf76,duration:.65,control:'stun',description:'Briefly interrupts actions and movement. Cannot chain during the recovery immunity.'},
+  poison:{label:'Poison',positive:false,color:0x9fdb64,duration:4,dot:1.25,description:'Loses 1.25 HP each second for 4 seconds. Reapplication refreshes, never stacks.'},
+  wardShield:{label:'Aegis shield',positive:true,color:0x96dcf4,duration:5,shield:18,description:'Absorbs up to 18 direct damage. Poison and bleeding bypass this shield.'},
+  arcaneWard:{label:'Arcane ward',positive:true,color:0xc5adff,duration:4,shield:10,description:'Absorbs up to 10 direct damage. Damage over time bypasses the ward.'},
+  familiars:{label:'Familiars',positive:true,color:0xffbc71,duration:4,description:'Two spectral familiars follow you and attack nearby enemies. Cover blocks their attacks.'},
+  guardians:{label:'Guardians',positive:true,color:0xffdf9b,duration:3,description:'Two sword guardians orbit you, protect you with Aegis and strike nearby enemies.'},
   flow:{label:'Flow',positive:true,color:0xe9c37a,duration:4,moveSpeed:1.10,description:'+10% movement speed.'},
   offBalance:{label:'Off balance',positive:false,color:0xd79e70,duration:3,knockTaken:1.25,description:'Takes 25% more knockback.'},
   arcaneSurge:{label:'Arcane surge',positive:true,color:0xbca1ed,duration:4,damage:1.15,description:'+15% direct attack damage.'},
@@ -25,13 +31,13 @@ export const STATUS_TYPES={
 export const STATUS_LOADOUTS={
   capoeira:{skill1:{statusSelf:['flow']},skill2:{statusTarget:['offBalance']}},
   magic:{skill1:{statusTarget:['weakened']},skill2:{statusSelf:['arcaneSurge']}},
-  soldier:{skill1:{statusSelf:['focus']},skill2:{statusTarget:['exposed']}},
+  soldier:{kick:{statusTarget:['stunned']},skill1:{statusSelf:['focus']},skill2:{statusTarget:['exposed']}},
   archer:{skill1:{statusSelf:['hunterPace']},skill2:{statusTarget:['hobbled']}},
   greatsword:{skill1:{statusSelf:['poise']},skill2:{statusTarget:['sundered']}},
   axe:{skill1:{statusSelf:['fury']},skill2:{statusTarget:['bleeding']}},
   mutant:{skill1:{statusTarget:['crushed']},skill2:{statusSelf:['enraged']}},
   paladin:{skill1:{statusSelf:['bulwark']},skill2:{statusCleanse:true,statusTarget:['judged']}},
-  zombie:{kick:{statusTarget:['infected']},skill1:{statusSelf:['hunger']},skill2:{statusTarget:['infected']}},
+  zombie:{kick:{statusTarget:['infected']},skill1:{statusSelf:['hunger']},skill2:{statusTarget:['poison']}},
 };
 
 // A reward for finishing the entire ultimate, including a whiff. Interruptions
@@ -40,27 +46,46 @@ export const ULTIMATE_REWARDS={capoeira:'flow',magic:'arcaneSurge',soldier:'focu
 export function grantUltimateReward(fighter,move){
   if(!fighter.alive||fighter.hp<=0||fighter.world.combatEnabled===false)return;
   if(move.statusCleanseOnComplete)fighter.statuses.cleanse();
-  for(const id of move.statusOnComplete||[])fighter.statuses.apply(id,fighter);
+  for(const id of move.statusOnComplete||[]){fighter.statuses.apply(id,fighter);const entry=fighter.statuses.entries.get(id);if(entry){entry.empowered=true;entry.empoweredT=Math.min(4,entry.remaining);}}
+  fighter.world.onUltimateComplete?.(fighter,move);
 }
 export function configureStatuses(roster){
   for(const[id,reward]of Object.entries(ULTIMATE_REWARDS)){
     roster[id].ultimate.statusOnComplete=[reward];
-    if(id==='paladin')roster[id].ultimate.statusCleanseOnComplete=true;
+    if(id==='paladin'){roster[id].ultimate.statusCleanseOnComplete=true;roster[id].ultimate.statusOnComplete.push('wardShield');}
+    if(id==='magic')roster[id].ultimate.statusOnComplete.push('arcaneWard');
   }
   for(const [fighter,moves]of Object.entries(STATUS_LOADOUTS))for(const [key,properties]of Object.entries(moves))Object.assign(roster[fighter][key],properties);
 }
 
 export class StatusEffects{
-  constructor(owner){this.owner=owner;this.entries=new Map();}
+  constructor(owner){this.owner=owner;this.entries=new Map();this.controlImmunity=0;}
   apply(id,source=this.owner,duration=STATUS_TYPES[id]?.duration){
-    const type=STATUS_TYPES[id];if(!type||!this.owner.alive||this.owner.hp<=0||!(duration>0))return false;
+    const type=STATUS_TYPES[id],c=this.owner;if(!type||!c.alive||c.inactive||c.hp<=0||!Number.isFinite(duration)||duration<=0)return false;
+    duration=Math.min(duration,type.control?1:15);
+    if(type.control&&(c.profile?.boss||this.controlImmunity>0||this.entries.has(id)||['dead','down','getup','dodge'].includes(c.state)))return false;
     const old=this.entries.get(id);
-    if(old){old.remaining=Math.max(old.remaining,duration);old.source=source;}
-    else{this.entries.set(id,{id,type,remaining:duration,source,tick:0});this.owner.world.onStatusApplied?.(this.owner,type,duration);}
+    if(old){old.remaining=Math.max(old.remaining,duration);old.duration=Math.max(old.duration,old.remaining);old.source=source;}
+    else{
+      this.entries.set(id,{id,type,remaining:duration,duration,source,tick:0,shield:type.shield||0,empowered:false});
+      if(type.control)c.enterStun?.();
+      c.world.onStatusApplied?.(c,type,duration);
+    }
     return true;
   }
-  clear(){this.entries.clear();this.owner.mover.statusSpeed=1;}
-  cleanse(){let count=0;for(const[id,e]of this.entries)if(!e.type.positive){this.entries.delete(id);count++;}if(count)this.owner.world.onStatusCleansed?.(this.owner,count);}
+  remove(id,reason='expired'){
+    const e=this.entries.get(id);if(!e)return false;this.entries.delete(id);
+    if(e.type.control)this.controlImmunity=Math.max(this.controlImmunity,1.25);
+    if(this.owner.alive)this.owner.world.onStatusEnded?.(this.owner,e.type,reason);return true;
+  }
+  clear(){this.entries.clear();this.controlImmunity=0;this.owner.mover.statusSpeed=1;}
+  cleanse(){let count=0;for(const[id,e]of this.entries)if(!e.type.positive){this.remove(id,'cleansed');count++;}if(count)this.owner.world.onStatusCleansed?.(this.owner,count);}
+  get shield(){let total=0;for(const e of this.entries.values())total+=e.shield||0;return total;}
+  absorbDamage(amount){
+    let damage=Math.max(0,amount),absorbed=0;
+    for(const[id,e]of this.entries){if(e.shield<=0)continue;const part=Math.min(damage,e.shield);e.shield-=part;damage-=part;absorbed+=part;if(e.shield<=1e-8)this.remove(id,'depleted');if(damage<=1e-8)break;}
+    if(absorbed>0)this.owner.world.onShieldAbsorbed?.(this.owner,absorbed);return{damage,absorbed};
+  }
   multiplier(stat){
     let value=1;for(const e of this.entries.values())value*=e.type[stat]??1;
     const bounds={moveSpeed:[.7,1.2],damage:[.75,1.25],defense:[.75,1.2],knockTaken:[.4,1.4],healing:[.25,1.25]};
@@ -72,14 +97,14 @@ export class StatusEffects{
     const before=c.hp;c.hp=Math.min(c.maxHp,c.hp+amount*this.multiplier('healing'));const actual=c.hp-before;if(actual>0)c.world.onHeal?.(c,actual);return actual;
   }
   update(dt){
-    if(!this.owner.alive){this.clear();return;}
+    if(!this.owner.alive){this.clear();return;}if(!(dt>0))return;
+    this.controlImmunity=Math.max(0,this.controlImmunity-dt);
     for(const[id,e]of this.entries){
       const active=Math.min(dt,e.remaining);e.remaining=Math.max(0,e.remaining-dt);
-      if(e.type.dot){
-        e.tick+=active;
-        while(e.tick>=1-1e-8&&this.owner.alive){e.tick=Math.max(0,e.tick-1);this.owner.takeStatusDamage(e.type.dot,e.source,e.type);}
-      }
-      if(e.remaining<=1e-8){this.entries.delete(id);if(this.owner.alive)this.owner.world.onStatusEnded?.(this.owner,e.type);}
+      if(e.empowered){e.empoweredT=Math.max(0,(e.empoweredT||0)-dt);e.empowered=e.empoweredT>0;}
+      if(e.type.dot){e.tick+=active;while(e.tick>=1-1e-8&&this.owner.alive){e.tick=Math.max(0,e.tick-1);this.owner.takeStatusDamage(e.type.dot,e.source,e.type);}}
+      if(!this.owner.alive){this.clear();break;}
+      if(e.remaining<=1e-8)this.remove(id);
     }
   }
 }
@@ -94,7 +119,7 @@ export function resolveStatusHit(attacker,target,result,move){
   attacker.statuses.heal(target.lastDamage*attacker.statuses.leech);
   if(move.statusCleanse)attacker.statuses.cleanse();
   for(const id of move.statusSelf||[])attacker.statuses.apply(id,attacker);
-  for(const id of move.statusTarget||[])target.statuses.apply(id,attacker);
+  if(!(target.lastHitInfo?.absorbed>0&&target.lastDamage===0))for(const id of move.statusTarget||[])target.statuses.apply(id,attacker);
 }
 
 export function statusMoveDescription(move){

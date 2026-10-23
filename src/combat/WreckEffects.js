@@ -19,7 +19,7 @@ function markTexture(kind){
 
 export class WreckEffects{
   constructor(scene){
-    this.budget=72;this.markLimit=12;this.debris=[];this.free=[];this.dummy=new THREE.Object3D();
+    this.budget=72;this.markLimit=12;this.debris=[];this.free=[];this.dummy=new THREE.Object3D();this.bodyRotation=new THREE.Quaternion();
     for(let i=0;i<128;i++)this.free.push({p:new THREE.Vector3(),v:new THREE.Vector3(),rotation:new THREE.Euler(),spin:new THREE.Vector3(),scale:new THREE.Vector3(),color:new THREE.Color(),life:0});
     this.mesh=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(.7,0),new THREE.MeshStandardMaterial({roughness:.94,metalness:.06}),128);
     this.mesh.count=0;this.mesh.frustumCulled=false;this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);scene.add(this.mesh);
@@ -34,7 +34,7 @@ export class WreckEffects{
       return{kind,mesh,opacity,slots:Array.from({length:16},()=>({life:0,p:new THREE.Vector3(),q:new THREE.Quaternion(),radius:1}))};
     });
   }
-  setBudget(count){this.budget=Math.min(128,Math.max(24,Math.floor(count*.75)));this.markLimit=count<64?6:count<128?12:16;}
+  setBudget(count){this.budget=this.physics?this.physics.setBudget(count):Math.min(128,Math.max(24,Math.floor(count*.75)));this.markLimit=count<64?6:count<128?12:16;}
   mark(point,normal,kind='crack',damage=20,radius){
     const batch=this.batches.find(b=>b.kind===kind)||this.batches[0],slots=batch.slots.slice(0,this.markLimit);
     const slot=slots.find(s=>s.life<=0)||slots.reduce((a,b)=>a.life<b.life?a:b);
@@ -56,10 +56,11 @@ export class WreckEffects{
         d.scale.set(width,.14+Math.random()*.25,width*(.65+Math.random()*.6));
         d.v.multiplyScalar(1.15);d.v.y=3+Math.random()*3;
       }
-      d.color.set(material==='wood'?0x967047:material==='metal'?0x626964:0x8e8b7e);d.life=d.max=material==='rubble'?GROUND_WRECK_LIFETIME:broken?3:1.6;this.debris.push(d);
+      d.color.set(material==='wood'?0x967047:material==='metal'?0x626964:0x8e8b7e);d.life=d.max=material==='rubble'?GROUND_WRECK_LIFETIME:broken?3:1.6;
+      if(this.physics&&!this.physics.spawnFragment(d)){this.free.push(d);break;}this.debris.push(d);
     }
   }
-  clear(){this.free.push(...this.debris);this.debris.length=0;this.mesh.count=0;for(const b of this.batches){for(const s of b.slots)s.life=0;b.mesh.count=0;}}
+  clear(){for(const d of this.debris)this.physics?.removeFragment(d);this.free.push(...this.debris);this.debris.length=0;this.mesh.count=0;for(const b of this.batches){for(const s of b.slots)s.life=0;b.mesh.count=0;}}
   syncMarks(){
     for(const b of this.batches){let count=0;
       b.slots.forEach((s,i)=>{if(s.ground&&s.life>0)s.p.y=(this.groundHeight?.(s.p.x,s.p.z)??0)+.022;const visible=s.life>0&&i<this.markLimit;this.dummy.position.copy(s.p);this.dummy.quaternion.copy(s.q);this.dummy.scale.setScalar(visible?s.radius:0);this.dummy.updateMatrix();b.mesh.setMatrixAt(i,this.dummy.matrix);b.opacity.setX(i,visible?Math.min(1,s.life/(s.ground?GROUND_RESTORE_DURATION:4)):0);if(visible)count=i+1;});
@@ -69,7 +70,8 @@ export class WreckEffects{
   update(dt){
     for(const b of this.batches)for(const s of b.slots)s.life=Math.max(0,s.life-dt);this.syncMarks();
     for(let i=this.debris.length-1;i>=0;i--){const d=this.debris[i];d.life-=dt;
-      if(d.life<=0||i>=this.budget){this.free.push(d);this.debris.splice(i,1);continue;}
+      if(d.life<=0||i>=this.budget){this.physics?.removeFragment(d);this.free.push(d);this.debris.splice(i,1);continue;}
+      if(d.body){d.p.copy(d.body.translation());this.bodyRotation.copy(d.body.rotation());d.rotation.setFromQuaternion(this.bodyRotation);continue;}
       d.v.y-=10*dt;d.p.addScaledVector(d.v,dt);
       const floor=(this.groundHeight?.(d.p.x,d.p.z)??0)+Math.max(.035,d.scale.y*.5);
       if(d.p.y<floor){d.p.y=floor;d.v.y=Math.abs(d.v.y)*.18;d.v.x*=.6;d.v.z*=.6;d.spin.multiplyScalar(.5);}

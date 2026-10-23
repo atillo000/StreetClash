@@ -1,7 +1,11 @@
 import * as THREE from 'three';
 import { QuarksEffects } from './QuarksEffects.js';
 import { ArcadeVFX } from './ArcadeVFX.js';
+import { PowerVFX } from './PowerVFX.js';
 import { WreckEffects } from './WreckEffects.js';
+import { loadVFXTextures } from './TexturedVFX.js';
+import { BladeTrails } from './BladeTrails.js';
+import { ElementalEffects, loadElementalAssets } from './ElementalEffects.js';
 
 // Fixed particle pool rendered in one draw call, with no per-impact meshes.
 export class Effects {
@@ -21,24 +25,25 @@ export class Effects {
     this.quarks = new QuarksEffects(scene);
     this.arcade = new ArcadeVFX(scene);
     this.wreck = new WreckEffects(scene);
+    this.special = new PowerVFX(scene);this.elemental=new ElementalEffects(scene);this.blades=new BladeTrails(scene);
     this.rings = []; this.ringFree = Array.from({ length: 16 }, () => ({ position: new THREE.Vector3(), color: new THREE.Color() }));
     this.ringMesh = new THREE.InstancedMesh(new THREE.RingGeometry(0.88, 1, 32).rotateX(-Math.PI / 2),
       new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }), 16);
     this.ringMesh.count = 0; this.ringMesh.frustumCulled = false; scene.add(this.ringMesh);
   }
 
-  setBudget(count) { this.budget = Math.min(this.capacity, count); this.quarks.setBudget(this.budget); this.arcade.setBudget(this.budget); this.wreck.setBudget(this.budget); }
-  clear() { this.free.push(...this.items); this.items.length = 0; this.mesh.count = 0; this.quarks.clear(); this.arcade.clear(); this.wreck.clear();
+  setBudget(count) { this.budget = Math.min(this.capacity, count); this.quarks.setBudget(this.budget); this.arcade.setBudget(this.budget); this.wreck.setBudget(this.budget); this.special.setBudget(this.budget);this.elemental.setBudget(this.budget);this.blades.setBudget(this.budget); }
+  clear() { this.free.push(...this.items); this.items.length = 0; this.mesh.count = 0; this.quarks.clear(); this.arcade.clear(); this.wreck.clear(); this.special.clear();this.elemental.clear();this.blades.clear();
     this.ringFree.push(...this.rings); this.rings.length = 0; this.ringMesh.count = 0; }
 
-  async loadSprites() { await this.quarks.loadAtlas(); }
+  async loadSprites() { await Promise.all([this.quarks.loadAtlas(),loadVFXTextures(),loadElementalAssets()]); }
   cast(pos, color, kind = 'cast') {
     this.quarks.burst(pos, color, kind);
     if (kind === 'muzzle') this.quarks.burst(pos, 0x777777, 'smoke');
   }
-  contact(attacker,target,result,move,point){this.arcade.contact(attacker,target,result,move,point);}
-  swing(fighter,move){this.arcade.swing(fighter,move);}
-  render(camera){this.arcade.render(camera);}
+  contact(attacker,target,result,move,point){this.arcade.contact(attacker,target,target.lastHitInfo?.absorbed>0&&target.lastDamage===0?'blocked':result,move,point);this.elemental.contact(attacker,target,result,move,point);}
+  swing(fighter,move){this.elemental.sweep(fighter,move);}
+  render(camera){this.arcade.render(camera);this.special.render(camera);this.elemental.render(camera);this.blades.render(camera); }
   impact(pos, color, heavy = false) { this.quarks.burst(pos, color, heavy ? 'heavy' : 'impact'); }
   projectileTrail(pos, color, style) { this.quarks.burst(pos, color, style === 'arrow' ? 'wind' : 'arcane'); }
 
@@ -103,6 +108,7 @@ export class Effects {
     this.quarks.update(dt);
     this.arcade.update(dt);
     this.wreck.update(dt);
+    this.special.update(dt);this.elemental.update(dt);this.blades.update(dt);
     for (let i = this.rings.length - 1; i >= 0; i--) {
       const ring = this.rings[i]; ring.remaining -= dt;
       if (ring.remaining <= 0 || i >= Math.max(2, this.budget / 12)) { this.ringFree.push(ring); this.rings.splice(i, 1); }

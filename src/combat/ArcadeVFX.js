@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { barrierMaterial, vfxTextures } from './TexturedVFX.js';
 
 const vertex=`
 varying vec2 vUv;
@@ -22,6 +23,7 @@ uniform float uProgress;
 uniform float uShell;
 uniform float uArc;
 uniform float uStrength;
+uniform sampler2D uSprite;
 void main(){
   float alpha=0.0;
   float core=0.0;
@@ -49,6 +51,7 @@ void main(){
       alpha=(ring*.85+inner+rays*.9)*(1.0-uProgress);core=inner+ring*.55;
     }
   }
+  if(uShell<.5){float sprite=texture2D(uSprite,vUv).a;alpha=sprite*(1.-uProgress)*1.2;core=sprite*.65;}
   alpha=clamp(alpha*uStrength,0.0,.92);
   if(alpha<.008)discard;
   gl_FragColor=vec4(mix(uColor,vec3(1.0),clamp(core*.65,0.0,.8)),alpha);
@@ -62,9 +65,10 @@ export class ArcadeVFX {
     const sphere=new THREE.SphereGeometry(1,24,16),plane=new THREE.PlaneGeometry(2,2);
     for(const kind of ['shell','impact','arc'])for(let i=0;i<8;i++){
       const material=new THREE.ShaderMaterial({vertexShader:vertex,fragmentShader:fragment,
-        uniforms:{uColor:{value:new THREE.Color()},uProgress:{value:0},uShell:{value:kind==='shell'?1:0},uArc:{value:kind==='arc'?1:0},uStrength:{value:1}},
+        uniforms:{uColor:{value:new THREE.Color()},uProgress:{value:0},uShell:{value:kind==='shell'?1:0},uArc:{value:kind==='arc'?1:0},uStrength:{value:1},uSprite:{value:null}},
         transparent:true,depthWrite:false,depthTest:true,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,toneMapped:false});
-      const mesh=new THREE.Mesh(kind==='shell'?sphere:plane,material);mesh.visible=false;mesh.frustumCulled=false;mesh.renderOrder=2;scene.add(mesh);
+      if(kind==='shell')material.dispose();
+      const mesh=new THREE.Mesh(kind==='shell'?sphere:plane,kind==='shell'?barrierMaterial():material);mesh.visible=false;mesh.frustumCulled=false;mesh.renderOrder=2;scene.add(mesh);
       this.entries.push({kind,mesh,remaining:0,life:1,follow:null,position:new THREE.Vector3(),scale:new THREE.Vector3(),forward:new THREE.Vector3()});
     }
     this.direction=new THREE.Vector3();
@@ -103,7 +107,9 @@ export class ArcadeVFX {
     for(const e of this.entries){
       if(e.remaining<=0)continue;e.remaining=Math.max(0,e.remaining-dt);
       e.mesh.visible=e.remaining>0;if(!e.mesh.visible){e.follow=null;continue;}
-      const t=1-e.remaining/e.life;e.mesh.material.uniforms.uProgress.value=t;
+      const t=1-e.remaining/e.life;const uniforms=e.mesh.material.uniforms;uniforms.uProgress.value=t;
+      if(e.kind==='shell'){uniforms.uSmoke.value=vfxTextures.smoke_04;uniforms.uTime.value=t*e.life;uniforms.uOpacity.value=.85;}
+      else uniforms.uSprite.value=e.kind==='arc'?vfxTextures.slash_02:vfxTextures.flare_01;
       if(e.follow){
         e.mesh.position.copy(e.follow.position).add(e.forward);
         e.mesh.position.y+=e.kind==='shell'?e.follow.height*.49:e.follow.height*.52;

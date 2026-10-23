@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { StatusEffects, grantUltimateReward } from './StatusEffects.js';
 import { directDamage } from './CombatBalance.js';
+import { SoldierCombatPose } from '../characters/SoldierCombat.js';
 import { PACE } from '../core/Pacing.js';
 import { MOVES, DEFENSE, HIT_MAX_ANGLE, attackPhase } from './moves.js';
 import { shortestAngle } from '../characters/Mover.js';
@@ -69,6 +70,7 @@ export class Combatant {
   get phase() { return this.state === 'attack' ? attackPhase(this.move, this.character.actionProgress()) : this.state === 'free' ? 'idle' : this.state === 'hit' ? 'stagger' : this.state === 'down' ? 'knockdown' : this.state; }
 
   replaceFighter({ character, mover, profile, moves, defense, equipment = null }) {
+    this.world.physics?.ragdolls.stop(this);
     const scene = this.character.root.parent;
     this.character.mixer.stopAllAction(); this.character.mixer.uncacheRoot(this.character.model);
     const oldMaterials = new Set();
@@ -86,6 +88,8 @@ export class Combatant {
   }
 
   reset() {
+    this.world.physics?.ragdolls.stop(this);this.launched=false;
+    if(this.profile?.id==='soldier'){this.character.poseLayer??=new SoldierCombatPose(this);this.character.poseLayer.beforeMix();this.character.poseLayer.pitch=0;this.character.poseLayer.yaw=0;this.character.poseLayer.recoil=0;}
     this.hitContext=null;this.lastHitInfo=null;
     this.statuses.clear();
     this.hp = this.maxHp;
@@ -300,11 +304,17 @@ export class Combatant {
     this._setState('block');
   }
 
+  enterStun(){
+    this.buffer=null;this.dodgeBuffer=null;this.move=null;this.strikers=[];this.comboStage=0;this.comboRemaining=0;this.wantBlock=false;this.mover.facingTarget=null;this.mover.speed=0;this.mover.velocity.set(0,0,0);
+    this.character.playAction(this.defense.hit.clip,{fade:.06,timeScale:1});this._setState('stun');
+  }
   update(dt) {
     if(this.inactive)return;
     this.previousPosition.copy(this.position);
     this.previousFacing = this.mover.facing;
     this.statuses.update(dt);
+    if(this.state==='stun'&&!this.statuses.entries.has('stunned'))this._toFree(.12);
+    if(this.statuses.entries.has('stunned')&&!['stun','down','getup','dead'].includes(this.state))this.enterStun();
     this.mover.statusSpeed = this.statuses.multiplier('moveSpeed');
     const ch = this.character;
     for (const id of Object.keys(this.cooldowns)) this.cooldowns[id] = Math.max(0, this.cooldowns[id] - dt);
@@ -371,11 +381,14 @@ export class Combatant {
       case 'dodge':
         if (p >= this.defense.dodge.endAt) this._toFree(0.15);
         break;
+      case 'stun':
+        if(p>=.5&&ch.action)ch.action.paused=true;
+        break;
       case 'hit':
         if (p >= this.defense.hit.endAt) this._toFree(0.15);
         break;
       case 'down':
-        if (p >= 0.97) {
+        if (p >= 0.97 && (!this.launched || this.jumpVelocity===0)) {
           this.holdT += dt;
           if (this.holdT > this.defense.down.hold) {
             ch.playAction(this.defense.getUp.clip, { fade: 0.1, timeScale: this.defense.getUp.speed });
@@ -398,13 +411,17 @@ export class Combatant {
     this.height = this.crouching ? 1.12 : this.profile?.height || 1.7;
     const groundBefore=this.world.arena.groundHeight?.(this.position.x,this.position.z)??0;
     this.character.grounded = this.position.y <= groundBefore+0.001 && ['free', 'block', 'blockEnd'].includes(this.state);
-    this.mover.enabled = this.state === 'free' || this.state === 'jump' || (this.state === 'land' && this.jumpMoving);
+    const mobileFire=this.state==='attack'&&!!this.move?.mobileFire;
+    if(mobileFire)this.mover.facingTarget=this.attackAngle;
+    this.mover.actionSpeed=mobileFire?.6:1;
+    this.mover.enabled = mobileFire || this.state === 'free' || this.state === 'jump' || (this.state === 'land' && this.jumpMoving);
     this.mover.update(dt);
     const ground=this.world.arena.groundHeight?.(this.position.x,this.position.z)??0;
     if (this.jumpVelocity !== 0 || this.state === 'jump') {
       this.jumpVelocity -= 14 * PACE.gravity * dt; this.position.y += this.jumpVelocity * dt;
       if (this.position.y <= ground) {
-        this.position.y = ground; this.jumpVelocity = 0;
+        const landingSpeed=Math.abs(this.jumpVelocity);this.position.y = ground; this.jumpVelocity = 0;
+        if(this.launched){this.launched=false;this.world.onLanding?.(this,landingSpeed);}
         if (this.state === 'jump') {
           const clip = this.jumpMoving && ch.hasClip('LandRun') ? 'LandRun' : 'Land';
           if (ch.hasClip(clip)) { ch.playAction(clip, { fade: 0.07, timeScale: 2.8 }); this._setState('land'); }
@@ -450,7 +467,7 @@ export class Combatant {
         const span = p - previousProgress;
         const activeFrom = from.clone().lerp(to, (a - previousProgress) / span);
         const activeTo = from.clone().lerp(to, (b - previousProgress) / span);
-        this.world.onTrail?.(activeFrom, activeTo, m.color ?? this.profile?.color);
+        this.world.onTrail?.(activeFrom, activeTo, m.color ?? this.profile?.color,this,m);
         this.world.onEnvironmentSweep?.(this,m,activeFrom,activeTo,m.strikeRadius,this.hitTargets[index]);
         for (const t of this.world.combatants) {
           if (t === this || t.team === this.team || !t.alive || this.hitTargets[index].has(t)) continue;
@@ -490,9 +507,10 @@ export class Combatant {
     const resolved=directDamage({damage,attacker,target:this,move,context,guarded:guarding});damage=resolved.damage;
     if (guarding && power !== 'heavy') {
       const before = this.hp;
-      this.hp = Math.max(Math.min(1, this.hp), this.hp - damage * B.damageTaken);
+      const shieldHit=this.statuses.absorbDamage(damage*B.damageTaken);
+      this.hp = Math.max(Math.min(1, this.hp), this.hp - shieldHit.damage);
       this.lastDamage = before - this.hp;
-      this.lastHitInfo={damage:this.lastDamage,critical:false,blocked:true};
+      this.lastHitInfo={damage:this.lastDamage,critical:false,blocked:true,absorbed:shieldHit.absorbed};
       this.mover.addImpulse(dir.clone().multiplyScalar(knock * B.pushback), 6);
       this._flash(0.08, 0.3, 0.55, 1.0);
       if (this.character.hasClip('BlockHit')) { this.guardPhase = 'react'; this.character.playAction('BlockHit', { fade: 0.05, timeScale: 2 * PACE.reaction }); }
@@ -500,11 +518,12 @@ export class Combatant {
     }
 
     // Heavy hits break a guard but do reduced damage to it.
-    const dmg = guarding ? damage * 0.6 : damage;
+    const shieldHit=this.statuses.absorbDamage(guarding?damage*.6:damage);const dmg=shieldHit.damage;
     this.lastDamage = Math.min(this.hp, dmg);
-    this.lastHitInfo={damage:this.lastDamage,critical:resolved.critical,blocked:false,guardBroken:guarding&&power==='heavy'};
+    this.lastHitInfo={damage:this.lastDamage,critical:resolved.critical,blocked:false,absorbed:shieldHit.absorbed,guardBroken:guarding&&power==='heavy'};
     if(resolved.critical)context.criticalTargets.add(this);
     this.hp -= dmg;
+    if(dmg<=1e-8&&shieldHit.absorbed>0){this._flash(.08,.3,.65,1);return 'hit';}
     this._flash(0.1, 1.0, 0.4, 0.25);
     this.buffer = null;
     this.dodgeBuffer = null;
@@ -524,6 +543,8 @@ export class Combatant {
       return 'dead';
     }
     if (power === 'heavy') {
+      this.statuses.remove('stunned','interrupted');
+      if(move?.launchSpeed>0&&!guarding&&!this.profile?.boss){this.jumpVelocity=Math.max(this.jumpVelocity,move.launchSpeed);this.launched=true;}
       this.character.playAction(this.defense.down.clip, { fade: 0.08, timeScale: this.defense.down.speed });
       this.holdT = 0;
       this._setState('down');

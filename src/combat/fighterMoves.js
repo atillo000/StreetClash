@@ -2,6 +2,9 @@ import { DEFENSE } from './moves.js';
 import { applyCombatKits } from './CombatKits.js';
 import { configureStatuses } from './StatusEffects.js';
 import { paceMoves, paceDefense } from '../core/Pacing.js';
+import { configureSoldierCombat } from '../characters/SoldierCombat.js';
+import { configurePowers } from './PowerMoves.js';
+import { configureCombatArt } from './CombatArt.js';
 import { applyCombatBalance } from './CombatBalance.js';
 import { configureEnemyMoves } from './EnemyMoves.js';
 import { configureEnvironmentMoves } from './EnvironmentMoves.js';
@@ -139,10 +142,13 @@ rifle.ultimate = {
 // Combat skill slots and click chains; uses existing embedded attack clips.
 applyCombatKits(FIGHTER_MOVES);
 configureEnemyMoves(FIGHTER_MOVES);
+configureSoldierCombat(FIGHTER_MOVES.soldier);
+configurePowers(FIGHTER_MOVES);
 applyCombatBalance(FIGHTER_MOVES);
 configureStatuses(FIGHTER_MOVES);
 paceMoves(FIGHTER_MOVES);
 configureEnvironmentMoves(FIGHTER_MOVES);
+configureCombatArt(FIGHTER_MOVES);
 
 export function fighterDefense(id) {
   const defense = Object.fromEntries(Object.entries(DEFENSE).map(([key, value]) => [key, { ...value }]));

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { BulletTracers } from './BulletTracers.js';
 import { boxSurfaceNormal } from './DestructibleProps.js';
 import { sweepHurtCapsule } from '../physics/collision.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -6,8 +7,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 export class Projectiles {
   constructor(scene, world, effects, capacity = 48) {
     Object.assign(this, { world, effects, capacity });
-    this.free = Array.from({ length: capacity }, () => ({ position: new THREE.Vector3(), velocity: new THREE.Vector3(), life: 0 }));
-    this.items = [];
+    this.free = Array.from({ length: capacity }, () => ({ position: new THREE.Vector3(), velocity: new THREE.Vector3(), origin:new THREE.Vector3(), life: 0 }));
+    this.items = [];this.tracers=new BulletTracers(scene);
     this.mesh = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.07, 1), new THREE.MeshBasicMaterial(), capacity);
     this.mesh.count = 0; this.mesh.frustumCulled = false; scene.add(this.mesh);
     const shaft = new THREE.CylinderGeometry(0.009, 0.009, 0.65, 5).rotateX(Math.PI / 2);
@@ -20,7 +21,7 @@ export class Projectiles {
     this.expandedBox = new THREE.Box3();
   }
 
-  clear() { this.free.push(...this.items); this.items.length = 0; this.mesh.count = 0; this.arrows.count = 0; }
+  clear() { this.tracers.clear();this.free.push(...this.items); this.items.length = 0; this.mesh.count = 0; this.arrows.count = 0; }
 
   emit(owner, move) {
     const it = this.free.pop(); if (!it) return;
@@ -35,7 +36,7 @@ export class Projectiles {
       if (direction.dot(heading) > 0.5) heading.copy(target.position).add(new THREE.Vector3(0, 1, 0)).sub(it.position).normalize();
     }
     it.velocity.copy(heading).multiplyScalar(move.projectileSpeed);
-    it.position.addScaledVector(heading, 0.08);
+    it.origin.copy(it.position);it.position.addScaledVector(heading, 0.08);
     it.life = move.range / move.projectileSpeed; it.trailT = 0;
     this.items.push(it);
     this.effects.spark(it.position, move.color, owner.profile?.id === 'soldier' ? 3 : 5, 1.4);
@@ -60,8 +61,9 @@ export class Projectiles {
   }
 
   update(dt) {
+    this.tracers.update(dt);
     for(let i=this.items.length-1;i>=0;i--){
-      const it=this.items[i],from=it.position.clone();it.position.addScaledVector(it.velocity,dt);it.life-=dt;it.trailT+=dt;
+      const it=this.items[i],from=it.position.clone();it.position.addScaledVector(it.velocity,Math.min(dt,Math.max(0,it.life)));it.life-=dt;it.trailT+=dt;
       if(['magic','archer'].includes(it.owner.profile?.id)&&it.trailT>=.05){it.trailT=0;this.effects.projectileTrail?.(it.position,it.move.color,it.move.projectileStyle);}
       const delta=it.position.clone().sub(from),distance=delta.length(),direction=delta.clone().normalize(),ray=new THREE.Ray(from,direction);
       let surfaceDistance=Infinity,surfaceBox=null;
@@ -84,17 +86,18 @@ export class Projectiles {
       for(const candidate of candidates){
         const result=candidate.target.takeHit({damage:it.move.damage,knock:it.move.knock,power:it.move.power,dir:it.velocity.clone().setY(0).normalize(),attacker:it.owner,point:candidate.point,move:it.move,context:it.context});
         if(result==='miss')continue;
-        this.world.onHit(it.owner,candidate.target,result,it.move,candidate.point);spent=true;break;
+        this.world.onHit(it.owner,candidate.target,result,it.move,candidate.point);it.position.copy(candidate.point);spent=true;break;
       }
       if(!spent&&surfaceDistance<=distance){
         const point=from.clone().addScaledVector(direction,surfaceDistance),normal=surfaceBox?boxSurfaceNormal(point,surfaceBox):terrainHit.normal;
         if(surfaceBox)point.addScaledVector(normal,-it.move.projectileRadius);else point.copy(terrainHit.point);
         if(this.world.destruction)this.world.destruction.surface(it.owner,it.move,point,surfaceBox,normal);else this.effects.impact(point,it.move.color);
-        spent=true;
+        it.position.copy(point);spent=true;
       }
+      if(it.owner.profile?.id==='soldier'&&distance>1e-6){const tail=it.position.clone().addScaledVector(direction,-Math.min(1.1,it.origin.distanceTo(it.position)));this.tracers.add(tail,it.position,it.move.color);}
       if(spent||it.life<=0){this.free.push(it);this.items[i]=this.items[this.items.length-1];this.items.pop();}
     }
-    this.sync();
+    this.tracers.update(0);this.sync();
   }
 
   sync() {
@@ -106,7 +109,7 @@ export class Projectiles {
       if (it.move.projectileStyle === 'arrow') {
         this.dummy.scale.setScalar(1); this.dummy.updateMatrix(); this.arrows.setMatrixAt(arrows++, this.dummy.matrix); continue;
       }
-      if (bullet) this.dummy.scale.set(0.5, 0.5, 3);
+      if (bullet) this.dummy.scale.set(.65,.65,4);
       else this.dummy.scale.setScalar(it.move.projectileRadius / 0.07);
       this.dummy.updateMatrix(); this.mesh.setMatrixAt(particles, this.dummy.matrix); this.mesh.setColorAt(particles++, new THREE.Color(it.move.color));
     }

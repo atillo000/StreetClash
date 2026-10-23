@@ -1,6 +1,9 @@
 import * as THREE from 'three';
+import { MISSIONS } from './Campaign.js';
 
 const MODES={
+  campaign:{label:'CAMPAIGN',duration:240,rules:'Complete missions to unlock the next contract. Progress saves on this device.'},
+  survival:{label:'ZOMBIE SURVIVAL',duration:240,rules:'Clear five escalating Parasite waves. One health pool. Clear every wave before time runs out.'},
   duel:{label:'DUEL',duration:120,rules:'One rival. Two minutes. Win by knockout or finish with more health.'},
   gauntlet:{label:'GAUNTLET',duration:360,rules:'Clear the Parasite wave, defeat the giant Mutant, then hunt El Chupacabra. Bosses arrive with zombie support. One health pool.'},
   boss:{label:'MUTANT HUNT',duration:240,rules:'Defeat the giant Mutant and its Parasite Zombies. Clear every enemy before time runs out.'},
@@ -18,14 +21,14 @@ export class ArenaCircuit{
   overlay.innerHTML='<div id="encounterProgress"></div><div id="bossDisplay" hidden><small>IRONWORKS / BOSS ENCOUNTER</small><strong></strong><div class="boss-track" role="progressbar" aria-label="Boss health"><i></i></div><span></span></div><div id="spawnWarning" hidden></div><div id="enemyNameplate" hidden><b></b><div><i></i></div></div>';document.body.appendChild(overlay);
   const score=document.createElement('p');score.id='runScore';document.getElementById('resultReason').after(score);
   this.marker=new THREE.Mesh(new THREE.RingGeometry(.85,.92,48).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xc18f52,transparent:true,opacity:.55,depthWrite:false}));this.marker.visible=false;scene.add(this.marker);this.projected=new THREE.Vector3();
-  document.getElementById('arenaMode').addEventListener('change',event=>{if(match.state!=='lobby')return;this.mode=event.target.value;world.enemyPool.clear();this.spawnEnemy(this.plan()[0].id,false);this.updateHud();});
+  document.getElementById('arenaMode').addEventListener('change',event=>{if(match.state!=='lobby')return;this.mode=event.target.value;this.preview();});
   const reset=match.onReset;
   match.onReset=()=>{
-    world.enemyPool.clear();this.stage=0;this.kills=0;this.pending=0;this.defeated.clear();this.sequence=this.training?[{id:this.rivalId,zombies:0}]:this.plan();
-    this.spawnEnemy(this.sequence[0].id,false);match.duration=MODES[this.mode].duration;match.remaining=match.duration;
+    world.enemyPool.clear();this.stage=0;this.kills=0;this.pending=0;this.defeated.clear();this.mission=this.mode==='campaign'&&!this.training?(world.campaign?.selected||MISSIONS[0]):null;this.sequence=this.training?[{id:this.rivalId,zombies:0}]:this.plan();
+    this.spawnEnemy(this.sequence[0].id,false);match.duration=this.mission?.duration||MODES[this.mode].duration;match.remaining=match.duration;
     reset();
     // Reset first clears terrain/effects; only then place the new zombie wave.
-    if(!this.training)world.enemyPool.spawn(this.sequence[0].zombies||0);
+    if(!this.training)world.enemyPool.spawn(this.sequence[0].zombies||0,this.sequence[0].hpScale||1);
     this.marker.visible=false;
   };
   const practice=match.practice.bind(match);match.practice=()=>{this.training=true;practice();this.training=false;world.enemyPool.clear();};
@@ -38,38 +41,39 @@ export class ArenaCircuit{
     if(player.hp<=0){match.finish('defeat','Knocked out in the circuit');return;}
     for(const c of world.combatants)if(c.team==='e'&&!c.alive&&!c.inactive&&!this.defeated.has(c)){this.defeated.add(c);this.kills++;}
     const cleared=!enemy.alive&&world.enemyPool.living===0;
-    if(cleared&&this.stage===this.sequence.length-1){match.finish('victory',this.boss?enemy.profile.name+' defeated / arena cleared':'Circuit cleared');return;}
+    if(cleared&&this.stage===this.sequence.length-1){match.finish('victory',this.mission?this.mission.title+' / objective complete':this.boss?enemy.profile.name+' defeated / arena cleared':'All waves cleared');return;}
     if(match.remaining<=1e-8){match.finish('defeat','Time limit / enemies remain');return;}
-    if(cleared&&!this.pending){this.pending=3;ai.enabled=false;lock.clear();world.projectiles.clear();this.spawnPoint();}
+    if(cleared&&!this.pending){this.pending=3;ai.enabled=false;lock.clear();world.projectiles.clear();world.powers.clear();this.spawnPoint();}
   };
   const finish=match.onFinish;
   match.onFinish=result=>{
     finish(result);const kills=this.mode==='duel'?(result.outcome==='victory'?1:0):this.kills;
     result.score=Math.max(0,Math.round(result.damageDealt+100*kills+(result.outcome==='victory'?500+player.hp*3+match.remaining*2:0)));
     this.rows.push({name:player.profile.name,mode:this.label,score:result.score,won:result.outcome==='victory'});this.rows.sort((a,b)=>b.score-a.score);this.rows=this.rows.slice(0,8);
-    try{localStorage.setItem(STORAGE,JSON.stringify(this.rows));}catch{}this.drawRecords();
+    try{localStorage.setItem(STORAGE,JSON.stringify(this.rows));}catch{}if(this.mode==='campaign'&&this.mission)world.campaign?.complete(this.mission,result);this.drawRecords();this.updateHud();
   };
   this.drawRecords();this.updateHud();
  }
- get label(){return MODES[this.mode].label;}
- plan(){return this.mode==='gauntlet'?[{id:'zombie',zombies:3},{id:'mutant',zombies:2},{id:'chupacabra',zombies:3}]:this.mode==='boss'?[{id:'mutant',zombies:2}]:this.mode==='predator'?[{id:'chupacabra',zombies:3}]:[{id:this.rivalId,zombies:0}];}
+ get label(){return this.mode==='campaign'?((this.match.state==='lobby'?this.world.campaign?.selected:this.mission)||MISSIONS[0]).type.toUpperCase():MODES[this.mode].label;}
+ plan(){if(this.mode==='campaign')return (this.world.campaign?.selected||MISSIONS[0]).waves;if(this.mode==='survival')return [1,2,3,3,3].map((zombies,i)=>({id:'zombie',zombies,hpScale:1+i*.1}));return this.mode==='gauntlet'?[{id:'zombie',zombies:3},{id:'mutant',zombies:2},{id:'chupacabra',zombies:3}]:this.mode==='boss'?[{id:'mutant',zombies:2}]:this.mode==='predator'?[{id:'chupacabra',zombies:3}]:[{id:this.rivalId,zombies:0}];}
+ preview(){if(this.match.state!=='lobby')return;this.stage=0;this.mission=null;this.sequence=this.plan();this.world.enemyPool.clear();this.spawnEnemy(this.sequence[0].id,false);this.updateHud();}
  spawnPoint(){const points=[[-4.7,-4.7],[4.7,-4.7],[-4.7,4.7],[4.7,4.7]];points.sort((a,b)=>Math.hypot(b[0]-this.player.position.x,b[1]-this.player.position.z)-Math.hypot(a[0]-this.player.position.x,a[1]-this.player.position.z));this.nextSpawn=new THREE.Vector3(points[0][0],0,points[0][1]);this.marker.position.set(this.nextSpawn.x,this.world.arena.groundHeight(this.nextSpawn.x,this.nextSpawn.z)+.023,this.nextSpawn.z);}
- spawnEnemy(id,arrival){const c=this.enemy;if(c.profile.id!==id)c.replaceFighter(this.library.create(id,c.spawnFacing));this.boss=!!c.profile.boss;c.maxHp=c.profile.maxHp||100;c.spawn.set(0,0,-3.8);if(arrival)c.spawn.copy(this.nextSpawn);c.reset();this.ai.reset();this.lock.clear();if(arrival){this.effects.pulse(c.position,0xc18f52,1.4);c.iframes=1;this.world.projectiles.clear();}}
+ spawnEnemy(id,arrival){const c=this.enemy;if(c.profile.id!==id)c.replaceFighter(this.library.create(id,c.spawnFacing));this.boss=!!c.profile.boss;c.maxHp=Math.round((c.profile.maxHp||100)*((this.sequence?.[this.stage]?.id===id?this.sequence[this.stage].hpScale:1)||1));c.spawn.set(0,0,-3.8);if(arrival)c.spawn.copy(this.nextSpawn);c.reset();this.ai.reset();this.lock.clear();if(arrival){this.effects.pulse(c.position,0xc18f52,1.4);c.iframes=1;this.world.projectiles.clear();}}
  update(dt){
   if(!this.match.canFight)return;
   this.world.enemyPool.update(dt,this.match.state==='active'&&this.pending<=0);
-  if(this.pending>0){this.pending=Math.max(0,this.pending-dt);this.ai.enabled=false;if(this.pending===0){this.stage++;this.defeated.clear();this.spawnEnemy(this.sequence[this.stage].id,true);this.world.enemyPool.spawn(this.sequence[this.stage].zombies||0);this.ai.enabled=true;this.marker.visible=false;}}
+  if(this.pending>0){this.pending=Math.max(0,this.pending-dt);this.ai.enabled=false;if(this.pending===0){this.stage++;this.defeated.clear();this.spawnEnemy(this.sequence[this.stage].id,true);this.world.enemyPool.spawn(this.sequence[this.stage].zombies||0,this.sequence[this.stage].hpScale||1);if(this.mission?.recovery)this.player.statuses.heal(this.mission.recovery);this.ai.enabled=true;this.marker.visible=false;}}
  }
  drawRecords(){const list=document.getElementById('circuitRecords');list.replaceChildren();if(!this.rows.length){const li=document.createElement('li');li.className='empty-record';li.textContent='Finish a match to set the first record.';list.appendChild(li);}this.rows.slice(0,5).forEach((r,i)=>{const li=document.createElement('li'),rank=document.createElement('b'),who=document.createElement('span'),value=document.createElement('strong');rank.textContent=String(i+1).padStart(2,'0');who.textContent=r.name+' / '+r.mode;value.textContent=r.score.toLocaleString();li.append(rank,who,value);list.appendChild(li);});}
  updateHud(){
   const m=this.match;document.getElementById('encounterDisplay').hidden=!['countdown','active','practice','ending'].includes(m.state);
-  document.getElementById('modeRules').textContent=MODES[this.mode].rules;document.querySelector('.arena-tag').textContent=this.mode==='gauntlet'?'3 WAVES':this.mode==='duel'?'1V1':'BOSS';document.getElementById('opponentChoice').disabled=this.mode!=='duel';
+  document.getElementById('modeRules').textContent=this.mode==='campaign'?(this.world.campaign?.selected||MISSIONS[0]).brief:MODES[this.mode].rules;document.querySelector('.arena-tag').textContent=this.mode==='duel'?'1V1':this.mode==='campaign'?'MISSION':this.mode==='survival'?'5 WAVES':this.mode==='gauntlet'?'3 WAVES':'BOSS';document.getElementById('opponentChoice').disabled=this.mode!=='duel';
   const feature=document.getElementById('featuredFighter');feature.querySelector('strong').textContent=this.player.profile.name.toUpperCase();feature.querySelector('span').textContent=this.player.profile.role;document.querySelector('.location-stamp small').textContent=this.label+' / LOCAL PLAY';
   const living=(this.enemy.alive?1:0)+this.world.enemyPool.living;
-  document.getElementById('encounterProgress').textContent=m.state==='practice'?'TRAINING / NO RECORD':this.mode==='duel'?'':(this.mode==='gauntlet'?'ENCOUNTER '+(this.stage+1)+' / 3 · ':'')+living+' ENEMIES REMAIN · '+this.kills+' KOs';
+  document.getElementById('encounterProgress').textContent=m.state==='practice'?'TRAINING / NO RECORD':this.mode==='duel'?'':((this.mode==='campaign'?'MISSION '+String(MISSIONS.indexOf(this.mission||this.world.campaign?.selected)+1).padStart(2,'0')+' · ':'')+'WAVE '+(this.stage+1)+' / '+(this.sequence?.length||this.plan().length)+' · ')+living+' ENEMIES REMAIN · '+this.kills+' KOs';
   const warning=document.getElementById('spawnWarning');warning.hidden=!(this.pending>0&&m.state==='active');warning.textContent='NEXT ENCOUNTER IN '+Math.ceil(this.pending);
   const boss=document.getElementById('bossDisplay');boss.hidden=!this.boss||m.state==='practice';boss.querySelector('strong').textContent=this.enemy.profile.name.toUpperCase();boss.querySelector('i').style.width=Math.max(0,this.enemy.hp/this.enemy.maxHp)*100+'%';boss.querySelector('span').textContent=Math.ceil(this.enemy.hp)+' / '+this.enemy.maxHp;
-  const bar=boss.querySelector('[role]');bar.setAttribute('aria-valuenow',Math.ceil(this.enemy.hp));bar.setAttribute('aria-valuemax',this.enemy.maxHp);document.getElementById('runScore').textContent=m.result?(m.result.score??0)+' CIRCUIT POINTS / SAVED ON THIS DEVICE':'';
+  const bar=boss.querySelector('[role]');bar.setAttribute('aria-valuenow',Math.ceil(this.enemy.hp));bar.setAttribute('aria-valuemax',this.enemy.maxHp);this.world.campaign?.updateHud();document.getElementById('runScore').textContent=m.result?(m.result.score??0)+' CIRCUIT POINTS / SAVED ON THIS DEVICE':'';
  }
  render(camera){
   const active=this.match.canFight&&!this.world.paused;this.world.enemyPool.render(camera,active);

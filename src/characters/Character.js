@@ -108,7 +108,7 @@ export class Character {
     this.previousSpeed = speed; this.previousCrouch = crouching;
 
     // Locomotion fades out while an action plays, and back in afterwards.
-    const goal = this.action ? 0 : 1;
+    const goal = this.action&&!this.partialAction ? 0 : 1;
     const step = dt / Math.max(0.05, this.locoFade);
     this.locoGain += THREE.MathUtils.clamp(goal - this.locoGain, -step, step);
 
@@ -202,6 +202,7 @@ export class Character {
     this.autoAction = false;
     const act = this.actions.get(name);
     if (!act) { console.warn('Missing clip:', name); return null; }
+    this.partialAction=!!act.getClip().userData?.upperBody;
     if (this.action && this.action !== act) this.action.fadeOut(fade);
     act.reset();
     act.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity);
@@ -217,6 +218,7 @@ export class Character {
   }
 
   endAction(fade = 0.2) {
+    this.partialAction=false;
     this.autoAction = false;
     if (this.action) this.action.fadeOut(fade);
     this.action = null;
@@ -232,7 +234,10 @@ export class Character {
   }
 
   update(dt) {
+    if(this.ragdoll)return;
+    this.poseLayer?.beforeMix();
     this.mixer.update(dt);
+    this.poseLayer?.update(dt);
     if (this.autoAction && this.actionProgress() >= 0.95) this.endAction(0.12);
     this.feet.update(this.root, dt, this.grounded && (!this.action || this.autoAction),
       this.groundSpeed > (this.loco?.walkSpeed || 2) + 0.2);

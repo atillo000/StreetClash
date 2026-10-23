@@ -21,10 +21,13 @@ import { CombatSignals } from './combat/CombatSignals.js';
 import { requestedAttacks } from './core/controls.js';
 import { CombatFeedback } from './ui/CombatFeedback.js';
 import { CombatHud } from './ui/CombatHud.js';
+import { Campaign } from './game/Campaign.js';
+import { PowerSystem } from './combat/PowerSystem.js';
 import { ArenaCircuit } from './game/ArenaCircuit.js';
 import { resolveStatusHit } from './combat/StatusEffects.js';
 import { StatusPresentation } from './ui/StatusPresentation.js';
 import { DestructibleProps } from './combat/DestructibleProps.js';
+import { RapierPhysics } from './physics/RapierPhysics.js';
 
 const statusEl = document.getElementById('status');
 const qEl = document.getElementById('q');
@@ -74,6 +77,7 @@ function setQuality(name) {
   applyQuality(name, renderer, key);
   effects.setBudget(QUALITY[name].particles);
   feedback?.setBudget(QUALITY[name].particles);
+  window.__world?.statusPresentation?.setBudget(QUALITY[name].particles);
   qEl.textContent = name;
 }
 setQuality(qualityOrder[qIndex]);
@@ -103,8 +107,11 @@ const world = {
   paused: false,
   hitstop: 0,
   hitMarkerT: 0, hitMessage: '',
-  onAttack(c, move) { if (move.skill) sound.play(move.kind === 'mobility' ? 'dodge' : 'charge'); },
+  onAttack(c, move) { effects.elemental.charge(c,move);if (move.skill) sound.play(move.kind === 'mobility' ? 'dodge' : 'charge'); },
   onCast(c, move) {
+    effects.elemental.release(c,move);
+    c.character.poseLayer?.shot?.();
+    if(move.specialPower){c.equipment?.kick();this.powers.release(c,move);sound.play(c.profile.id==='soldier'?'rifle':move.specialPower==='fissure'?'heavy':'magic');return;}
     if (move.kind === 'mobility') { effects.pulse(c.position, move.color, 0.6); sound.play('dodge'); return; }
     c.equipment?.kick();
     if (move.kind === 'projectile') {
@@ -114,13 +121,13 @@ const world = {
     if (move.kind === 'area') projectiles.area(c, move); else projectiles.emit(c, move);
     sound.play(move.kind === 'area' ? 'heavy' : c.profile.id === 'soldier' ? 'rifle' : 'magic');
   },
-  onSwing(c,move) { effects.swing(c,move); },
+  onSwing(c,move) { effects.swing(c,move);sound.play(move.element==='fire'?'fire':move.element==='storm'?'electric':'swing'); },
   onEnvironmentSweep(c,move,from,to,radius,seen){this.destruction?.sweep(c,move,from,to,radius,seen);},
   onPropImpact(c,prop,damage,broken){
     sound.play(broken?'heavy':'hit');
     if(c.team==='p'){this.hitMarkerT=.2;this.hitMessage=prop.name.replaceAll('-',' ').toUpperCase()+(broken?' BROKEN':' / '+Math.ceil(damage));}
   },
-  onTrail(from, to, color) { effects.trail(from, to, color); },
+  onTrail(from, to, color, fighter, move) { if(fighter&&move)effects.blades.sample(from,to,fighter,move);else effects.trail(from,to,color); },
   onHit(attacker, target, result, move, point) {
     const critical=!!target.lastHitInfo?.critical;
     feedback?.damage(attacker,target,point,result);
@@ -129,8 +136,8 @@ const world = {
     effects.contact(attacker,target,result,move,point);
     const heavy = move.power === 'heavy';
     effects.impact(point, move.color ?? attacker.profile?.color ?? 0xffd58a, (heavy||critical) && result !== 'blocked');
-    if (attacker.team === 'p') { this.hitMarkerT = 0.22; this.hitMessage = result === 'blocked' ? 'GUARDED' : `${critical?'CRITICAL ':''}${Math.round(target.lastDamage)}${attacker.comboStage ? ' / CHAIN ' + attacker.comboStage : ''}`; }
-    sound.play(result === 'blocked' ? 'block' : heavy ? 'heavy' : 'hit');
+    if (attacker.team === 'p') { this.hitMarkerT = 0.22; this.hitMessage = target.lastHitInfo?.absorbed>0&&target.lastDamage===0?'SHIELD / '+Math.round(target.lastHitInfo.absorbed):result === 'blocked' ? 'GUARDED' : `${critical?'CRITICAL ':''}${Math.round(target.lastDamage)}${attacker.comboStage ? ' / CHAIN ' + attacker.comboStage : ''}`; }
+    sound.play(result === 'blocked' ? 'block' : critical?'critical':move.element==='storm'?'electric':heavy?'heavy':'hit');
     if (result === 'blocked') {
       effects.spark(point, 0x7fb4ff, 6, 3);
       cam.shake(0.03);
@@ -143,7 +150,9 @@ const world = {
     }
   },
   onStatusApplied(c,type,duration) { effects.shockwave(c.position,type.color,.9);feedback?.status(c,type,duration); },
-  onStatusEnded(c,type){feedback?.ended(c,type);},
+  onStatusEnded(c,type,reason){feedback?.ended(c,type,reason);},
+  onShieldAbsorbed(c,amount){feedback?.shield(c,amount);effects.cast(c.position.clone().add(new THREE.Vector3(0,c.height*.5,0)),0x9be9ff,'pulse');},
+  onUltimateComplete(c,move){effects.elemental.empower(c,move);},
   onStatusCleansed(c,count){feedback?.cleansed(c,count);},
   onHeal(c,amount){feedback?.heal(c,amount);},
   onStatusTick(source,target,damage,type) {
@@ -151,11 +160,13 @@ const world = {
     if(source)this.match?.recordHit(source,target,'periodic',damage);
     effects.spark(target.position.clone().add(new THREE.Vector3(0,.8,0)),type.color,3,1);
   },
-  onKill() {}, // Match resolves confirmed damage after both fighters' hit checks.
+  onLanding(c,speed){effects.elemental.landing(c,speed);if(c.team==='p'){cam.shake(.035);sound.play('heavy');}},
+  onKill(attacker,target) { this.physics?.ragdolls.stop(target);target.statuses.clear(); }, // Match still owns scoring/outcomes.
   onRespawn() {},
 };
 
 const projectiles = new Projectiles(scene, world, effects);
+world.powers=new PowerSystem(world,effects);
 world.projectiles = projectiles;
 
 async function boot() {
@@ -181,8 +192,11 @@ async function boot() {
   const player = makeFighter('capoeira', { name: 'YOU', team: 'p', spawn: new THREE.Vector3(0, 0, 5.5), facing: Math.PI });
   const dummy = makeFighter('magic', { name: 'RIVAL', team: 'e', spawn: new THREE.Vector3(0, 0, -3.8), facing: 0 });
   world.effects=effects;world.enemyPool=new EnemyPool({world,scene,library,size:3});
+  statusEl.textContent='Initializing Rapier physics...';
+  world.physics=await RapierPhysics.create(arena,world.combatants);
+  effects.wreck.physics=world.physics;effects.wreck.setBudget(QUALITY[qualityOrder[qIndex]].particles);
   world.presentation = new FighterPresentation(scene, world.combatants);
-  world.statusPresentation = new StatusPresentation(scene,world.combatants);
+  world.statusPresentation = new StatusPresentation(scene,world.combatants);world.statusPresentation.setBudget(QUALITY[qualityOrder[qIndex]].particles);
   const ai = new EnemyAI(dummy);
   const lock = new TargetLock(player, world);
   const aimTrace = new Aim(); world.aim = aimTrace;
@@ -190,8 +204,9 @@ async function boot() {
   const lockRing = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.57, 32), new THREE.MeshBasicMaterial({ color: 0xffcf40, side: THREE.DoubleSide, depthWrite: false }));
   lockRing.rotation.x = -Math.PI / 2; lockRing.visible = false; scene.add(lockRing);
   function resetArena() {
-    world.destruction.reset();feedback?.clear();
+    world.powers.clear();world.destruction.reset();feedback?.clear();
     player.reset(); dummy.reset(); lock.clear(); effects.clear(); projectiles.clear(); ai.reset();
+    world.physics.reset();
     input.clear(); world.hitstop = 0;
     world.hitMarkerT = 0; world.hitMessage = '';
     cam.yaw = 0; cam.pitch = 0.38; cam.distance = 4.8; cam._first = true; cam.shakeAmt = 0;
@@ -204,7 +219,7 @@ async function boot() {
       ai.enabled = match.state === 'active';
       if (!match.canFight) {
         for(const c of world.combatants)c.statuses.clear();
-        projectiles.clear();
+        projectiles.clear();world.powers.clear();
         input.clear(); lock.clear();
         for (const c of world.combatants) { c.mover.steer(_fwd.set(0, 0, 0), 0); c.mover.velocity.set(0, 0, 0); c.mover.impulse.set(0, 0, 0); c.mover.speed = 0; c.wantBlock = false; }
       }
@@ -279,6 +294,7 @@ async function boot() {
 
   // ---- HUD ------------------------------------------------------------
   const combatHud = new CombatHud();
+  world.campaign=new Campaign(world);
   const aiEl = document.getElementById('ai');
   const debugEl = document.getElementById('debug');
   let debug = false;
@@ -343,7 +359,8 @@ async function boot() {
         + (c.strikers.length ? '\n   strikers: ' + c.strikers.map(s => s.name.replace('mixamorig', '') + ' ' + s.speed.toFixed(1) + 'm/s').join(', ') : '');
       debugEl.textContent = world.combatants.map(line).join('\n') + `\n${match.state} | AI: ${ai.behavior} | ${renderer.info.render.calls} draw calls | ${Math.round(renderer.info.render.triangles / 1000)}k triangles | particles ${effects.items.length}/${effects.budget}`;
       debugEl.textContent += `
-Physics: swept capsules / AABB · ${world.arena.obstacles.length} cover colliders
+Physics: Rapier ${world.physics.version} / debris ${world.physics.stats.dynamic}/${world.physics.stats.limit} (${world.physics.stats.sleeping} sleeping) / ${world.physics.stats.ragdolls} ragdolls
+Combat: swept capsules / AABB · ${world.arena.obstacles.length} cover colliders
 Arena: ${world.arena.halfSize*2}m · Camera: ${cam.clearDistance.toFixed(2)}m
 Projectiles: ${projectiles.items.length} · Fixed step: 60 Hz`;
       let i = 0;
@@ -401,7 +418,7 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
         c.character.locomote(0, dt);
         if (match.state !== 'results') c.character.update(dt);
       }
-      input.endFrame(); return;
+      world.physics.step(dt);input.endFrame(); return;
     }
     if (world.hitstop > 0) {
       world.hitstop = Math.max(0, world.hitstop - dt);
@@ -415,7 +432,7 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
     for (const c of world.combatants) if(!c.inactive)c.character.update(dt);
     for (const c of world.combatants) c.equipment?.update(['block','blockEnd','dodge','hit','down','getup','dead','jump','land','victory'].includes(c.state) || (c.state === 'attack' && (c.move?.clip === 'Kick' || c.move?.kind === 'mobility')));
     for (const c of world.combatants) c.postAnimation(dt);
-    projectiles.update(dt);
+    projectiles.update(dt);world.powers.update(dt);world.physics.step(dt);
     match.resolveOutcome();
     lock.update();
     input.endFrame();
@@ -455,8 +472,9 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
       portraitFill.position.copy(camera.position).add(new THREE.Vector3(0, 2, 0));
       portraitFill.target.position.copy(player.position).add(new THREE.Vector3(0, 1, 0));
     }
+    world.physics.ragdolls.apply();
     world.presentation.update();
-    world.statusPresentation.render(world.paused?0:raw,match.canFight);
+    world.statusPresentation.render(world.paused?0:raw,match.canFight,camera);
     world.circuit.render(camera);
     effects.render(camera);
     feedback.render(camera,world.paused?0:raw,match.canFight||match.state==='ending');

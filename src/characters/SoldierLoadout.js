@@ -1,11 +1,15 @@
+import { buildSoldierActions } from './SoldierCombat.js';
+
 // Two weapons, one Soldier: preserve HP, cooldowns, statuses and combo state.
 // The new pack supplies locomotion; short original recoil clips are prepared
 // from its pistol idle pose because the pack contains no shooting take.
 export function soldierLoadout(weapons,character,profile,rifleMoves){
+  buildSoldierActions(character);
   const original=new Map(character.actions);
   const stop=()=>{for(const action of new Set(character.actions.values()))action.stop();};
   function pose(pistol){
     stop();character.action=null;character.actionName=null;character.autoAction=false;character.locoGain=1;character.actions=new Map(original);
+    if(!pistol&&original.has('RifleReadyIdle'))character.actions.set('Idle',original.get('RifleReadyIdle'));
     if(pistol)for(const name of original.keys()){
       const action=original.get('Pistol'+name);
       if(action)character.actions.set(name,action);
@@ -13,13 +17,14 @@ export function soldierLoadout(weapons,character,profile,rifleMoves){
     }
     character.startLocomotion(profile);character.transitionBlockT=.3;character.mixer.update(0);character.root.updateMatrixWorld(true);
   }
-  const rifle=weapons.create('rifle',character);pose(true);
+  pose(false);const rifle=weapons.create('rifle',character);pose(true);
   const pistol=weapons.create('pistol',character);pose(false);
   const pistolMoves=structuredClone(rifleMoves);
   const rename=(m,label)=>{m.label=label;if(m.kind==='projectile'){m.damage*=.8;m.range=Math.min(m.range,12);m.projectileRadius=.045;}return m;};
   rename(pistolMoves.punch,'Pistol combination');
   pistolMoves.punch.chain.forEach((m,i)=>rename(m,['Pistol shot I','Pistol shot II','Stopping shot III'][i]));
   rename(pistolMoves.heavy,'Pistol burst');rename(pistolMoves.skill1,'Rapid pistol fire');rename(pistolMoves.skill2,'Piercing pistol shot');
+  for(const key of new Set(pistolMoves.ultimate.sequence||[]))if(pistolMoves[key]?.kind==='projectile')rename(pistolMoves[key],pistolMoves[key].label);
   pistolMoves.ultimate.label='Sidearm barrage';
   let active=rifle;
   return {

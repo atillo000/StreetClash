@@ -12,11 +12,12 @@ export class ThirdPersonCamera {
     this.viewYaw=0;this.viewPitch=pitch;this.viewDistance=distance;this.clearDistance=distance;
     this.radius=0.18;this.expanded=new THREE.Box3();this.ray=new THREE.Ray();
     this.anchor=new THREE.Vector3();this.want=new THREE.Vector3();this.offset=new THREE.Vector3();this.point=new THREE.Vector3();
-    this.avoidYaw=0;this.avoidPitch=0;this.renderYaw=0;
+    this.avoidYaw=0;this.avoidPitch=0;this.renderYaw=0;this.manualLookT=0;
+    this.viewRotation=new THREE.Euler(0,0,0,'YXZ');this.shakeRotation=new THREE.Euler();this.shakeQuaternion=new THREE.Quaternion();
     this.probe=camera.clone();this.screenPoint=new THREE.Vector3();this.probeDirection=new THREE.Vector3();
   }
   shake(amount){this.shakeAmt=Math.max(this.shakeAmt,amount);}
-  forward(out=new THREE.Vector3()){return out.set(-Math.sin(this.renderYaw),0,-Math.cos(this.renderYaw));}
+  forward(out=new THREE.Vector3()){const direction=Math.cos(this.viewPitch)<0?-1:1;return out.set(-Math.sin(this.renderYaw)*direction,0,-Math.cos(this.renderYaw)*direction);}
   right(out=new THREE.Vector3()){return out.set(Math.cos(this.renderYaw),0,-Math.sin(this.renderYaw));}
   clearance(direction,distance,blockers){
     this.ray.set(this.focus,direction);let clear=distance;
@@ -35,17 +36,19 @@ export class ThirdPersonCamera {
     return true;
   }
   applyLook(look){
+    if(look.dx||look.dy)this.manualLookT=1;
     this.yaw-=look.dx*this.sensitivity;
-    this.pitch=THREE.MathUtils.clamp(this.pitch+look.dy*this.sensitivity,0.12,0.85);
+    this.pitch+=look.dy*this.sensitivity;
     this.distance=THREE.MathUtils.clamp(this.distance+look.wheel*.4,this.minDistance,this.maxDistance);
   }
   trackTarget(dt,playerPos,enemyPos){
+    if(this.manualLookT>0)return;
     const heading=Math.atan2(enemyPos.x-playerPos.x,enemyPos.z-playerPos.z)+Math.PI;
     this.yaw+=shortestAngle(this.yaw,heading)*(1-Math.exp(-7*dt));
   }
   update(dt,targetPos,look={dx:0,dy:0,wheel:0},lockPos=null,blockers=[],shoulder=false){
     this.applyLook(look);
-    const step=Math.min(Math.max(dt,0),.1),snap=this._first;
+    const step=Math.min(Math.max(dt,0),.1),snap=this._first;this.manualLookT=Math.max(0,this.manualLookT-step);
     if(snap)this.renderYaw=this.yaw;
     this.anchor.set(targetPos.x,targetPos.y+this.height+(this.bossLift||0),targetPos.z);this.want.copy(this.anchor);
     let distance=THREE.MathUtils.clamp(this.distance+Math.min(.6,(this.bossLift||0)*.6),this.minDistance,this.maxDistance);
@@ -73,8 +76,11 @@ export class ThirdPersonCamera {
       this.viewPitch=THREE.MathUtils.lerp(this.viewPitch,this.pitch,1-Math.exp(-16*step));
       this.viewDistance=THREE.MathUtils.lerp(this.viewDistance,distance,1-Math.exp(-10*step));
     }
-    let cp=Math.cos(this.viewPitch);
-    this.offset.set(Math.sin(this.viewYaw)*cp,Math.sin(this.viewPitch),Math.cos(this.viewYaw)*cp);
+    // View pitch has no clamp. Keep the orbit above the deck independently,
+    // so looking at the sky does not require putting the camera underground.
+    const orbitPitch=THREE.MathUtils.clamp(Math.asin(Math.sin(this.viewPitch)),.12,1.35);
+    let cp=Math.cos(orbitPitch);
+    this.offset.set(Math.sin(this.viewYaw)*cp,Math.sin(orbitPitch),Math.cos(this.viewYaw)*cp);
     let clear=this.clearance(this.offset,this.viewDistance,blockers),avoidYaw=0,avoidPitch=0;
     // Hugging cover should not turn the player into a screen-filling close-up.
     // Prefer a small clear orbit/lift that still frames both actors over zooming
@@ -82,28 +88,32 @@ export class ThirdPersonCamera {
     if(clear<3.2){
       let best=-Infinity;
       for(const lift of [0,.2,.4])for(const turn of [0,-.35,.35,-.7,.7,-1.05,1.05]){
-        const pitch=Math.min(1,this.viewPitch+lift),yaw=this.viewYaw+turn,cos=Math.cos(pitch);
+        const pitch=Math.min(1.4,orbitPitch+lift),yaw=this.viewYaw+turn,cos=Math.cos(pitch);
         this.probeDirection.set(Math.sin(yaw)*cos,Math.sin(pitch),Math.cos(yaw)*cos);
         const available=this.clearance(this.probeDirection,this.viewDistance,blockers);
         if(available<3||!this.framingFits(this.probeDirection,available,targetPos,lockPos))continue;
         const score=available-Math.abs(turn)*.6-lift*.8-Math.abs(turn-this.avoidYaw)*.25-Math.abs(lift-this.avoidPitch)*.2;
-        if(score>best){best=score;avoidYaw=turn;avoidPitch=pitch-this.viewPitch;}
+        if(score>best){best=score;avoidYaw=turn;avoidPitch=pitch-orbitPitch;}
       }
     }
     if(snap){this.avoidYaw=avoidYaw;this.avoidPitch=avoidPitch;}
     else{const ease=1-Math.exp(-9*step);this.avoidYaw=THREE.MathUtils.lerp(this.avoidYaw,avoidYaw,ease);this.avoidPitch=THREE.MathUtils.lerp(this.avoidPitch,avoidPitch,ease);}
-    this.renderYaw=this.viewYaw+this.avoidYaw;const pitch=this.viewPitch+this.avoidPitch;cp=Math.cos(pitch);
+    this.renderYaw=this.viewYaw+this.avoidYaw;const pitch=orbitPitch+this.avoidPitch;cp=Math.cos(pitch);
     this.offset.set(Math.sin(this.renderYaw)*cp,Math.sin(pitch),Math.cos(this.renderYaw)*cp);
     clear=this.clearance(this.offset,this.viewDistance,blockers);
     this.clearDistance=snap?clear:clear<this.clearDistance?clear:THREE.MathUtils.lerp(this.clearDistance,clear,1-Math.exp(-5*step));
     this.camera.position.copy(this.focus).addScaledVector(this.offset,this.clearDistance);
+    this.camera.position.y=Math.max(.35,this.camera.position.y);
+    // Quaternion orientation remains continuous at the vertical poles and can
+    // pass through them. World-up lookAt would otherwise flip or stop there.
+    const lookPitch=this.viewPitch+(this.viewPitch>=.12&&this.viewPitch<=1.1?this.avoidPitch:0);
+    this.camera.quaternion.setFromEuler(this.viewRotation.set(-lookPitch,this.renderYaw,0,'YXZ'));
     if(this.shakeAmt>.001){
-      // Angular shake cannot push the camera back through an obstruction.
-      const amount=this.shakeAmt;this.want.copy(this.focus);
-      this.want.x+=(Math.random()-.5)*amount;this.want.y+=(Math.random()-.5)*amount;
+      const angular=this.shakeAmt/Math.max(1,this.clearDistance);
+      this.shakeRotation.set((Math.random()-.5)*angular,(Math.random()-.5)*angular,0);
+      this.camera.quaternion.multiply(this.shakeQuaternion.setFromEuler(this.shakeRotation));
       this.shakeAmt*=Math.exp(-14*step);
-    }else this.want.copy(this.focus);
-    this.camera.position.y=Math.max(.35,this.camera.position.y);this.camera.lookAt(this.want);
+    }
     this._first=false;
   }
 }
