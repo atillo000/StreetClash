@@ -17,6 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "@dimforge/rapier3d-compat": "0.21.0",
+    "@supabase/supabase-js": "2.118.0",
     "three": "0.165.0",
     "three.quarks": "0.15.0"
   }

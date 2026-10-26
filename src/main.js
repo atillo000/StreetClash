@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { HeroPreview } from './ui/HeroPreview.js';
+import { Multiplayer } from './online/Multiplayer.js';
 import { QUALITY, applyQuality } from './core/quality.js';
 import { ART, createArcadeLighting, FighterPresentation } from './core/ArtDirection.js';
 import { FighterLibrary } from './characters/FighterLibrary.js';
@@ -121,7 +123,7 @@ const world = {
     if (move.kind === 'area') projectiles.area(c, move); else projectiles.emit(c, move);
     sound.play(move.kind === 'area' ? 'heavy' : c.profile.id === 'soldier' ? 'rifle' : 'magic');
   },
-  onSwing(c,move) { effects.swing(c,move);sound.play(move.element==='fire'?'fire':move.element==='storm'?'electric':'swing'); },
+  onSwing(c,move) { effects.swing(c,move);this.destruction?.reactions.swing(c,move);sound.play(move.element==='fire'?'fire':move.element==='storm'?'electric':'swing'); },
   onEnvironmentSweep(c,move,from,to,radius,seen){this.destruction?.sweep(c,move,from,to,radius,seen);},
   onPropImpact(c,prop,damage,broken){
     sound.play(broken?'heavy':'hit');
@@ -252,7 +254,7 @@ async function boot() {
   }
   document.getElementById('opponentChoice').value = dummy.profile.id;
   document.getElementById('opponentChoice').addEventListener('change', event => world.selectFighter('opponent', event.target.value));
-  world.onRespawn = c => { if (match.state === 'practice'&&!c.isMinion) c.reset(); };
+  world.onRespawn = c => { if (!world.online?.playing&&match.state === 'practice'&&!c.isMinion) c.reset(); };
   world.switchSoldierWeapon=()=>{if(player.profile.id!=='soldier'||player.state!=='free'||world.paused)return false;player.equipment.toggle();player.moves=player.equipment.moves;player.comboStage=0;player.comboRemaining=0;player.buffer=null;updateHud();return player.equipment.id;};
 
   // ---- Player input ---------------------------------------------------
@@ -295,6 +297,9 @@ async function boot() {
   // ---- HUD ------------------------------------------------------------
   const combatHud = new CombatHud();
   world.campaign=new Campaign(world);
+  world.heroPreview=new HeroPreview({renderer,scene,world,player});
+  world.online=new Multiplayer({world,player,enemy:dummy,ai,input,cam,camera,aim:aimTrace,lock,effects});
+  world.onNetworkHit=(a,b,point,result)=>feedback?.damage(a,b,point,result);
   const aiEl = document.getElementById('ai');
   const debugEl = document.getElementById('debug');
   let debug = false;
@@ -319,7 +324,7 @@ async function boot() {
     const loadout=document.getElementById('weaponLoadout');loadout.hidden=player.profile.id!=='soldier';
     loadout.textContent='Q · '+(player.equipment?.id==='pistol'?'PISTOL / SWITCH TO RIFLE':'RIFLE / SWITCH TO PISTOL');
     combatHud.update(player,dummy,match,world,lock);
-    world.circuit?.updateHud();
+    if(!world.online?.playing)world.circuit?.updateHud();else document.getElementById('encounterDisplay').hidden=true;
     world.statusPresentation.updateHud();
     input.combatEnabled = match.canFight && !world.paused;
     aiEl.textContent = ai.enabled ? 'ON' : 'OFF (dummy)';
@@ -337,13 +342,13 @@ async function boot() {
     document.getElementById('lobby').hidden = match.state !== 'lobby';
     document.getElementById('results').hidden = match.state !== 'results';
     document.getElementById('matchHud').hidden = ['lobby', 'results'].includes(match.state);
-    document.getElementById('matchHud').classList.toggle('practice', match.state === 'practice');
+    document.getElementById('matchHud').classList.toggle('practice', match.state === 'practice'&&!world.online?.playing);
     document.getElementById('fightHud').hidden = ['lobby', 'results'].includes(match.state);
-    document.getElementById('timer').textContent = match.state === 'practice' ? '∞' : `${Math.floor(Math.ceil(match.remaining) / 60)}:${String(Math.ceil(match.remaining) % 60).padStart(2, '0')}`;
-    document.getElementById('matchMode').textContent = match.state === 'practice' ? 'TRAINING' : world.circuit.label;
+    if(!world.online?.playing)document.getElementById('timer').textContent = match.state === 'practice' ? '∞' : `${Math.floor(Math.ceil(match.remaining) / 60)}:${String(Math.ceil(match.remaining) % 60).padStart(2, '0')}`;
+    if(!world.online?.playing)document.getElementById('matchMode').textContent = match.state === 'practice' ? 'TRAINING' : world.circuit.label;
     const banner = document.getElementById('countdown');
-    banner.hidden = !['countdown', 'ending'].includes(match.state);
-    banner.textContent = match.state === 'countdown' ? String(Math.max(1, Math.ceil(match.countdownRemaining))) : match.result?.outcome === 'victory' ? 'KNOCKOUT · YOU WIN' : match.result?.outcome === 'defeat' ? 'RIVAL WINS' : 'DRAW';
+    if(!world.online?.playing)banner.hidden = !['countdown', 'ending'].includes(match.state);
+    if(!world.online?.playing)banner.textContent = match.state === 'countdown' ? String(Math.max(1, Math.ceil(match.countdownRemaining))) : match.result?.outcome === 'victory' ? 'KNOCKOUT · YOU WIN' : match.result?.outcome === 'defeat' ? 'RIVAL WINS' : 'DRAW';
     if (match.state === 'ending' && match.result?.reason.startsWith('Time')) banner.textContent = 'TIME UP';
     if (match.result) {
       document.getElementById('resultTitle').textContent = match.result.outcome.toUpperCase();
@@ -387,19 +392,21 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
   world.fixed = fixed;
   const pauseEl = document.getElementById('pause');
   function pause(value) {
+    if(world.online?.playing&&value){input.clear();return;}
     if (value && !match.canPause) return;
     world.paused = value; fixed.reset(); input.clear(); clock.getDelta();
     pauseEl.style.display = value ? 'flex' : 'none';
     if (value && input.locked) document.exitPointerLock();
   }
   window.addEventListener('keydown', e => {
-    if (e.repeat) return;
+    if (e.repeat||e.target.closest?.('input,textarea,select,[contenteditable],.hero-stage')) return;
+    if (world.online?.rooms.room&&['Enter','KeyR'].includes(e.code)) return;
     if (e.code === 'KeyP') pause(!world.paused);
     if (e.code === 'KeyM') { sound.muted = !sound.muted; if (!sound.muted) sound.unlock(); updateHud(); }
     if (e.code === 'Enter' && ['lobby', 'results'].includes(match.state)) begin('match');
     if (e.code === 'KeyR' && match.canPause) { if (match.state === 'practice') begin('practice'); else begin('match'); }
   });
-  function begin(mode) { pause(false); input.clear(); if (mode === 'practice') match.practice(); else match.start(); }
+  function begin(mode) { if(world.online?.rooms.room)return;pause(false); input.clear(); if (mode === 'practice') match.practice(); else match.start(); }
   document.getElementById('startMatch').addEventListener('click', () => begin('match'));
   document.getElementById('practice').addEventListener('click', () => begin('practice'));
   document.getElementById('rematch').addEventListener('click', () => begin('match'));
@@ -410,7 +417,8 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
   document.addEventListener('visibilitychange', () => { if (document.hidden) pause(true); });
   world.setPaused = pause;
   function simulate(dt) {
-    match.update(dt);
+    if(world.online?.playing&&world.online.beforeStep(dt))return;
+    if(!world.online?.playing)match.update(dt);
     world.destruction.update(dt);
     if (!match.canFight) {
       for (const c of world.combatants) {
@@ -425,15 +433,15 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
       for (const c of world.combatants) { c.previousPosition.copy(c.position); c.previousFacing = c.mover.facing; }
       return;
     }
-    world.circuit.update(dt);
-    playerBrain(); ai.update(dt);
+    if(!world.online?.playing)world.circuit.update(dt);
+    playerBrain(); if(!world.online?.playing)ai.update(dt);
     for (const c of world.combatants) c.update(dt);
     arena.resolve(world.combatants.filter(c=>!c.inactive&&c.alive));
     for (const c of world.combatants) if(!c.inactive)c.character.update(dt);
     for (const c of world.combatants) c.equipment?.update(['block','blockEnd','dodge','hit','down','getup','dead','jump','land','victory'].includes(c.state) || (c.state === 'attack' && (c.move?.clip === 'Kick' || c.move?.kind === 'mobility')));
     for (const c of world.combatants) c.postAnimation(dt);
     projectiles.update(dt);world.powers.update(dt);world.physics.step(dt);
-    match.resolveOutcome();
+    if(world.online?.playing)world.online.afterStep(dt);else match.resolveOutcome();
     lock.update();
     input.endFrame();
   }
@@ -475,10 +483,12 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
     world.physics.ragdolls.apply();
     world.presentation.update();
     world.statusPresentation.render(world.paused?0:raw,match.canFight,camera);
-    world.circuit.render(camera);
+    if(!world.online?.playing)world.circuit.render(camera);
     effects.render(camera);
     feedback.render(camera,world.paused?0:raw,match.canFight||match.state==='ending');
     renderer.render(scene, camera);
+    world.heroPreview?.render();
+    world.online?.render(camera);
     world.combatants.forEach((c, i) => { c.position.copy(renderPositions[i]); c.character.root.rotation.y = c.mover.facing; });
 
     hudT += raw;

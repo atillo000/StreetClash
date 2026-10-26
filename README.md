@@ -2,6 +2,10 @@
 
 Original 3D brawler inspired by the genre of classic arcade PC brawlers. All names and designs are original.
 
+## Friends multiplayer and 360° character preview
+
+The lobby includes a draggable 360° fighter preview and private Supabase rooms for 2–4 players. Complete the [Supabase setup guide](docs/multiplayer-setup.md) before playing online. Offline modes work without configuration. The room creator’s browser runs combat; this is unranked friends/testing multiplayer.
+
 ## Run
 ```
 cd streetclash

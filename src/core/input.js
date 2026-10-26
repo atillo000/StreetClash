@@ -10,6 +10,7 @@ export class Input {
     this.combatEnabled = false;
 
     window.addEventListener('keydown', e => {
+      if(e.target.closest?.('input,textarea,select,[contenteditable],.hero-stage'))return;
       if (['Space', 'Tab', 'F1', 'KeyX', 'KeyC', 'KeyZ', 'Digit1', 'Digit2', 'Digit3', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
       if (!e.repeat) this.pressedSet.add(e.code);
       this.keys.add(e.code);

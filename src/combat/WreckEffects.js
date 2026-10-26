@@ -6,12 +6,13 @@ function markTexture(kind){
   const glow=g.createRadialGradient(256,256,12,256,256,245);
   glow.addColorStop(0,kind==='scorch'?'rgba(28,24,25,.68)':'rgba(30,29,26,.32)');glow.addColorStop(.55,'rgba(35,31,27,.14)');glow.addColorStop(1,'rgba(35,31,27,0)');g.fillStyle=glow;g.fillRect(0,0,512,512);
   let seed=kind==='chip'?29:91;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+  if(kind==='frost'){g.clearRect(0,0,512,512);const ice=g.createRadialGradient(256,256,10,256,256,245);ice.addColorStop(0,'rgba(186,232,244,.4)');ice.addColorStop(1,'rgba(186,232,244,0)');g.fillStyle=ice;g.fillRect(0,0,512,512);}
   if(kind!=='scorch')for(let i=0;i<(kind==='chip'?5:9);i++){
     const angle=i*Math.PI*2/(kind==='chip'?5:11)+random()*.25;let x=256,y=256;
     g.beginPath();g.moveTo(x,y);
     for(let j=0;j<5;j++){const r=(j+1)*(30+random()*13),a=angle+(random()-.5)*.25;x=256+Math.cos(a)*r;y=256+Math.sin(a)*r;g.lineTo(x,y);
       if(j===2){g.moveTo(x,y);g.lineTo(x+Math.cos(a+.55)*45,y+Math.sin(a+.55)*45);g.moveTo(x,y);}}
-    g.strokeStyle='rgba(20,21,19,.78)';g.lineWidth=kind==='chip'?3:2+random()*3;g.lineJoin='round';g.stroke();
+    g.strokeStyle=kind==='frost'?'rgba(196,239,255,.7)':'rgba(20,21,19,.78)';g.lineWidth=kind==='chip'?3:2+random()*3;g.lineJoin='round';g.stroke();
     g.strokeStyle='rgba(179,171,149,.35)';g.lineWidth=1;g.stroke();
   }
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;return texture;
@@ -23,7 +24,7 @@ export class WreckEffects{
     for(let i=0;i<128;i++)this.free.push({p:new THREE.Vector3(),v:new THREE.Vector3(),rotation:new THREE.Euler(),spin:new THREE.Vector3(),scale:new THREE.Vector3(),color:new THREE.Color(),life:0});
     this.mesh=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(.7,0),new THREE.MeshStandardMaterial({roughness:.94,metalness:.06}),128);
     this.mesh.count=0;this.mesh.frustumCulled=false;this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);scene.add(this.mesh);
-    this.batches=['crack','scorch','chip'].map(kind=>{
+    this.batches=['crack','scorch','chip','frost'].map(kind=>{
       const geometry=new THREE.PlaneGeometry(2,2),opacity=new THREE.InstancedBufferAttribute(new Float32Array(16),1);geometry.setAttribute('markOpacity',opacity);
       const material=new THREE.MeshBasicMaterial({map:markTexture(kind),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
       material.onBeforeCompile=shader=>{

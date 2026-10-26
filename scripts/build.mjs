@@ -30,6 +30,12 @@ for (const [pkg, file] of [['three.quarks', 'three.quarks.esm.js'], ['quarks.cor
 await mkdir(path.join(output,'vendor/@dimforge/rapier3d-compat/dist'),{recursive:true});
 await cp(path.join(root,'node_modules/@dimforge/rapier3d-compat/dist/rapier.mjs'),path.join(output,'vendor/@dimforge/rapier3d-compat/dist/rapier.mjs'));
 await cp(path.join(root,'node_modules/@dimforge/rapier3d-compat/LICENSE'),path.join(output,'vendor/@dimforge/rapier3d-compat/LICENSE'));
+// Supabase loads lazily as a self-contained browser bundle; no bundler required.
+await mkdir(path.join(output,'vendor/@supabase/supabase-js/dist/umd'),{recursive:true});
+await cp(path.join(root,'node_modules/@supabase/supabase-js/dist/umd/supabase.js'),path.join(output,'vendor/@supabase/supabase-js/dist/umd/supabase.js'));
+await cp(path.join(root,'node_modules/@supabase/supabase-js/LICENSE'),path.join(output,'vendor/@supabase/supabase-js/LICENSE'));
+const onlineClient=path.join(output,'src/online/SupabaseRooms.js');
+await writeFile(onlineClient,(await readFile(onlineClient,'utf8')).replace('../../node_modules/','../../vendor/'));
 const html = (await readFile(path.join(root, 'index.html'), 'utf8')).replaceAll('./node_modules/', './vendor/');
 await writeFile(path.join(output, 'index.html'), html);
 

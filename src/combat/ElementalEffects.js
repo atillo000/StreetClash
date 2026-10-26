@@ -68,7 +68,7 @@ export class ElementalEffects{
   const entry=this.entries.slice(0,this.limit).find(e=>e.life<=0);if(!entry)return null;
   const art=COMBAT_ART[owner?.profile?.id]||COMBAT_ART.capoeira;
   Object.assign(entry,{kind,life,max:life,time:0,follow:null,owner,move,scale:radius,element:move?.element||art.element,angle:owner?.mover.facing||0,height:0});entry.position.copy(point);entry.group.visible=true;
-  entry.material.uniforms.uColor.value.set(move?.artColor||art.color);entry.material.uniforms.uFire.value=entry.element==='fire'?1:0;entry.material.uniforms.uWall.value=kind==='sweep'?0:1;
+  entry.material.uniforms.uColor.value.set(({arcaneField:0xbba3e8,holyField:0xffe3a0,toxinCloud:0x9cbd64,shadowPulse:0x987dbb,gust:0xc1d6d7,frostMist:0xb7edff,discharge:0x8bdfff})[kind]??move?.artColor??art.color);entry.material.uniforms.uFire.value=entry.element==='fire'&&['heat','sweep','nova','burst','powerMode','ultimateAura'].includes(kind)?1:0;entry.material.uniforms.uWall.value=kind==='sweep'?0:1;
   return entry;
  }
  empower(fighter,move){
@@ -118,17 +118,17 @@ export class ElementalEffects{
    const t=1-e.life/e.max,u=e.material.uniforms;u.uTime.value=e.time;u.uProgress.value=t;u.uAtlas.value=elementalTextures.atlas;u.uNoise.value=vfxTextures.smoke_04;
    e.group.position.copy(e.position);e.group.position.y+=e.height;e.group.rotation.set(0,e.angle+(e.kind==='sweep'?t*1.5:e.time*2),0);e.group.scale.setScalar(e.scale*(e.kind==='burst'?.6+t*.5:e.kind==='sweep'?1:.75+t*.25));
    for(const mesh of e.ribbons)mesh.visible=e.kind==='sweep'||e.kind==='nova'||e.kind==='charge'||e.kind==='frostWave'||e.kind==='ultimateAura'||e.kind==='powerMode';
-   e.veil.visible=e.kind!=='sweep';e.veil.scale.y=e.kind==='charge'?.7:e.kind==='burst'?.6:1;
-   e.shards.visible=e.element==='frost'&&['nova','burst','frostWave'].includes(e.kind);
+   e.veil.visible=e.kind!=='sweep';e.veil.scale.y=['frostMist','holyField','arcaneField'].includes(e.kind)?.18:['gust','landing'].includes(e.kind)?.35:['toxinCloud','shadowPulse'].includes(e.kind)?.7:e.kind==='charge'?.7:e.kind==='burst'?.6:1;
+   e.shards.visible=e.element==='frost'&&['nova','burst','frostWave','frostMist'].includes(e.kind);
    if(e.shards.visible){e.shards.count=e.kind==='burst'?8:24;for(let i=0;i<e.shards.count;i++){const a=i*2.4,r=e.kind!=='burst'?.88:.2+(i%3)*.18;this.dummy.position.set(Math.cos(a)*r,0,Math.sin(a)*r);this.dummy.rotation.set(Math.sin(a)*.25,a,Math.cos(a)*.25);this.dummy.scale.setScalar((.35+(i%4)*.16)*Math.sin(Math.PI*t));this.dummy.updateMatrix();e.shards.setMatrixAt(i,this.dummy.matrix);}e.shards.instanceMatrix.needsUpdate=true;}
-   const map=e.kind==='landing'?vfxTextures.smoke_04:vfxTextures.flare_01;if(e.motes.material.map!==map){e.motes.material.map=map;e.motes.material.needsUpdate=true;}e.motes.material.color.copy(u.uColor.value);e.motes.material.opacity=(e.kind==='landing'?.25:.65)*(1-t);
+   const map=['landing','gust','frostMist','toxinCloud','shadowPulse'].includes(e.kind)?vfxTextures.smoke_04:vfxTextures.flare_01;if(e.motes.material.map!==map){e.motes.material.map=map;e.motes.material.needsUpdate=true;}e.motes.material.color.copy(u.uColor.value);e.motes.material.opacity=(['landing','gust','frostMist','toxinCloud','shadowPulse'].includes(e.kind)?.22:.65)*(1-t);
   }
   for(const s of this.lights){s.life=Math.max(0,s.life-dt);s.light.intensity=8*s.life/s.max;}
   this.screenLife=Math.max(0,this.screenLife-dt);this.screen.style.opacity=(this.screenLife/.12*.12).toFixed(3);
  }
  render(camera){
   for(const e of this.entries){if(e.life<=0)continue;const t=1-e.life/e.max;e.group.getWorldQuaternion(this.dummy.quaternion);const q=this.dummy.quaternion.clone().invert().multiply(camera.quaternion);e.motes.count=this.moteCount||14;
-   for(let i=0;i<e.motes.count;i++){const a=i*2.4+t*3,r=(e.kind==='sweep'?.75:.3)+t*.6;this.dummy.position.set(Math.cos(a)*r,(i%4)*.12+t*.6,Math.sin(a)*r);this.dummy.quaternion.copy(q);this.dummy.scale.setScalar(e.kind==='landing'?.6:.025+(i%3)*.015);this.dummy.updateMatrix();e.motes.setMatrixAt(i,this.dummy.matrix);}e.motes.instanceMatrix.needsUpdate=true;
+   for(let i=0;i<e.motes.count;i++){const a=i*2.4+t*3,r=(e.kind==='sweep'?.75:.3)+t*.6;this.dummy.position.set(Math.cos(a)*r,(i%4)*.12+t*.6,Math.sin(a)*r);this.dummy.quaternion.copy(q);this.dummy.scale.setScalar(['landing','gust','frostMist','toxinCloud','shadowPulse'].includes(e.kind)?.45:.025+(i%3)*.015);this.dummy.updateMatrix();e.motes.setMatrixAt(i,this.dummy.matrix);}e.motes.instanceMatrix.needsUpdate=true;
   }
  }
 }

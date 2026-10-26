@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { EnvironmentReactions } from './EnvironmentReactions.js';
 
 const UP=new THREE.Vector3(0,1,0);
 function remove(array,item){const i=array.indexOf(item);if(i>=0)array.splice(i,1);}
@@ -12,7 +13,7 @@ export class DestructibleProps{
   constructor(world,effects){
     this.world=world;this.arena=world.arena;this.effects=effects;this.props=this.arena.breakables;
     this.effects.wreck.groundHeight=(x,z)=>this.arena.groundHeight(x,z);
-    this.byBounds=new Map(this.props.map(p=>[p.bounds,p]));this.arena.revision=0;
+    this.byBounds=new Map(this.props.map(p=>[p.bounds,p]));this.arena.revision=0;this.reactions=new EnvironmentReactions(this);
   }
   visible(origin,point,ignore){
     const delta=point.clone().sub(origin),length=delta.length();if(length<.001)return true;
@@ -61,8 +62,10 @@ export class DestructibleProps{
   groundImpact(owner,move,point,scale=1){
     if(Math.abs(point.x)>this.arena.halfSize||Math.abs(point.z)>this.arena.halfSize)return;
     const floorPoint=point.clone();floorPoint.y=this.arena.groundHeight(point.x,point.z);
-    const damage=(move.damage||0)*(owner.statuses?.multiplier('damage')??1),kind=move.environment?.groundStyle||'chip';
-    const excavates=kind==='crack'||kind==='scorch'&&(damage>=18||move.environment?.surface==='ground');
+    const damage=(move.damage||0)*(owner.statuses?.multiplier('damage')??1),response=move.environment?.groundResponse||'chip';
+    if(response==='none'||damage<=0)return;
+    const kind=response==='fracture'?'crack':response;
+    const excavates=response==='fracture';
     if(excavates){
       const radius=Math.min(2.25,(.65+Math.sqrt(damage)*.15)*scale);
       this.arena.terrain.impact(floorPoint,damage,radius,kind==='scorch');
@@ -72,22 +75,25 @@ export class DestructibleProps{
       this.effects.wreck.mark(floorPoint,this.arena.terrain.normalAt(point.x,point.z),kind,damage);
       this.effects.wreck.fragments(floorPoint,'stone',damage*.25);
     }
-    if(kind!=='chip')this.effects.cast(floorPoint.clone().add(new THREE.Vector3(0,.12,0)),0xaaa28e,'smoke');
+    this.reactions.burst(owner,move,floorPoint.clone().add(new THREE.Vector3(0,.04,0)),Math.min(1.8,scale*1.5));
+    if(excavates){this.effects.cast(floorPoint.clone().add(new THREE.Vector3(0,.12,0)),0xaaa28e,'smoke');this.reactions.disturb(owner,floorPoint,2*scale,3);}
   }
   area(owner,move,center){
     const air=move.environment?.surface==='air'||center.y>this.arena.groundHeight(center.x,center.z)+.25;
-    if(!air)this.groundImpact(owner,move,center,Math.min(1.4,move.range/2));
+    this.reactions.area(owner,move,center,air);
+    if(!air&&move.environment?.surface==='ground')this.groundImpact(owner,move,center,Math.min(1.4,move.range/2));
     if((move.environment?.propDamage??1)<=0)return;
     const origin=center.clone().add(new THREE.Vector3(0,air?.8:.25));
     const targets=this.props.filter(p=>p.alive&&p.bounds.distanceToPoint(origin)<=move.range).sort((a,b)=>a.bounds.distanceToPoint(origin)-b.bounds.distanceToPoint(origin));
     for(const prop of targets){const point=prop.bounds.clampPoint(origin,new THREE.Vector3());if(this.visible(origin,point,prop.bounds))this.damage(prop,owner,move,point);}
   }
   surface(owner,move,point,box,normal){
+    this.reactions.burst(owner,move,point,move.specialPower==='dragon'?1.1:.5);
     const prop=this.byBounds.get(box);
     if(prop?.alive){this.damage(prop,owner,move,point);return;}
     this.effects.impact(point,move.color);
     if(!box&&normal.y>.25&&point.y<=this.arena.groundHeight(point.x,point.z)+.08)this.groundImpact(owner,move,point,.5);
-    else{const magic=move.environment?.groundStyle==='scorch';this.effects.wreck.mark(point,normal,magic?'scorch':'chip',move.damage,magic?.18+Math.sqrt(move.damage||1)*.035:undefined);this.effects.wreck.fragments(point,box?.surfaceMaterial||'stone',(move.damage||5)*.25);}
+    else{const magic=move.environment?.groundResponse==='scorch';this.effects.wreck.mark(point,normal,magic?'scorch':'chip',move.damage,magic?.18+Math.sqrt(move.damage||1)*.035:undefined);this.effects.wreck.fragments(point,box?.surfaceMaterial||'stone',(move.damage||5)*.25);}
   }
   update(dt){
     this.arena.terrain.update(dt);
