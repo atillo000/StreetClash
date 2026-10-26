@@ -100,7 +100,7 @@ export class QuarksEffects {
       slot.remaining -= dt;
       if (slot.remaining <= 0) { slot.system.stop(); slot.reserved = 0; }
     }
-    this.batch.update(Math.min(dt, 0.1));
+    const running=this.slots.some(s=>s.remaining>0);if(running||this.wasRunning)this.batch.update(Math.min(dt, 0.1));this.wasRunning=running;
   }
 
   clear() {

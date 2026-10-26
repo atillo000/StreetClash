@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { AdaptivePerformance } from './core/AdaptivePerformance.js';
+import { CombatJuice } from './combat/CombatJuice.js';
 import { HeroPreview } from './ui/HeroPreview.js';
 import { Multiplayer } from './online/Multiplayer.js';
 import { QUALITY, applyQuality } from './core/quality.js';
@@ -86,8 +88,7 @@ setQuality(qualityOrder[qIndex]);
 window.addEventListener('keydown', e => {
   if (e.code === 'F2' && !e.repeat && world.debugEnabled) {
     qIndex = (qIndex + 1) % qualityOrder.length;
-    setQuality(qualityOrder[qIndex]);
-    resize();
+    setQuality(qualityOrder[qIndex]);window.__world?.performance?.setMode(qualityOrder[qIndex]);
   }
 });
 
@@ -135,6 +136,7 @@ const world = {
     feedback?.damage(attacker,target,point,result);
     resolveStatusHit(attacker,target,result,move);
     this.match?.recordHit(attacker, target, result, target.lastDamage);
+    this.juice?.hit(attacker,target,result,move,point);
     effects.contact(attacker,target,result,move,point);
     const heavy = move.power === 'heavy';
     effects.impact(point, move.color ?? attacker.profile?.color ?? 0xffd58a, (heavy||critical) && result !== 'blocked');
@@ -143,11 +145,13 @@ const world = {
     if (result === 'blocked') {
       effects.spark(point, 0x7fb4ff, 6, 3);
       cam.shake(0.03);
-      this.hitstop = Math.max(this.hitstop, 0.03);
+      this.hitstop = Math.max(this.hitstop, this.online?.playing||move.kind==='projectile'?0:.008);
     } else {
       effects.spark(point, move.color ?? attacker.profile?.color ?? (heavy ? 0xff9a3c : 0xffe08a), heavy ? 16 : 9, heavy ? 6 : 4);
       cam.shake(heavy ? 0.14 : critical ? .085 : 0.045);
-      this.hitstop = Math.max(this.hitstop, heavy ? 0.075 : critical ? .05 : 0.035);
+      // Ranged impacts and online hits use presentation feedback without freezing
+      // the entire arena. Short offline melee stop remains for weight.
+      this.hitstop = Math.max(this.hitstop, this.online?.playing||move.kind==='projectile'?0:heavy?.04:critical?.022:.012);
       // Body/air contacts stay at the actual hit; ground wreckage uses surface events.
     }
   },
@@ -162,7 +166,7 @@ const world = {
     if(source)this.match?.recordHit(source,target,'periodic',damage);
     effects.spark(target.position.clone().add(new THREE.Vector3(0,.8,0)),type.color,3,1);
   },
-  onLanding(c,speed){effects.elemental.landing(c,speed);if(c.team==='p'){cam.shake(.035);sound.play('heavy');}},
+  onLanding(c,speed){sound.play('land');effects.elemental.landing(c,speed);if(c.team==='p'){cam.shake(.035);sound.play('heavy');}},
   onKill(attacker,target) { this.physics?.ragdolls.stop(target);target.statuses.clear(); }, // Match still owns scoring/outcomes.
   onRespawn() {},
 };
@@ -206,7 +210,7 @@ async function boot() {
   const lockRing = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.57, 32), new THREE.MeshBasicMaterial({ color: 0xffcf40, side: THREE.DoubleSide, depthWrite: false }));
   lockRing.rotation.x = -Math.PI / 2; lockRing.visible = false; scene.add(lockRing);
   function resetArena() {
-    world.powers.clear();world.destruction.reset();feedback?.clear();
+    world.powers.clear();world.destruction.reset();feedback?.clear();world.juice?.clear();
     player.reset(); dummy.reset(); lock.clear(); effects.clear(); projectiles.clear(); ai.reset();
     world.physics.reset();
     input.clear(); world.hitstop = 0;
@@ -285,7 +289,7 @@ async function boot() {
     for (const id of requestedAttacks(input, player.moves)) {
       const move = player.moves[id];
       const heading = move?.kind === 'mobility' ? moveAim ?? player.mover.facing + Math.PI : aim;
-      if (player.tryAttack(id, heading)) sound.play('swing');
+      if (player.tryAttack(id, heading)) sound.play('intent');
     }
     if (input.pressed('KeyE')) { if (player.tryDodge(moveAim)) sound.play('dodge'); }
 
@@ -297,9 +301,13 @@ async function boot() {
   // ---- HUD ------------------------------------------------------------
   const combatHud = new CombatHud();
   world.campaign=new Campaign(world);
+  world.juice=new CombatJuice(world,camera);
+  world.performance=new AdaptivePerformance({renderer,apply:name=>{qIndex=qualityOrder.indexOf(name);setQuality(name);}});
+  const graphics=document.createElement('label');graphics.className='graphics-option';graphics.innerHTML='GRAPHICS <select data-graphics-mode aria-label="Graphics quality"><option value="auto">Auto / recommended</option><option value="low">Performance</option><option value="medium">Balanced</option><option value="high">High</option></select>';graphics.querySelector('select').value=world.performance.mode;graphics.querySelector('select').onchange=e=>world.performance.setMode(e.target.value);document.getElementById('practice').after(graphics);
+  const pauseGraphics=graphics.cloneNode(true);pauseGraphics.querySelector('select').onchange=e=>world.performance.setMode(e.target.value);document.getElementById('resume').after(pauseGraphics);
   world.heroPreview=new HeroPreview({renderer,scene,world,player});
   world.online=new Multiplayer({world,player,enemy:dummy,ai,input,cam,camera,aim:aimTrace,lock,effects});
-  world.onNetworkHit=(a,b,point,result)=>feedback?.damage(a,b,point,result);
+  world.onNetworkHit=(a,b,point,result)=>{feedback?.damage(a,b,point,result);world.juice.hit(a,b,result,a.move||a.moves.punch,point);};
   const aiEl = document.getElementById('ai');
   const debugEl = document.getElementById('debug');
   let debug = false;
@@ -422,9 +430,11 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
     world.destruction.update(dt);
     if (!match.canFight) {
       for (const c of world.combatants) {
+        if(c.inactive||match.state==='lobby'&&c!==player)continue;
         c.previousPosition.copy(c.position); c.previousFacing = c.mover.facing;
         c.character.locomote(0, dt);
         if (match.state !== 'results') c.character.update(dt);
+        c.equipment?.update(c.state==='dead');
       }
       world.physics.step(dt);input.endFrame(); return;
     }
@@ -438,8 +448,8 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
     for (const c of world.combatants) c.update(dt);
     arena.resolve(world.combatants.filter(c=>!c.inactive&&c.alive));
     for (const c of world.combatants) if(!c.inactive)c.character.update(dt);
-    for (const c of world.combatants) c.equipment?.update(['block','blockEnd','dodge','hit','down','getup','dead','jump','land','victory'].includes(c.state) || (c.state === 'attack' && (c.move?.clip === 'Kick' || c.move?.kind === 'mobility')));
-    for (const c of world.combatants) c.postAnimation(dt);
+    for (const c of world.combatants) if(!c.inactive)c.equipment?.update(['block','blockEnd','dodge','hit','down','getup','dead','jump','land','victory'].includes(c.state) || (c.state === 'attack' && (c.move?.clip === 'Kick' || c.move?.kind === 'mobility')));
+    for (const c of world.combatants) if(!c.inactive)c.postAnimation(dt);
     projectiles.update(dt);world.powers.update(dt);world.physics.step(dt);
     if(world.online?.playing)world.online.afterStep(dt);else match.resolveOutcome();
     lock.update();
@@ -448,14 +458,16 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
   let frames = 0, acc = 0, hudT = 0;
   const renderPositions = world.combatants.map(() => new THREE.Vector3());
   function tick() {
-    const raw = Math.min(clock.getDelta(), 0.1);
+    const elapsed=clock.getDelta();
+    const raw = Math.min(elapsed, 0.1);
+    world.performance.update(elapsed,!world.paused&&!document.hidden);
     if (!world.paused) {
       cam.applyLook(input.consumeLook());
       if (lock.target) cam.trackTarget(raw, player.position, lock.target.position);
     }
     const alpha = world.paused ? 1 : fixed.advance(raw, simulate);
-    for (const c of world.combatants) c.equipment?.update(['block','blockEnd','dodge','hit','down','getup','dead','jump','land','victory'].includes(c.state) || (c.state === 'attack' && (c.move?.clip === 'Kick' || c.move?.kind === 'mobility')));
-    if (!world.paused) effects.update(raw);
+    // Attachments already updated at the fixed simulation step.
+    if (!world.paused) {effects.update(raw);world.juice.update(raw,match.canFight&&world.combatEnabled);}
     if (!world.paused) world.hitMarkerT = Math.max(0, world.hitMarkerT - raw);
     // Interpolate only for drawing; restore authoritative positions afterwards.
     world.combatants.forEach((c, i) => {
@@ -481,6 +493,7 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
       portraitFill.target.position.copy(player.position).add(new THREE.Vector3(0, 1, 0));
     }
     world.physics.ragdolls.apply();
+    if(match.state!=='lobby')world.juice.beginRender();
     world.presentation.update();
     world.statusPresentation.render(world.paused?0:raw,match.canFight,camera);
     if(!world.online?.playing)world.circuit.render(camera);
@@ -489,6 +502,7 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
     renderer.render(scene, camera);
     world.heroPreview?.render();
     world.online?.render(camera);
+    if(match.state!=='lobby')world.juice.endRender();
     world.combatants.forEach((c, i) => { c.position.copy(renderPositions[i]); c.character.root.rotation.y = c.mover.facing; });
 
     hudT += raw;

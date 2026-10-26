@@ -23,3 +23,5 @@
 .skill-slot.ultimate-slot{border-color:#f1c477;border-bottom-color:#f1c477}.ultimate-slot .skill-icon{color:#f1c477}.skill-slot.unavailable{pointer-events:auto}.skill-slot.unavailable .skill-icon{opacity:.25}
 #skillHud{max-width:calc(100vw - 44px)}#skillHud .abilities{flex-wrap:wrap}
 @media(max-width:600px){#skillHud{max-width:calc(100vw - 20px)}}
+
+.graphics-option{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;font-size:10px;letter-spacing:1px;color:#c5c5ad}.graphics-option select{background:#18251f;color:#e6e0ce;border:1px solid #929e8066;padding:6px;font:11px inherit}.health-delay{background:#e5c888!important}

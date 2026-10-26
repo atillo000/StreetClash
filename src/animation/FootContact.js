@@ -47,6 +47,7 @@ export class FootContact {
   }
   update(root, dt, enabled, movingFast) {
     if (!this.samples.length) return;
+    if(!enabled){this.offset=0;this.model.position.y=this.baseY;root.updateMatrixWorld(true);return;}
     this.model.position.y = this.baseY;
     root.updateMatrixWorld(true);
     const min = this.minimum(), floor = root.getWorldPosition(this.point).y;

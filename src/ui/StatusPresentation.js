@@ -44,7 +44,7 @@ export class StatusPresentation{
         chip.title=e.type.description;chip.setAttribute('aria-label',chip.textContent+'. '+e.type.description);
       }
     }
-    const feedback=document.getElementById('combatFeedback'),panel=document.getElementById('barP');if(feedback&&panel)feedback.style.setProperty('--notice-top',(panel.getBoundingClientRect().bottom+8)+'px');
+    const feedback=document.getElementById('combatFeedback'),panel=document.getElementById('barP');const layoutKey=innerWidth+':'+innerHeight+':'+[...this.entries[0].chips.keys()].join(',');if(feedback&&panel&&layoutKey!==this.layoutKey){this.layoutKey=layoutKey;feedback.style.setProperty('--notice-top',(panel.getBoundingClientRect().bottom+8)+'px');}
   }
 
   render(dt,active,camera){

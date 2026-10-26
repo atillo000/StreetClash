@@ -20,7 +20,7 @@ const icon=name=>`<svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="
 
 export class CombatHud {
   constructor(){
-    this.signature='';this.slots=new Map();
+    this.signature='';this.slots=new Map();this.healthTails=new Map();
   }
   syncSlots(bindings) {
     const ids=new Set(bindings.map(([id])=>id));
@@ -41,7 +41,7 @@ export class CombatHud {
     for(const[c,suffix]of [[player,'P'],[enemy,'E']]){
       const ratio=Math.max(0,Math.min(1,c.hp/c.maxHp)),panel=document.getElementById('bar'+suffix);
       document.getElementById('hp'+suffix).style.width=ratio*100+'%';
-      document.getElementById('hp'+suffix+'Delay').style.width=ratio*100+'%';
+      let tail=this.healthTails.get(c);const now=performance.now();if(!tail||c.hp>tail.hp){tail={hp:c.hp,ratio,at:now,frame:now};this.healthTails.set(c,tail);}if(c.hp<tail.hp){tail.hp=c.hp;tail.at=now;}const step=Math.min(.1,(now-tail.frame)/1000);tail.frame=now;if(now-tail.at>160)tail.ratio=Math.max(ratio,tail.ratio-(tail.ratio-ratio)*Math.min(1,step*7));document.getElementById('hp'+suffix+'Delay').style.width=tail.ratio*100+'%';
       document.getElementById('hp'+suffix+'Text').textContent=`${Math.ceil(c.hp)} / ${c.maxHp}`;
       document.getElementById(suffix==='P'?'playerName':'opponentName').textContent=c.profile.name.toUpperCase();
       document.getElementById(suffix==='P'?'playerClass':'opponentClass').textContent=c.profile.role+(c.profile.id==='soldier'?' / '+c.equipment.id.toUpperCase():'');

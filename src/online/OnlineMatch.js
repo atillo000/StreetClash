@@ -68,7 +68,8 @@ export class OnlineMatch{
   const axis=this.input.moveAxis(),f=new THREE.Vector3(),r=new THREE.Vector3(),dir=new THREE.Vector3();this.cam.forward(f);this.cam.right(r);dir.addScaledVector(f,axis.y).addScaledVector(r,axis.x);if(dir.lengthSq()>1)dir.normalize();
   const target=this.lock.target,point=target?target.position.clone().add(new THREE.Vector3(0,1,0)):this.aim.point.clone();
   this.latestInput={dir:[dir.x,dir.z],aim:wrap(target?Math.atan2(target.position.x-this.player.position.x,target.position.z-this.player.position.z):this.aim.heading(this.player)),point:point.toArray(),aiming:!!target||this.input.locked,walk:this.input.walkModifier,block:this.input.down('KeyF'),crouch:this.input.down('KeyC'),sprint:this.input.down('KeyZ')};
-  this.pendingAttacks.push(...requestedAttacks(this.input,this.player.moves));this.pendingAttacks=this.pendingAttacks.slice(0,6);
+  const pressed=requestedAttacks(this.input,this.player.moves);if(pressed.length&&this.countdown<=0&&!this.finished)this.world.sound.play('intent');
+  this.pendingAttacks.push(...pressed);this.pendingAttacks=this.pendingAttacks.slice(0,6);
   for(const[k,code]of [['jump','Space'],['dodge','KeyE'],['switchWeapon','KeyQ']])this.pendingEdges[k]||=this.input.pressed(code);
   this.inputT+=dt;if(this.inputT>=1/this.rates.inputHz){this.inputT=0;const packet={v:NET.version,type:'input',match:this.matchId,seq:++this.inputSeq,...this.latestInput,attacks:this.pendingAttacks.splice(0),jump:!!this.pendingEdges.jump,dodge:!!this.pendingEdges.dodge,switchWeapon:!!this.pendingEdges.switchWeapon};this.pendingEdges={};this.rooms.send(packet);}
  }

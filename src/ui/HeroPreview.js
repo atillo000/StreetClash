@@ -23,6 +23,7 @@ export class HeroPreview {
   const renderer=this.renderer;renderer.getViewport(this.viewport);renderer.getScissor(this.scissor);const scissorTest=renderer.getScissorTest();
   const others=this.world.combatants.filter(c=>c!==this.player).map(c=>[c.character.root,c.character.root.visible]);for(const[o]of others)o.visible=false;
   this.camera.aspect=r.width/r.height;this.camera.updateProjectionMatrix();renderer.setViewport(r.left,innerHeight-r.bottom,r.width,r.height);renderer.setScissor(r.left,innerHeight-r.bottom,r.width,r.height);renderer.setScissorTest(true);
-  try{renderer.render(this.scene,this.camera);}finally{for(const[o,v]of others)o.visible=v;renderer.setViewport(this.viewport);renderer.setScissor(this.scissor);renderer.setScissorTest(scissorTest);}
+  const shadowAuto=renderer.shadowMap.autoUpdate;renderer.shadowMap.autoUpdate=false;
+  try{renderer.render(this.scene,this.camera);}finally{renderer.shadowMap.autoUpdate=shadowAuto;for(const[o,v]of others)o.visible=v;renderer.setViewport(this.viewport);renderer.setScissor(this.scissor);renderer.setScissorTest(scissorTest);}
  }
 }

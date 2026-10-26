@@ -70,7 +70,7 @@ export class SoldierCombatPose{
   const firing=c.state==='attack'&&c.move?.kind==='projectile',ready=c.state==='free'||firing;
   let correction=0,yawCorrection=0;
   if(ready&&c.alive){
-   ch.root.updateMatrixWorld(true);c.equipment?.update(false);
+   ch.root.updateWorldMatrix(true,false);c.equipment?.update(false);
    const weapon=c.equipment;if(weapon?.muzzle){weapon.muzzle.getWorldPosition(this.point);weapon.root.getWorldDirection(this.forward);
     const aim=firing?c.castTarget:c.aimPoint;
     if(aim){const dx=aim.x-this.point.x,dz=aim.z-this.point.z,elevation=Math.atan2(aim.y-this.point.y,Math.hypot(dx,dz));const yaw=Math.atan2(dx,dz)-Math.atan2(this.forward.x,this.forward.z);yawCorrection=THREE.MathUtils.clamp(Math.atan2(Math.sin(yaw),Math.cos(yaw)),-.65,.65);correction=THREE.MathUtils.clamp(elevation-Math.asin(THREE.MathUtils.clamp(this.forward.y,-1,1)),-1.45,1.45);}
@@ -79,13 +79,13 @@ export class SoldierCombatPose{
   this.pitch=THREE.MathUtils.lerp(this.pitch,ready?correction:0,1-Math.exp(-16*dt));
   this.yaw=THREE.MathUtils.lerp(this.yaw,ready?yawCorrection:0,1-Math.exp(-32*dt));
   if(!ready)return;
-  for(const {bone}of this.bones.filter(x=>/Spine[12]$/.test(x.bone.name))){bone.parent.getWorldQuaternion(this.parent);this.delta.setFromAxisAngle(this.up,this.yaw*.5);this.delta.premultiply(this.inverseParent.copy(this.parent).invert()).multiply(this.parent);bone.quaternion.premultiply(this.delta);this.record(bone);bone.updateMatrixWorld(true);}
+  for(const {bone}of this.bones.filter(x=>/Spine[12]$/.test(x.bone.name))){bone.parent.getWorldQuaternion(this.parent);this.delta.setFromAxisAngle(this.up,this.yaw*.5);this.delta.premultiply(this.inverseParent.copy(this.parent).invert()).multiply(this.parent);bone.quaternion.premultiply(this.delta);this.record(bone);bone.updateWorldMatrix(true,false);}
   ch.root.getWorldQuaternion(this.rotation);this.axis.set(1,0,0).applyQuaternion(this.rotation);
   const elevation=this.pitch+this.recoil;
   for(const {bone,weight}of this.bones){
    bone.parent.getWorldQuaternion(this.parent);this.delta.setFromAxisAngle(this.axis,-elevation*weight);
    this.delta.premultiply(this.inverseParent.copy(this.parent).invert()).multiply(this.parent);bone.quaternion.premultiply(this.delta);
-   this.record(bone);bone.updateMatrixWorld(true);
+   this.record(bone);bone.updateWorldMatrix(true,false);
   }
  }
 }

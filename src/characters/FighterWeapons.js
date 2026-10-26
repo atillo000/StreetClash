@@ -45,9 +45,9 @@ function paladinShield(character) {
   const bossGeometry=new THREE.SphereGeometry(.085,10,6),boss=new THREE.Mesh(bossGeometry,rimMaterial);boss.scale.z=.5;boss.position.set(0,0,.11);root.add(boss);
   root.name='Paladin shield';root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});character.root.add(root);
   const hand=character.bone('mixamorigLeftHand'),point=new THREE.Vector3(),rotation=new THREE.Quaternion(),inverse=new THREE.Quaternion();
-  character.root.updateMatrixWorld(true);character.root.getWorldQuaternion(inverse).invert();hand.getWorldQuaternion(rotation).premultiply(inverse);
+  character.root.updateWorldMatrix(true,false);character.root.getWorldQuaternion(inverse).invert();hand.getWorldQuaternion(rotation).premultiply(inverse);
   const mounting=rotation.clone().invert();
-  return {root,update(){character.root.updateMatrixWorld(true);palmWorld(character,'Left',point);character.root.worldToLocal(point);root.position.copy(point);
+  return {root,update(){character.root.updateWorldMatrix(true,false);palmWorld(character,'Left',point);character.root.worldToLocal(point);root.position.copy(point);
     character.root.getWorldQuaternion(inverse).invert();hand.getWorldQuaternion(rotation).premultiply(inverse).multiply(mounting);root.quaternion.copy(rotation);root.updateMatrixWorld(true);},
     dispose(){root.removeFromParent();geometry.dispose();bossGeometry.dispose();rimMaterial.dispose();faceMaterial.dispose();}};
 }
@@ -87,7 +87,7 @@ export class FighterWeapons {
     const q = new THREE.Quaternion(), inverse = new THREE.Quaternion(), handRotation = new THREE.Quaternion();
     const mounting = new THREE.Quaternion(), swing = new THREE.Quaternion(), mountedAxis = new THREE.Vector3();
     const longAxis = new THREE.Vector3(0,id==='rifle'?0:1,id==='rifle'?1:0);
-    character.root.updateMatrixWorld(true);
+    character.root.updateWorldMatrix(true,false);
     character.root.getWorldQuaternion(inverse).invert();
     hand.getWorldQuaternion(handRotation).premultiply(inverse).normalize();
     if (id === 'rifle') {
@@ -119,7 +119,7 @@ export class FighterWeapons {
       update(stowed = false) {
         root.visible = id==='paladin' || !stowed;
         shield?.update();
-        character.root.updateMatrixWorld(true);
+        character.root.updateWorldMatrix(true,false);
         palmWorld(character,side,a); character.root.worldToLocal(a); root.position.copy(a);
         character.root.getWorldQuaternion(inverse).invert();
         hand.getWorldQuaternion(q).premultiply(inverse).normalize().multiply(mounting);
