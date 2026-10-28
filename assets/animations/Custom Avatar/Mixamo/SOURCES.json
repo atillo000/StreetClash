@@ -1,0 +1,122 @@
+{
+  "source": "https://www.mixamo.com/",
+  "terms": "https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html",
+  "downloaded": "2026-10-26",
+  "character": "User-supplied My Own Face Character",
+  "settings": {
+    "format": "FBX Binary 7.4 (2014)",
+    "skin": "Without Skin",
+    "fps": 30,
+    "keyframeReduction": "none"
+  },
+  "notes": "Mixamo/Adobe royalty-free usage terms apply. Not CC0. Four footwork clips retained as optional sources; their short shuffling strides do not suit current controller speeds. Existing travelling and dodge animations retained.",
+  "files": [
+    {
+      "file": "Boxing Idle.fbx",
+      "mixamoDescription": "Boxing Idle",
+      "aliases": [
+        "Idle",
+        "AimIdle"
+      ],
+      "status": "integrated",
+      "bytes": 403616,
+      "sha256": "389acc2acc61b1a59d40cc9693ee0d606b3b2fbbad51130d62c2e46646054077"
+    },
+    {
+      "file": "Lead Jab.fbx",
+      "mixamoDescription": "Boxing Leading Hand Jab",
+      "aliases": [
+        "Light",
+        "UltimateStart"
+      ],
+      "status": "integrated",
+      "bytes": 363808,
+      "sha256": "017806aee65ffb8b72fd1954371e5f6096adbf2e674e554f552cb70a48514a09"
+    },
+    {
+      "file": "Rear Cross.fbx",
+      "mixamoDescription": "Back Hand Cross",
+      "aliases": [
+        "Cross",
+        "UltimateStrike"
+      ],
+      "status": "integrated",
+      "bytes": 397936,
+      "sha256": "af61a6b6e5686d25d5e0735a06459d328477a9bdd890de4573ef36e132211467"
+    },
+    {
+      "file": "Rear Hook.fbx",
+      "mixamoDescription": "Boxing Back Hand Hook",
+      "aliases": [
+        "Hook",
+        "UltimateCombo"
+      ],
+      "status": "integrated",
+      "bytes": 400784,
+      "sha256": "78d59475319a714de5156dc1a423ee63252fe9af968e249ee3741f5d3524b9e4"
+    },
+    {
+      "file": "Rear Uppercut.fbx",
+      "mixamoDescription": "Boxing Back Hand Uppercut",
+      "aliases": [
+        "Heavy",
+        "UltimateFinisher"
+      ],
+      "status": "integrated",
+      "bytes": 403632,
+      "sha256": "5d9f0de37530bd9453f2540b04d18d2060f59c27f6a1f6d19d8827d541027a27"
+    },
+    {
+      "file": "Jab Cross Combo.fbx",
+      "mixamoDescription": "Boxing Jab Cross Combo",
+      "aliases": [
+        "Combo"
+      ],
+      "status": "integrated",
+      "bytes": 395088,
+      "sha256": "d9a21ad8fac59ee04565804bef95abdb771de5102902e7bc98500b7be5441797"
+    },
+    {
+      "file": "Knee Strike.fbx",
+      "mixamoDescription": "Boxing Illegal Knee",
+      "aliases": [
+        "Knee"
+      ],
+      "status": "integrated",
+      "bytes": 426368,
+      "sha256": "8e434c1e89314b1a0cda795a73fd3751c92778dd5aa0249f0ea6a1f31c3e48dd"
+    },
+    {
+      "file": "Boxing Forward.fbx",
+      "mixamoDescription": "Boxing Advancing Forward",
+      "aliases": [],
+      "status": "optional source only",
+      "bytes": 301248,
+      "sha256": "a55d92f311cb9151177d1b3f26b92c84f0e32c4562f16c188bc1db254373522e"
+    },
+    {
+      "file": "Boxing Left.fbx",
+      "mixamoDescription": "Boxing Left Side Step Walk",
+      "aliases": [],
+      "status": "optional source only",
+      "bytes": 304080,
+      "sha256": "959428099abbbb77b71b2c96e343828896be6bdad1ab2b6793fb9d0805a26619"
+    },
+    {
+      "file": "Boxing Right.fbx",
+      "mixamoDescription": "Boxing Side Step Walk",
+      "aliases": [],
+      "status": "optional source only",
+      "bytes": 304080,
+      "sha256": "f54b899a056cb633810f133df428e1f724027729ffa7cb0b39da7b4885219449"
+    },
+    {
+      "file": "Boxing Retreat.fbx",
+      "mixamoDescription": "Boxing Dodge Retreat",
+      "aliases": [],
+      "status": "optional source only",
+      "bytes": 406464,
+      "sha256": "81da6b2b4da1d3efec7655673fe6c72d8877a49dfb0b695ceb89d1034bf18846"
+    }
+  ]
+}

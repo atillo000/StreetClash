@@ -1,3 +1,4 @@
+import { AVATAR_MOVES } from './AvatarMoves.js';
 import { DEFENSE } from './moves.js';
 import { applyCombatKits } from './CombatKits.js';
 import { configureStatuses } from './StatusEffects.js';
@@ -37,6 +38,7 @@ export const FIGHTER_MOVES = {
       damage: 7, knock: 0.6, range: 15, projectileSpeed: 24, projectileRadius: 0.065, color: 0xffc574, lunge: 0, cooldown: 3 }),
   },
   ...IMPORTED_MOVES,
+  avatar:AVATAR_MOVES,
 };
 
 // Reuse the supplied class clips; damage still follows their measured gestures.

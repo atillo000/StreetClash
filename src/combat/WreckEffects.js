@@ -22,7 +22,9 @@ export class WreckEffects{
   constructor(scene){
     this.budget=72;this.markLimit=12;this.debris=[];this.free=[];this.dummy=new THREE.Object3D();this.bodyRotation=new THREE.Quaternion();
     for(let i=0;i<128;i++)this.free.push({p:new THREE.Vector3(),v:new THREE.Vector3(),rotation:new THREE.Euler(),spin:new THREE.Vector3(),scale:new THREE.Vector3(),color:new THREE.Color(),life:0});
-    this.mesh=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(.7,0),new THREE.MeshStandardMaterial({roughness:.94,metalness:.06}),128);
+    const outline=new THREE.Shape();outline.moveTo(-.65,-.45);outline.lineTo(.2,-.65);outline.lineTo(.65,-.05);outline.lineTo(.35,.6);outline.lineTo(-.5,.4);outline.closePath();
+    const fragmentGeometry=new THREE.ExtrudeGeometry(outline,{depth:1,bevelEnabled:false}).translate(0,0,-.5).rotateX(-Math.PI/2);
+    this.mesh=new THREE.InstancedMesh(fragmentGeometry,new THREE.MeshStandardMaterial({roughness:.94,metalness:.06}),128);
     this.mesh.count=0;this.mesh.frustumCulled=false;this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);scene.add(this.mesh);
     this.batches=['crack','scorch','chip','frost'].map(kind=>{
       const geometry=new THREE.PlaneGeometry(2,2),opacity=new THREE.InstancedBufferAttribute(new Float32Array(16),1);geometry.setAttribute('markOpacity',opacity);

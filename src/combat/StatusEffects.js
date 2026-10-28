@@ -42,7 +42,7 @@ export const STATUS_LOADOUTS={
 
 // A reward for finishing the entire ultimate, including a whiff. Interruptions
 // never reach the completion hook. Reuse existing effects rather than stacking.
-export const ULTIMATE_REWARDS={capoeira:'flow',magic:'arcaneSurge',soldier:'focus',archer:'hunterPace',greatsword:'poise',axe:'fury',mutant:'enraged',paladin:'bulwark',zombie:'hunger'};
+export const ULTIMATE_REWARDS={avatar:'poise',capoeira:'flow',magic:'arcaneSurge',soldier:'focus',archer:'hunterPace',greatsword:'poise',axe:'fury',mutant:'enraged',paladin:'bulwark',zombie:'hunger'};
 export function grantUltimateReward(fighter,move){
   if(!fighter.alive||fighter.hp<=0||fighter.world.combatEnabled===false)return;
   if(move.statusCleanseOnComplete)fighter.statuses.cleanse();

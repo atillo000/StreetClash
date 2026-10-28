@@ -110,9 +110,9 @@ const world = {
   paused: false,
   hitstop: 0,
   hitMarkerT: 0, hitMessage: '',
-  onAttack(c, move) { effects.elemental.charge(c,move);if (move.skill) sound.play(move.kind === 'mobility' ? 'dodge' : 'charge'); },
+  onAttack(c, move) { effects.contacts.anticipate(c,move);effects.elemental.charge(c,move);if (move.skill) sound.play(move.kind === 'mobility' ? 'dodge' : 'charge'); },
   onCast(c, move) {
-    effects.elemental.release(c,move);
+    effects.contacts.release(c,move);effects.elemental.release(c,move);
     c.character.poseLayer?.shot?.();
     if(move.specialPower){c.equipment?.kick();this.powers.release(c,move);sound.play(c.profile.id==='soldier'?'rifle':move.specialPower==='fissure'?'heavy':'magic');return;}
     if (move.kind === 'mobility') { effects.pulse(c.position, move.color, 0.6); sound.play('dodge'); return; }
@@ -127,7 +127,8 @@ const world = {
   onSwing(c,move) { effects.swing(c,move);this.destruction?.reactions.swing(c,move);sound.play(move.element==='fire'?'fire':move.element==='storm'?'electric':'swing'); },
   onEnvironmentSweep(c,move,from,to,radius,seen){this.destruction?.sweep(c,move,from,to,radius,seen);},
   onPropImpact(c,prop,damage,broken){
-    sound.play(broken?'heavy':'hit');
+    sound.play(broken?prop.material==='wood'?'wood':prop.material==='metal'?'metal':'stone':'hit');
+    if(broken)effects.contacts.dust(prop.root.position,Math.min(1.3,prop.bounds.getSize(new THREE.Vector3()).length()*.3),1);
     if(c.team==='p'){this.hitMarkerT=.2;this.hitMessage=prop.name.replaceAll('-',' ').toUpperCase()+(broken?' BROKEN':' / '+Math.ceil(damage));}
   },
   onTrail(from, to, color, fighter, move) { if(fighter&&move)effects.blades.sample(from,to,fighter,move);else effects.trail(from,to,color); },
@@ -139,19 +140,19 @@ const world = {
     this.juice?.hit(attacker,target,result,move,point);
     effects.contact(attacker,target,result,move,point);
     const heavy = move.power === 'heavy';
-    effects.impact(point, move.color ?? attacker.profile?.color ?? 0xffd58a, (heavy||critical) && result !== 'blocked');
+    const local=attacker===this.combatants[0]||target===this.combatants[0];
+    const proximity=local?1:Math.max(0,1-point.distanceTo(this.combatants[0].position)/8)*.25;
     if (attacker.team === 'p') { this.hitMarkerT = 0.22; this.hitMessage = target.lastHitInfo?.absorbed>0&&target.lastDamage===0?'SHIELD / '+Math.round(target.lastHitInfo.absorbed):result === 'blocked' ? 'GUARDED' : `${critical?'CRITICAL ':''}${Math.round(target.lastDamage)}${attacker.comboStage ? ' / CHAIN ' + attacker.comboStage : ''}`; }
-    sound.play(result === 'blocked' ? 'block' : critical?'critical':move.element==='storm'?'electric':heavy?'heavy':'hit');
+    sound.play(result === 'blocked' ? 'block' : critical?'critical':heavy?'heavy':'hit',{volume:local?1:Math.max(.1,proximity),intensity:Math.min(1.25,.65+(target.lastDamage||0)/35)});
     if (result === 'blocked') {
-      effects.spark(point, 0x7fb4ff, 6, 3);
-      cam.shake(0.03);
-      this.hitstop = Math.max(this.hitstop, this.online?.playing||move.kind==='projectile'?0:.008);
+
+      if(!this.juice?.reduced)cam.shake(.025*proximity);
+      this.hitstop = Math.max(this.hitstop, !local||this.online?.playing||move.kind==='projectile'?0:.018);
     } else {
-      effects.spark(point, move.color ?? attacker.profile?.color ?? (heavy ? 0xff9a3c : 0xffe08a), heavy ? 16 : 9, heavy ? 6 : 4);
-      cam.shake(heavy ? 0.14 : critical ? .085 : 0.045);
+      if(!this.juice?.reduced)cam.shake((heavy?.09:critical?.075:.035)*proximity);
       // Ranged impacts and online hits use presentation feedback without freezing
       // the entire arena. Short offline melee stop remains for weight.
-      this.hitstop = Math.max(this.hitstop, this.online?.playing||move.kind==='projectile'?0:heavy?.04:critical?.022:.012);
+      this.hitstop = Math.max(this.hitstop, !local||this.online?.playing||move.kind==='projectile'?0:heavy?.065:critical?.045:.028);
       // Body/air contacts stay at the actual hit; ground wreckage uses surface events.
     }
   },
@@ -166,7 +167,8 @@ const world = {
     if(source)this.match?.recordHit(source,target,'periodic',damage);
     effects.spark(target.position.clone().add(new THREE.Vector3(0,.8,0)),type.color,3,1);
   },
-  onLanding(c,speed){sound.play('land');effects.elemental.landing(c,speed);if(c.team==='p'){cam.shake(.035);sound.play('heavy');}},
+  onGroundImpact(c,move,point,radius,fracture){effects.contacts.dust(point,radius,fracture?1.8:.7);sound.play(fracture?'stone':'land',{volume:.7});if(c===this.combatants[0]&&!this.juice?.reduced)cam.shake(fracture?.07:.02);},
+  onLanding(c,speed){sound.play('land');effects.elemental.landing(c,speed);if(c.team==='p'){if(!this.juice?.reduced)cam.shake(.035);}},
   onKill(attacker,target) { this.physics?.ragdolls.stop(target);target.statuses.clear(); }, // Match still owns scoring/outcomes.
   onRespawn() {},
 };

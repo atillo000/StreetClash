@@ -74,7 +74,7 @@ export function applyCombatKits(roster){
   z.kick=skill(z.heavy,{label:'Parasite bite',speed:3,damage:23,knock:4,cooldown:4});
   z.skill1=skill(z.skill1,{label:'Ravenous lunge',speed:3.3,damage:23,lunge:14,range:4,cooldown:5});
   z.skill2=skill(z.ultimateStart,{label:'Parasite shock',clip:'Kick',kind:'area',strikers:[],events:[.3],windows:[[.24,.4]],speed:3.5,damage:18,knock:6,power:'light',range:2.7,lunge:0,cancelAt:.7,endAt:.85,cooldown:7});
-  const icons={capoeira:'boot',magic:'magic',soldier:'rifle',archer:'bow',greatsword:'sword',axe:'axe',mutant:'claw',paladin:'sword',zombie:'claw'};
+  const icons={avatar:'fist',capoeira:'boot',magic:'magic',soldier:'rifle',archer:'bow',greatsword:'sword',axe:'axe',mutant:'claw',paladin:'sword',zombie:'claw'};
   for(const [id,kit] of Object.entries(roster))for(const key of ['punch','heavy','kick','skill1','skill2']){
     const move=kit[key];
     move.icon=move.kind==='area'?'area':move.strikers?.some(name=>name.includes('Foot'))?'boot':icons[id];

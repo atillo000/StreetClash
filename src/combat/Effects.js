@@ -1,9 +1,10 @@
 import * as THREE from 'three';
+import { ImpactPresentation } from './ImpactPresentation.js';
 import { QuarksEffects } from './QuarksEffects.js';
 import { ArcadeVFX } from './ArcadeVFX.js';
 import { PowerVFX } from './PowerVFX.js';
 import { WreckEffects } from './WreckEffects.js';
-import { loadVFXTextures } from './TexturedVFX.js';
+import { loadVFXTextures, vfxTextures } from './TexturedVFX.js';
 import { BladeTrails } from './BladeTrails.js';
 import { ElementalEffects, loadElementalAssets } from './ElementalEffects.js';
 
@@ -22,18 +23,19 @@ export class Effects {
     scene.add(this.mesh);
     this._dummy = new THREE.Object3D();
     this._dir = new THREE.Vector3();
+    this.contacts = new ImpactPresentation(scene);
     this.quarks = new QuarksEffects(scene);
     this.arcade = new ArcadeVFX(scene);
     this.wreck = new WreckEffects(scene);
     this.special = new PowerVFX(scene);this.elemental=new ElementalEffects(scene);this.blades=new BladeTrails(scene);
     this.rings = []; this.ringFree = Array.from({ length: 16 }, () => ({ position: new THREE.Vector3(), color: new THREE.Color() }));
-    this.ringMesh = new THREE.InstancedMesh(new THREE.RingGeometry(0.88, 1, 32).rotateX(-Math.PI / 2),
+    this.ringMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(2,2).rotateX(-Math.PI / 2),
       new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }), 16);
     this.ringMesh.count = 0; this.ringMesh.frustumCulled = false; scene.add(this.ringMesh);
   }
 
-  setBudget(count) { this.budget = Math.min(this.capacity, count); this.quarks.setBudget(this.budget); this.arcade.setBudget(this.budget); this.wreck.setBudget(this.budget); this.special.setBudget(this.budget);this.elemental.setBudget(this.budget);this.blades.setBudget(this.budget); }
-  clear() { this.free.push(...this.items); this.items.length = 0; this.mesh.count = 0; this.quarks.clear(); this.arcade.clear(); this.wreck.clear(); this.special.clear();this.elemental.clear();this.blades.clear();
+  setBudget(count) { this.budget = Math.min(this.capacity, count); this.contacts.setBudget(this.budget); this.quarks.setBudget(this.budget); this.arcade.setBudget(this.budget); this.wreck.setBudget(this.budget); this.special.setBudget(this.budget);this.elemental.setBudget(this.budget);this.blades.setBudget(this.budget); }
+  clear() { this.free.push(...this.items); this.items.length = 0; this.mesh.count = 0; this.contacts.clear(); this.quarks.clear(); this.arcade.clear(); this.wreck.clear(); this.special.clear();this.elemental.clear();this.blades.clear();
     this.ringFree.push(...this.rings); this.rings.length = 0; this.ringMesh.count = 0; }
 
   async loadSprites() { await Promise.all([this.quarks.loadAtlas(),loadVFXTextures(),loadElementalAssets()]); }
@@ -41,9 +43,9 @@ export class Effects {
     this.quarks.burst(pos, color, kind);
     if (kind === 'muzzle') this.quarks.burst(pos, 0x777777, 'smoke');
   }
-  contact(attacker,target,result,move,point){this.arcade.contact(attacker,target,target.lastHitInfo?.absorbed>0&&target.lastDamage===0?'blocked':result,move,point);this.elemental.contact(attacker,target,result,move,point);}
-  swing(fighter,move){this.elemental.sweep(fighter,move);}
-  render(camera){this.arcade.render(camera);this.special.render(camera);this.elemental.render(camera);this.blades.render(camera); }
+  contact(attacker,target,result,move,point){this.arcade.contact(attacker,target,target.lastHitInfo?.absorbed>0&&target.lastDamage===0?'blocked':result,move,point);this.contacts.contact(attacker,target,result,move,point);if(move.skill||move.sequenceOnly)this.elemental.contact(attacker,target,result,move,point);}
+  swing(fighter,move){this.contacts.release(fighter,move);this.elemental.sweep(fighter,move);}
+  render(camera){this.contacts.render(camera);this.arcade.render(camera);this.special.render(camera);this.elemental.render(camera);this.blades.render(camera); }
   impact(pos, color, heavy = false) { this.quarks.burst(pos, color, heavy ? 'heavy' : 'impact'); }
   projectileTrail(pos, color, style) { this.quarks.burst(pos, color, style === 'arrow' ? 'wind' : 'arcane'); }
 
@@ -62,14 +64,7 @@ export class Effects {
     return it;
   }
 
-  spark(pos, color = 0xffe08a, count = 8, speed = 4) {
-    for (let i = 0; i < count; i++) {
-      const it = this.spawn(pos, color, 0.25 + Math.random() * 0.2);
-      if (!it) break;
-      it.velocity.set(Math.random() - 0.5, Math.random() * 0.8, Math.random() - 0.5)
-        .normalize().multiplyScalar(speed * (0.4 + Math.random() * 0.8));
-    }
-  }
+  spark(pos, color = 0xffe08a, count = 8, speed = 4) { this.contacts.sparks(pos,color,count,speed); }
 
   trail(from, to, color = 0xffcb61) {
     this._dir.subVectors(to, from);
@@ -80,35 +75,21 @@ export class Effects {
     it.rotation.setFromUnitVectors(new THREE.Vector3(0, 1, 0), this._dir.normalize());
   }
 
-  slam(pos) {
-    const count = this.budget < 64 ? 8 : 16;
-    for (let i = 0; i < count; i++) {
-      const angle = i / count * Math.PI * 2;
-      const it = this.spawn(pos, 0xff924d, 0.3);
-      if (!it) break;
-      it.position.y = pos.y + 0.06;
-      it.velocity.set(Math.cos(angle) * 4, 0.7, Math.sin(angle) * 4);
-    }
-  }
+  slam(pos) { this.contacts.dust(pos,1.2,1.5); }
 
   pulse(pos, color, radius) {
     this.shockwave(pos, color, radius);
     this.quarks.burst(pos.clone().add(new THREE.Vector3(0, 0.15, 0)), color, 'pulse', Math.min(1.5, radius));
-    const count = this.budget < 64 ? 12 : 28;
-    for (let i = 0; i < count; i++) {
-      const a = i / count * Math.PI * 2, it = this.spawn(pos, color, 0.4);
-      if (!it) break;
-      it.position.y += 0.12;
-      it.velocity.set(Math.cos(a) * radius * 3, 1.4, Math.sin(a) * radius * 3);
-    }
     this.spark(pos.clone().add(new THREE.Vector3(0, 0.9, 0)), 0xffffff, 6, 2);
   }
 
   update(dt) {
+    this.contacts.update(dt);
     this.quarks.update(dt);
     this.arcade.update(dt);
     this.wreck.update(dt);
     this.special.update(dt);this.elemental.update(dt);this.blades.update(dt);
+    if(this.ringMesh.material.map!==vfxTextures.twirl_01){this.ringMesh.material.map=vfxTextures.twirl_01;this.ringMesh.material.needsUpdate=true;}
     for (let i = this.rings.length - 1; i >= 0; i--) {
       const ring = this.rings[i]; ring.remaining -= dt;
       if (ring.remaining <= 0 || i >= Math.max(2, this.budget / 12)) { this.ringFree.push(ring); this.rings.splice(i, 1); }

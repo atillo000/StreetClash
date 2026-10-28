@@ -5,7 +5,7 @@ export function configureEnvironmentMoves(roster){
  for(const[id,kit]of Object.entries(roster))for(const move of Object.values(kit))for(const stage of [move,...(move.chain||[])]){
   tag(stage,{propDamage:1,groundResponse:id==='magic'?'scorch':'chip',groundContact:false,surface:stage.kind==='area'?'air':'contact',reaction:'none'});
   // No damage/range on setup poses: charging never breaks scenery.
-  if(stage.skill||stage.sequenceOnly)tag(stage,{reaction:({capoeira:'wind',magic:'arcane',soldier:'storm',archer:'frost',greatsword:'frost',axe:'heat',paladin:'holy',mutant:'earth',zombie:'toxin',chupacabra:'shadow'})[id]||'none'});
+  if(stage.skill||stage.sequenceOnly)tag(stage,{reaction:({avatar:'wind',capoeira:'wind',magic:'arcane',soldier:'storm',archer:'frost',greatsword:'frost',axe:'heat',paladin:'holy',mutant:'earth',zombie:'toxin',chupacabra:'shadow'})[id]||'none'});
   if(stage.specialPower==='tornado')tag(stage,{reaction:id==='axe'?'heatWind':'wind',groundResponse:'none',path:'wind',pathPropDamage:.45});
   if(stage.specialPower==='fissure')tag(stage,{reaction:'frost',groundResponse:'fracture',path:'seismic',pathPropDamage:.7});
   if(stage.specialPower==='lightning')tag(stage,{reaction:id==='paladin'?'holy':'storm',groundResponse:'scorch'});

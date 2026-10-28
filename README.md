@@ -75,3 +75,7 @@ Stage 4: **Tab** toggles target lock. WASD strafes/backpedals while locked; move
 - Sound cues are synthesized placeholders. Further abilities and ranged-versus-melee balancing remain later-stage work.
 - Geometry is statically batched and quality is adjustable; physical MX130 performance still needs a check on that laptop.
 - The older shared `idle.fbx` fails to parse in the current FBX loader. Current fighters use their dedicated pack idles baked into the prepared GLBs.
+
+## Custom face avatar
+
+Choose **Kickboxer / My Own Face** for the supplied custom character and its retargeted unarmed moveset. See [animation sources, controls and customization](docs/custom-avatar.md). Existing Supabase projects must apply `supabase/migrations/002_custom_avatar.sql` to select it online.

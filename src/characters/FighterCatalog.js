@@ -1,3 +1,4 @@
+import { AVATAR_FIGHTER } from './AvatarFighter.js';
 import { IMPORTED_FIGHTERS } from './ImportedFighters.js';
 const shared = file => `./assets/animations/Boxing Animation/${file}.fbx`;
 const cap = file => `./assets/animations/Capoeira Character Animation Pack/Capoeira Locomotion Pack/${file}.fbx`;
@@ -84,6 +85,7 @@ export const FIGHTERS = {
     moveLabels: ['Rifle shot', 'Close kick', 'Rifle burst'],
   },
   ...IMPORTED_FIGHTERS,
+  avatar:AVATAR_FIGHTER,
 };
 
 export const FIGHTER_LIST = Object.values(FIGHTERS);

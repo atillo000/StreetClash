@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
 const tabs = await fetch('http://127.0.0.1:9222/json/list').then(r => r.json());
-const tab = tabs.find(t => t.url.includes(process.env.GAME_URL || '127.0.0.1:8123'));
+const tab = tabs.find(t => t.url.includes(process.env.GAME_URL || '127.0.0.1:8080'));
 if (!tab) throw new Error('Open the game in the Chrome debugging session first');
 const ws = new WebSocket(tab.webSocketDebuggerUrl);
 await new Promise(resolve => ws.addEventListener('open', resolve, { once: true }));

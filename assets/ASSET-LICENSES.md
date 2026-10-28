@@ -132,3 +132,19 @@ The exact generation prompt and usage are recorded in docs/elemental-combat.md.
 Existing Kenney CC0 sprites and the supplied optimized great-sword model are
 reused under their existing license records. New shaders/physics code are
 original project code; Rapier remains Apache-2.0.
+
+## Custom avatar and animation integration — 2026-10-26
+
+characters/Custom Character Avatars/avatar/My Own Face Character.fbx was supplied and described as customized by the user. characters/generated/avatar.glb is its runtime derivative; the original is preserved. No license ownership is inferred for the supplied source beyond the user's authorization to integrate it.
+
+animations/Quaternius Universal Animation Library/standard.glb is the free Standard edition from Quaternius, downloaded from the publisher's Godot Asset Store distribution (https://store.godotengine.org/asset/quaternius/universal-animation-library/ ; download/44/). License: CC0 1.0, publisher's License.txt retained beside the file. Only animations from that source are retargeted onto the custom avatar; its mannequin is not substituted for the user's model. Existing supplied Boxing Animation/locomotion clips retain their original terms. Exact aliases, mappings and preparation notes are in docs/custom-avatar.md.
+
+## Custom avatar Mixamo boxing set - 2026-10-26
+
+Eleven animation-only FBXs downloaded from https://www.mixamo.com/ using the user's signed-in session and supplied avatar. Source files and checksums: animations/Custom Avatar/Mixamo/SOURCES.json. Seven sources are integrated; four footwork takes are optional, unused at runtime. Export settings: FBX 2014 Binary, Without Skin, 30 fps, no keyframe reduction.
+
+Adobe's Mixamo FAQ permits royalty-free use of characters and animations in video games: https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html . These clips are not CC0. The user's model is preserved; only animation channels are transferred into its generated GLB. Existing Quaternius CC0 and supplied-animation terms remain separate.
+
+## Combat impact audio - 2026-10-26
+
+21 original OGG files selected from Kenney Impact Sounds: https://kenney.nl/assets/impact-sounds . CC0-1.0; License.txt and file hashes retained in assets/audio/kenney-impact. Punches, metal blocks, concrete steps and wood/stone/metal impacts use three variations each. The download archive and unused sounds are not shipped. Existing Kenney particle art supplies the textured contact flashes, streaks and dust; no new third-party JavaScript dependency.

@@ -1,0 +1,233 @@
+{
+  "id": "avatar",
+  "originalBones": 91,
+  "uniqueBones": 73,
+  "maximumBindDifference": 0,
+  "height": 1.8,
+  "scale": 0.99700731959935,
+  "bytes": 16102832,
+  "clips": [
+    {
+      "name": "Idle",
+      "duration": 2.200000047683716,
+      "tracks": 55
+    },
+    {
+      "name": "AimIdle",
+      "duration": 2.200000047683716,
+      "tracks": 55
+    },
+    {
+      "name": "Walk",
+      "duration": 1.3333333730697632,
+      "tracks": 53
+    },
+    {
+      "name": "Run",
+      "duration": 0.9333333373069763,
+      "tracks": 53
+    },
+    {
+      "name": "Sprint",
+      "duration": 0.6666666865348816,
+      "tracks": 53
+    },
+    {
+      "name": "Jump",
+      "duration": 1.3333333730697632,
+      "tracks": 53
+    },
+    {
+      "name": "JumpLoop",
+      "duration": 2.5,
+      "tracks": 53
+    },
+    {
+      "name": "Land",
+      "duration": 1.2666666507720947,
+      "tracks": 53
+    },
+    {
+      "name": "Roll",
+      "duration": 1.4666666984558105,
+      "tracks": 53
+    },
+    {
+      "name": "Light",
+      "duration": 0.6666666865348816,
+      "tracks": 24
+    },
+    {
+      "name": "Cross",
+      "duration": 0.7666666507720947,
+      "tracks": 24
+    },
+    {
+      "name": "Hook",
+      "duration": 0.9666666388511658,
+      "tracks": 24
+    },
+    {
+      "name": "Heavy",
+      "duration": 1,
+      "tracks": 24
+    },
+    {
+      "name": "Knee",
+      "duration": 1.2333333492279053,
+      "tracks": 24
+    },
+    {
+      "name": "Hit",
+      "duration": 0.3333333432674408,
+      "tracks": 53
+    },
+    {
+      "name": "HitBack",
+      "duration": 1.5833333730697632,
+      "tracks": 47
+    },
+    {
+      "name": "HitLeft",
+      "duration": 1.5833333730697632,
+      "tracks": 47
+    },
+    {
+      "name": "HitRight",
+      "duration": 1.5833333730697632,
+      "tracks": 47
+    },
+    {
+      "name": "Kick",
+      "duration": 1.0333333015441895,
+      "tracks": 47
+    },
+    {
+      "name": "Combo",
+      "duration": 0.9333333969116211,
+      "tracks": 24
+    },
+    {
+      "name": "Block",
+      "duration": 2.5166666507720947,
+      "tracks": 47
+    },
+    {
+      "name": "Down",
+      "duration": 2.133333444595337,
+      "tracks": 47
+    },
+    {
+      "name": "GetUp",
+      "duration": 2.700000047683716,
+      "tracks": 47
+    },
+    {
+      "name": "Defeat",
+      "duration": 4.75,
+      "tracks": 47
+    },
+    {
+      "name": "Victory",
+      "duration": 4.5,
+      "tracks": 47
+    },
+    {
+      "name": "StrafeLeftWalk",
+      "duration": 1.0333333015441895,
+      "tracks": 47
+    },
+    {
+      "name": "StrafeRightWalk",
+      "duration": 1.0333333015441895,
+      "tracks": 47
+    },
+    {
+      "name": "StrafeLeftRun",
+      "duration": 0.6666666865348816,
+      "tracks": 47
+    },
+    {
+      "name": "StrafeRightRun",
+      "duration": 0.6666666865348816,
+      "tracks": 47
+    },
+    {
+      "name": "TurnLeft",
+      "duration": 0.9333333373069763,
+      "tracks": 47
+    },
+    {
+      "name": "TurnRight",
+      "duration": 0.9333333373069763,
+      "tracks": 47
+    },
+    {
+      "name": "UltimateStart",
+      "duration": 0.6666666865348816,
+      "tracks": 24
+    },
+    {
+      "name": "UltimateStrike",
+      "duration": 0.7666666507720947,
+      "tracks": 24
+    },
+    {
+      "name": "UltimateCombo",
+      "duration": 0.9666666388511658,
+      "tracks": 24
+    },
+    {
+      "name": "UltimateFinisher",
+      "duration": 1,
+      "tracks": 24
+    },
+    {
+      "name": "BackWalk",
+      "duration": 1.3333333730697632,
+      "tracks": 53
+    },
+    {
+      "name": "BackRun",
+      "duration": 0.9333333373069763,
+      "tracks": 53
+    }
+  ],
+  "sources": {
+    "Idle": "./assets/animations/Custom Avatar/Mixamo/Boxing Idle.fbx",
+    "AimIdle": "./assets/animations/Custom Avatar/Mixamo/Boxing Idle.fbx",
+    "Walk": "./assets/animations/Quaternius Universal Animation Library/standard.glb",
+    "Run": "./assets/animations/Quaternius Universal Animation Library/standard.glb",
+    "Sprint": "./assets/animations/Quaternius Universal Animation Library/standard.glb",
+    "Jump": "./assets/animations/Quaternius Universal Animation Library/standard.glb",
+    "JumpLoop": "./assets/animations/Quaternius Universal Animation Library/standard.glb",
+    "Land": "./assets/animations/Quaternius Universal Animation Library/standard.glb",
+    "Roll": "./assets/animations/Quaternius Universal Animation Library/standard.glb",
+    "Light": "./assets/animations/Custom Avatar/Mixamo/Lead Jab.fbx",
+    "Cross": "./assets/animations/Custom Avatar/Mixamo/Rear Cross.fbx",
+    "Hook": "./assets/animations/Custom Avatar/Mixamo/Rear Hook.fbx",
+    "Heavy": "./assets/animations/Custom Avatar/Mixamo/Rear Uppercut.fbx",
+    "Knee": "./assets/animations/Custom Avatar/Mixamo/Knee Strike.fbx",
+    "Hit": "./assets/animations/Quaternius Universal Animation Library/standard.glb",
+    "HitBack": "./assets/animations/Boxing Animation/Hit Reaction.fbx",
+    "HitLeft": "./assets/animations/Boxing Animation/Hit Reaction.fbx",
+    "HitRight": "./assets/animations/Boxing Animation/Hit Reaction.fbx",
+    "Kick": "./assets/animations/Boxing Animation/Mma Kick.fbx",
+    "Combo": "./assets/animations/Custom Avatar/Mixamo/Jab Cross Combo.fbx",
+    "Block": "./assets/animations/Boxing Animation/Outward Block.fbx",
+    "Down": "./assets/animations/Boxing Animation/Knocked Down.fbx",
+    "GetUp": "./assets/animations/Boxing Animation/Getting Up.fbx",
+    "Defeat": "./assets/animations/Boxing Animation/Defeat.fbx",
+    "Victory": "./assets/animations/Boxing Animation/Victory.fbx",
+    "StrafeLeftWalk": "./assets/animations/locomotion/left strafe walking.fbx",
+    "StrafeRightWalk": "./assets/animations/locomotion/right strafe walking.fbx",
+    "StrafeLeftRun": "./assets/animations/locomotion/left strafe.fbx",
+    "StrafeRightRun": "./assets/animations/locomotion/right strafe.fbx",
+    "TurnLeft": "./assets/animations/locomotion/left turn 90.fbx",
+    "TurnRight": "./assets/animations/locomotion/right turn 90.fbx",
+    "UltimateStart": "./assets/animations/Custom Avatar/Mixamo/Lead Jab.fbx",
+    "UltimateStrike": "./assets/animations/Custom Avatar/Mixamo/Rear Cross.fbx",
+    "UltimateCombo": "./assets/animations/Custom Avatar/Mixamo/Rear Hook.fbx",
+    "UltimateFinisher": "./assets/animations/Custom Avatar/Mixamo/Rear Uppercut.fbx"
+  }
+}

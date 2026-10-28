@@ -15,7 +15,7 @@ const paths={
   area:'M12 4v4 M12 16v4 M4 12h4 M16 12h4 M6 6l3 3 M15 15l3 3 M18 6l-3 3 M9 15l-3 3',
   dash:'M3 7h8 M1 12h7 M3 17h8 M11 4l9 8-9 8 M19 12H9',
 };
-const roleIcon={capoeira:'boot',magic:'magic',soldier:'rifle',archer:'bow',greatsword:'sword',axe:'axe',mutant:'claw',paladin:'shield',zombie:'claw',chupacabra:'claw'};
+const roleIcon={avatar:'fist',capoeira:'boot',magic:'magic',soldier:'rifle',archer:'bow',greatsword:'sword',axe:'axe',mutant:'claw',paladin:'shield',zombie:'claw',chupacabra:'claw'};
 const icon=name=>`<svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name]||paths.fist}"/></svg>`;
 
 export class CombatHud {

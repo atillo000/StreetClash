@@ -578,12 +578,20 @@ export class Combatant {
     return this.character.hasClip(base + suffix) ? base + suffix : base;
   }
   _flash(t, r, g, b) {
-    this.flashT = t;
-    for (const x of this.mats) { x.m.emissive.setRGB(r, g, b); x.m.emissiveIntensity = 0.9; }
+    this.flashT = this.flashDuration = t;
+    this.flashColor ??= new THREE.Color();this.flashColor.setRGB(r,g,b);
+    // Keep skin/clothing readable beneath a short, fading contact tint.
+    this._updateFlash(0);
   }
   _updateFlash(dt) {
     if (this.flashT <= 0) return;
     this.flashT -= dt;
-    if (this.flashT <= 0) for (const x of this.mats) { x.m.emissive.copy(x.e); x.m.emissiveIntensity = x.i; }
+    const fade=Math.max(0,this.flashT/this.flashDuration);
+    for (const x of this.mats) {
+      if(fade===0){x.m.emissive.copy(x.e);x.m.emissiveIntensity=x.i;continue;}
+      const strength=.085*fade;
+      x.m.emissive.setRGB(x.e.r*x.i+this.flashColor.r*strength,x.e.g*x.i+this.flashColor.g*strength,x.e.b*x.i+this.flashColor.b*strength);
+      x.m.emissiveIntensity=1;
+    }
   }
 }

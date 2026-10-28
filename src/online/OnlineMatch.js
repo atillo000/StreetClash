@@ -118,15 +118,15 @@ export class OnlineMatch{
  }
  presentEvent(e){
   const a=this.actors.get(e.a),b=this.actors.get(e.b),move=a?.moves[e.move]||a?.moves.punch;
-  if(e.type==='ground'){this.world.arena.terrain.impact(vec(e.p),e.damage,e.radius,e.scorch);this.effects.wreck.fragments(vec(e.p),'rubble',e.damage,true);}
+  if(e.type==='ground'){this.world.arena.terrain.impact(vec(e.p),e.damage,e.radius,e.scorch);this.effects.wreck.fragments(vec(e.p),'rubble',e.damage,true);this.effects.contacts.dust(vec(e.p),e.radius,1.8);this.world.sound.play('stone',{volume:.5});}
   else if(e.type==='mark')this.effects.wreck.mark(vec(e.p),vec(e.normal),e.kind,e.damage,e.radius);
   else if(e.type==='bolt'){const start=vec(e.p),end=vec(e.end),s=this.effects.special.spawn('lightning',start,end.clone().sub(start).normalize(),e.color,.2);if(s){s.end.copy(end);s.held=false;s.life=.22;}}
   else if(a&&move){
-   if(e.type==='onAttack')this.effects.elemental.charge(a,move);
+   if(e.type==='onAttack'){this.effects.contacts.anticipate(a,move);this.effects.elemental.charge(a,move);}
    if(e.type==='onSwing'){this.world.sound.play('swing');this.effects.swing(a,move);this.world.destruction.reactions.swing(a,move);}
    if(e.type==='onUltimateComplete')this.effects.elemental.empower(a,move);
-   if(e.type==='onCast'){this.world.sound.play(a.profile.id==='soldier'?'rifle':'magic');this.effects.elemental.release(a,move);if(move.kind==='projectile'&&!move.specialPower){const source=a.equipment?.muzzle||a.character.bone('mixamorigRightHand');this.effects.cast(source.getWorldPosition(new THREE.Vector3()),move.color,a.profile.id==='soldier'?'muzzle':'cast');}if(move.kind==='area'&&!move.specialPower)this.world.destruction.reactions.area(a,move,a.position,move.environment?.surface==='air');}
-   if(e.type==='hit'&&b){b.lastHitInfo=e.info;b.lastDamage=e.damage;const point=vec(e.point);this.world.sound.play(e.result==='blocked'?'block':move.power==='heavy'?'heavy':'hit');this.effects.contact(a,b,e.result,move,point);this.effects.impact(point,move.color,move.power==='heavy');this.world.onNetworkHit?.(a,b,point,e.result);if(b===this.player)this.cam.shake(.07);}
+   if(e.type==='onCast'){this.effects.contacts.release(a,move);this.world.sound.play(a.profile.id==='soldier'?'rifle':'magic');this.effects.elemental.release(a,move);if(move.kind==='projectile'&&!move.specialPower){const source=a.equipment?.muzzle||a.character.bone('mixamorigRightHand');this.effects.cast(source.getWorldPosition(new THREE.Vector3()),move.color,a.profile.id==='soldier'?'muzzle':'cast');}if(move.kind==='area'&&!move.specialPower)this.world.destruction.reactions.area(a,move,a.position,move.environment?.surface==='air');}
+   if(e.type==='hit'&&b){b.lastHitInfo=e.info;b.lastDamage=e.damage;const point=vec(e.point);this.world.sound.play(e.result==='blocked'?'block':move.power==='heavy'?'heavy':'hit');this.effects.contact(a,b,e.result,move,point);this.world.onNetworkHit?.(a,b,point,e.result);if(b===this.player&&!this.world.juice?.reduced)this.cam.shake(.07);}
   }
  }
  syncProps(props){for(let i=0;i<props.length&&i<this.world.destruction.props.length;i++){const state=props[i],p=this.world.destruction.props[i];if(!Number.isFinite(state.hp)||!Array.isArray(state.p))continue;const delta=vec(state.p).sub(p.root.position);p.root.position.add(delta);p.bounds.translate(delta);p.hp=Math.max(0,state.hp);const alive=p.hp>0;if(p.alive!==alive){p.alive=alive;p.root.visible=alive;if(!alive){for(const list of [this.world.arena.obstacles,this.world.arena.cameraBlockers]){const j=list.indexOf(p.bounds);if(j>=0)list.splice(j,1);}this.world.arena.revision++;this.effects.wreck.fragments(p.bounds.getCenter(new THREE.Vector3()),p.material,20,true);}}for(const{material,base}of p.materials)material.color.copy(base).multiplyScalar(.7+.3*p.hp/p.maxHp);}this.world.arena.syncBreakables();}

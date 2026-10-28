@@ -50,7 +50,7 @@ function energyMaterial(){return new THREE.ShaderMaterial({uniforms:{uAtlas:{val
 // active-window or confirmed-contact event supplied by the combat simulation.
 export class ElementalEffects{
  constructor(scene){
-  this.entries=[];this.limit=6;this.dummy=new THREE.Object3D();this.temp=new THREE.Vector3();
+  this.reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;this.entries=[];this.limit=6;this.dummy=new THREE.Object3D();this.temp=new THREE.Vector3();
   const arc=arcGeometry(),wall=new THREE.CylinderGeometry(1,1,.9,48,1,true),crystal=crystalGeometry(),plane=new THREE.PlaneGeometry(1,1);
   for(let i=0;i<12;i++){
    const group=new THREE.Group();group.visible=false;scene.add(group);const material=energyMaterial();
@@ -75,11 +75,12 @@ export class ElementalEffects{
   const e=this.emit('powerMode',fighter.position,move,fighter,.85,4);if(e){e.follow=fighter;e.height=.025;}
  }
  charge(fighter,move){
-  if(!move.skill||fighter.attackSequence?.index>0||move.kind==='mobility')return;
+  if(!move.skill||!fighter.attackSequence||fighter.attackSequence.index>0||move.kind==='mobility')return;
   const ultimate=!!fighter.attackSequence;
   const entry=this.emit(ultimate?'ultimateAura':'charge',fighter.position,move,fighter,ultimate?1.05:.6,ultimate?3.5:.38);if(entry){entry.follow=fighter;entry.height=.05;}
  }
  sweep(fighter,move){
+  if(!move.skill&&!move.sequenceOnly)return; // Basic attacks use the actual hand/blade trail.
   const entry=this.emit('sweep',fighter.position,move,fighter,Math.min(1.8,Math.max(.7,(move.range||1.2)*.75)),move.power==='heavy'?.34:.24);
   if(entry){entry.height=fighter.height*(fighter.profile.id==='capoeira'?.28:.52);entry.follow=fighter;entry.angle+=fighter.comboStage===2?.6:-.5;}
  }
@@ -99,7 +100,7 @@ export class ElementalEffects{
  }
  flash(point,color,screen){
   const slot=this.lights.find(s=>s.life<=0)||this.lights[0];slot.life=slot.max;slot.light.position.copy(point);slot.light.color.set(color);slot.light.intensity=8;slot.light.visible=true;
-  if(screen){this.screenLife=.12;this.screen.style.setProperty('--hit-color',new THREE.Color(color).getStyle());}
+  if(screen&&!this.reduced){this.screenLife=.12;this.screen.style.setProperty('--hit-color',new THREE.Color(color).getStyle());}
  }
  strike(point,move,fighter){
   const top=point.clone();top.y+=4.5;
@@ -109,7 +110,7 @@ export class ElementalEffects{
  }
  landing(fighter,velocity){
   if(velocity<2)return;
-  this.emit('landing',fighter.position,{element:'earth',artColor:0xd6c9ac},fighter,Math.min(1.2,.4+velocity*.07),.32);
+  fighter.world.effects.contacts.dust(fighter.position,Math.min(1.2,.4+velocity*.07),.7);
  }
  clear(){for(const e of this.entries){e.life=0;e.group.visible=false;e.follow=null;}for(const s of this.lights){s.life=0;s.light.intensity=0;}this.screenLife=0;this.screen.style.opacity=0;}
  update(dt){
@@ -118,7 +119,7 @@ export class ElementalEffects{
    const t=1-e.life/e.max,u=e.material.uniforms;u.uTime.value=e.time;u.uProgress.value=t;u.uAtlas.value=elementalTextures.atlas;u.uNoise.value=vfxTextures.smoke_04;
    e.group.position.copy(e.position);e.group.position.y+=e.height;e.group.rotation.set(0,e.angle+(e.kind==='sweep'?t*1.5:e.time*2),0);e.group.scale.setScalar(e.scale*(e.kind==='burst'?.6+t*.5:e.kind==='sweep'?1:.75+t*.25));
    for(const mesh of e.ribbons)mesh.visible=e.kind==='sweep'||e.kind==='nova'||e.kind==='charge'||e.kind==='frostWave'||e.kind==='ultimateAura'||e.kind==='powerMode';
-   e.veil.visible=e.kind!=='sweep';e.veil.scale.y=['frostMist','holyField','arcaneField'].includes(e.kind)?.18:['gust','landing'].includes(e.kind)?.35:['toxinCloud','shadowPulse'].includes(e.kind)?.7:e.kind==='charge'?.7:e.kind==='burst'?.6:1;
+   e.veil.visible=!['sweep','ultimateAura','powerMode','landing','gust','frostMist'].includes(e.kind);e.veil.scale.y=['frostMist','holyField','arcaneField'].includes(e.kind)?.18:['gust','landing'].includes(e.kind)?.35:['toxinCloud','shadowPulse'].includes(e.kind)?.7:e.kind==='charge'?.7:e.kind==='burst'?.6:1;
    e.shards.visible=e.element==='frost'&&['nova','burst','frostWave','frostMist'].includes(e.kind);
    if(e.shards.visible){e.shards.count=e.kind==='burst'?8:24;for(let i=0;i<e.shards.count;i++){const a=i*2.4,r=e.kind!=='burst'?.88:.2+(i%3)*.18;this.dummy.position.set(Math.cos(a)*r,0,Math.sin(a)*r);this.dummy.rotation.set(Math.sin(a)*.25,a,Math.cos(a)*.25);this.dummy.scale.setScalar((.35+(i%4)*.16)*Math.sin(Math.PI*t));this.dummy.updateMatrix();e.shards.setMatrixAt(i,this.dummy.matrix);}e.shards.instanceMatrix.needsUpdate=true;}
    const map=['landing','gust','frostMist','toxinCloud','shadowPulse'].includes(e.kind)?vfxTextures.smoke_04:vfxTextures.flare_01;if(e.motes.material.map!==map){e.motes.material.map=map;e.motes.material.needsUpdate=true;}e.motes.material.color.copy(u.uColor.value);e.motes.material.opacity=(['landing','gust','frostMist','toxinCloud','shadowPulse'].includes(e.kind)?.22:.65)*(1-t);
@@ -128,7 +129,7 @@ export class ElementalEffects{
  }
  render(camera){
   for(const e of this.entries){if(e.life<=0)continue;const t=1-e.life/e.max;e.group.getWorldQuaternion(this.dummy.quaternion);const q=this.dummy.quaternion.clone().invert().multiply(camera.quaternion);e.motes.count=this.moteCount||14;
-   for(let i=0;i<e.motes.count;i++){const a=i*2.4+t*3,r=(e.kind==='sweep'?.75:.3)+t*.6;this.dummy.position.set(Math.cos(a)*r,(i%4)*.12+t*.6,Math.sin(a)*r);this.dummy.quaternion.copy(q);this.dummy.scale.setScalar(['landing','gust','frostMist','toxinCloud','shadowPulse'].includes(e.kind)?.45:.025+(i%3)*.015);this.dummy.updateMatrix();e.motes.setMatrixAt(i,this.dummy.matrix);}e.motes.instanceMatrix.needsUpdate=true;
+   for(let i=0;i<e.motes.count;i++){const a=i*2.4+t*3,r=(e.kind==='sweep'?.75:.3)+t*.6;this.dummy.position.set(Math.cos(a)*r,(i%4)*.12+t*.6,Math.sin(a)*r);this.dummy.quaternion.copy(q);this.dummy.scale.setScalar(['landing','gust','frostMist','toxinCloud','shadowPulse'].includes(e.kind)?.65:.025+(i%3)*.015);this.dummy.updateMatrix();e.motes.setMatrixAt(i,this.dummy.matrix);}e.motes.instanceMatrix.needsUpdate=true;
   }
  }
 }

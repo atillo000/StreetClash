@@ -76,6 +76,7 @@ export class DestructibleProps{
       this.effects.wreck.fragments(floorPoint,'stone',damage*.25);
     }
     this.reactions.burst(owner,move,floorPoint.clone().add(new THREE.Vector3(0,.04,0)),Math.min(1.8,scale*1.5));
+    this.world.onGroundImpact?.(owner,move,floorPoint,Math.min(2.25,(.65+Math.sqrt(damage)*.15)*scale),excavates);
     if(excavates){this.effects.cast(floorPoint.clone().add(new THREE.Vector3(0,.12,0)),0xaaa28e,'smoke');this.reactions.disturb(owner,floorPoint,2*scale,3);}
   }
   area(owner,move,center){

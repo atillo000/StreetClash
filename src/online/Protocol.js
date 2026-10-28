@@ -1,5 +1,5 @@
 export const NET={version:1,maxPlayers:4,inputHz:15,snapshotHz:15,interpolationMs:100,inputTimeoutMs:500,hostTimeoutMs:12000,roundSeconds:120};
-export const PLAYABLE=['capoeira','magic','soldier','archer','greatsword','axe','paladin'];
+export const PLAYABLE=['capoeira','magic','soldier','archer','greatsword','axe','paladin','avatar'];
 export const ACTIONS=['punch','heavy','kick','skill1','skill2','ultimate'];
 const finite=(n,lo,hi)=>typeof n==='number'&&Number.isFinite(n)&&n>=lo&&n<=hi;
 export function validInput(p){return p&&Number.isSafeInteger(p.seq)&&p.seq>=0&&Array.isArray(p.dir)&&p.dir.length===2&&p.dir.every(n=>finite(n,-1,1))&&finite(p.aim,-Math.PI*2,Math.PI*2)&&Array.isArray(p.point)&&p.point.length===3&&p.point.every(n=>finite(n,-100,100))&&Array.isArray(p.attacks)&&p.attacks.length<=6&&p.attacks.every(a=>ACTIONS.includes(a))&&['aiming','block','walk','crouch','sprint','jump','dodge','switchWeapon'].every(k=>typeof p[k]==='boolean');}

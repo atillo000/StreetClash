@@ -5,8 +5,9 @@
   const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
   const { mergeVertices } = await import('three/addons/utils/BufferGeometryUtils.js');
   const { FIGHTERS } = await import('../src/characters/FighterCatalog.js?prepare=roster-v2');
+  const { normalizeSourceRig } = await import('../src/animation/SourceRigNames.js');
   const { fitClips } = await import('../src/animation/AnimBank.js');
-  const id = window.__prepareFighter || 'capoeira', config = FIGHTERS[id];
+  const id = window.__prepareFighter || 'capoeira', config = window.__prepareConfig || FIGHTERS[id];
   if (!config) throw new Error('Unknown fighter');
   const manager = new T.LoadingManager();
   let complete = false;
@@ -16,6 +17,7 @@
     : await new FBXLoader(manager).loadAsync(encodeURI(config.source));
   for (let i = 0; i < 1200 && !complete; i++) await new Promise(r => setTimeout(r, 25));
   if (!complete) throw new Error('Character textures did not finish loading');
+  if(config.normalizeMixamoNames)normalizeSourceRig(model);
   model.updateMatrixWorld(true);
   for (const name of config.omitMeshes || []) model.getObjectByName(name)?.removeFromParent();
 
@@ -53,11 +55,21 @@
     mesh.bind(skeleton, mesh.bindMatrix.clone());
   });
 
+  // Bake any active source facial shape before dropping unused morph channels.
+  // Only the derivative GLB changes; the supplied FBX remains editable/intact.
+  if(config.stripUnusedMorphTargets)model.traverse(mesh=>{if(!mesh.isMesh)return;const geometry=mesh.geometry;for(const key of ['position','normal']){const base=geometry.attributes[key],targets=geometry.morphAttributes[key]||[];if(!base)continue;for(let i=0;i<base.count;i++){let x=base.getX(i),y=base.getY(i),z=base.getZ(i);const bx=x,by=y,bz=z;for(let j=0;j<targets.length;j++){const weight=mesh.morphTargetInfluences?.[j]||0;if(!weight)continue;x+=(targets[j].getX(i)-(geometry.morphTargetsRelative?0:bx))*weight;y+=(targets[j].getY(i)-(geometry.morphTargetsRelative?0:by))*weight;z+=(targets[j].getZ(i)-(geometry.morphTargetsRelative?0:bz))*weight;}base.setXYZ(i,x,y,z);}}geometry.morphAttributes={};mesh.morphTargetInfluences=[];mesh.morphTargetDictionary={};});
+  let textureTemplate;
+  if(config.textureTemplate){
+    const gltf=await new GLTFLoader().loadAsync(encodeURI(config.textureTemplate));
+    gltf.scene.traverse(o=>{if(o.isMesh&&!textureTemplate)textureTemplate=[].concat(o.material)[0].clone();});
+    if(!textureTemplate)throw Error('Missing material template');
+    if(config.templateFlipY)for(const key of ['map','normalMap','roughnessMap','metalnessMap'])if(textureTemplate[key]){textureTemplate[key]=textureTemplate[key].clone();textureTemplate[key].flipY=true;textureTemplate[key].needsUpdate=true;}
+  }
   const materials = new Map();
   model.traverse(mesh => {
     if (!mesh.isMesh) return;
     const convert = material => {
-      if (!materials.has(material)) materials.set(material, new T.MeshStandardMaterial({ name: material.name,
+      if (!materials.has(material)) materials.set(material, textureTemplate ? textureTemplate.clone() : new T.MeshStandardMaterial({ name: material.name,
         color: material.color, map: material.map, normalMap: material.normalMap,
         normalScale: material.normalScale?.clone() || new T.Vector2(1, 1), roughness: 0.8, metalness: 0.02,
         alphaMap: material.alphaMap, alphaTest: material.transparent ? 0.35 : 0,
@@ -65,6 +77,7 @@
       return materials.get(material);
     };
     mesh.material = Array.isArray(mesh.material) ? mesh.material.map(convert) : convert(mesh.material);
+    if(config.compressOpaqueTextures)for(const mat of [].concat(mesh.material))if(mat.map&&!mat.alphaMap&&!mat.alphaTest)mat.map.userData.mimeType='image/jpeg';
     mesh.geometry = mergeVertices(mesh.geometry);
   });
   const restBounds = new T.Box3().setFromObject(model);
@@ -80,18 +93,31 @@
         // the supplied Mixamo FBXs before fitClips applies the model's ratio.
         const gltf = await new GLTFLoader().loadAsync(encodeURI(url));
         fbx = gltf.scene; fbx.animations = gltf.animations;
+        if(config.normalizeMixamoNames)normalizeSourceRig(fbx,{quaterniusRig:true});
         fbx.traverse(node => node.position.multiplyScalar(100));
         for (const clip of fbx.animations) for (const track of clip.tracks) {
           if (track.name.endsWith('.position')) for (let i=0;i<track.values.length;i++) track.values[i] *= 100;
         }
         fbx.updateMatrixWorld(true);
-      } else fbx = await new FBXLoader().loadAsync(encodeURI(url));
+      } else {
+        fbx = await new FBXLoader().loadAsync(encodeURI(url));
+        if(config.normalizeMixamoNames)normalizeSourceRig(fbx);
+      }
+      const sourceScale=Object.entries(config.animationSourceScales||{}).find(([prefix])=>url.startsWith(prefix))?.[1]||1;
+      if(sourceScale!==1){
+        fbx.traverse(node=>node.position.multiplyScalar(sourceScale));
+        for(const clip of fbx.animations)for(const track of clip.tracks)if(track.name.endsWith('.position'))for(let i=0;i<track.values.length;i++)track.values[i]*=sourceScale;
+        fbx.updateMatrixWorld(true);
+      }
       cache.set(url, fbx);
     }
     if (!fbx.animations[0]) throw new Error('No animation: ' + url);
-    bank.set(key, fbx.animations[0]); bank.roots.set(key, fbx);
+    const selected=config.clipNames?.[key]?fbx.animations.find(c=>c.name===config.clipNames[key]):fbx.animations[0];
+    if(!selected)throw new Error('Missing named animation '+config.clipNames[key]+' for '+key);
+    bank.set(key, selected); bank.roots.set(key, fbx);
   }
   const clips = fitClips(bank, { animations: [] }, model, { trims: config.clipTrims || {} });
+  // Preserve authored idle motion; do not freeze the avatar into an entry pose.
   if(id==='soldier'){
     const idle=clips.find(c=>c.name==='PistolIdle');
     // The pack has no travelling crouch/landing takes. Reuse the existing leg
@@ -162,8 +188,11 @@
   }
   model.scale.setScalar(scale); model.position.y = -restBounds.min.y * scale;
   model.name = config.name;
+  // Animation-only avatar exports include an AvatarRoot track. The runtime owns
+  // that root and renames it, so export only its canonical bone channels.
+  if(config.boneAnimationOnly)for(const clip of clips)clip.tracks=clip.tracks.filter(track=>model.getObjectByName(track.name.slice(0,track.name.lastIndexOf('.')))?.isBone);
   model.updateMatrixWorld(true);
-  const binary = await new GLTFExporter().parseAsync(model, { binary: true, animations: clips, maxTextureSize: 1024, onlyVisible: false });
+  const binary = await new GLTFExporter().parseAsync(model, { binary: true, animations: clips, maxTextureSize: config.maxTextureSize || 1024, onlyVisible: false });
   const receiver = window.__assetReceiver || 'http://127.0.0.1:8124';
   const response = await fetch(`${receiver}/${id}.glb`, { method: 'POST', body: binary });
   if (!response.ok) throw new Error(await response.text());

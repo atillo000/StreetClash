@@ -1,7 +1,7 @@
 // Presentation and launch tuning only. Damage, cooldowns, bindings and clips
 // stay in fighterMoves.js. Element names also select impact sound/lighting.
 export const COMBAT_ART={
- capoeira:{element:'wind',color:0xc5f1ff},magic:{element:'fire',color:0xffae50},
+ avatar:{element:'wind',color:0xe8d4b2},capoeira:{element:'wind',color:0xc5f1ff},magic:{element:'fire',color:0xffae50},
  soldier:{element:'storm',color:0x83dfff},archer:{element:'frost',color:0x9eeaff},
  greatsword:{element:'frost',color:0x8cdfff},axe:{element:'fire',color:0xffad47},
  paladin:{element:'holy',color:0xffde8c},mutant:{element:'earth',color:0xc4ad85},

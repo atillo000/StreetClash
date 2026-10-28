@@ -2,6 +2,7 @@
 // Keep movement, animations and hit timings independent from balance tuning.
 export const CRITICAL_MULTIPLIER=1.25;
 export const DAMAGE_BUDGETS={
+  avatar:{chain:[7,9,12],heavy:22,skills:[16,21,24],cooldowns:[3.5,6,8],ultimate:60,ultimateCooldown:26},
   capoeira:{chain:[8,9,13],heavy:18,skills:[15,18,22],cooldowns:[3,5,8],ultimate:60,ultimateCooldown:24},
   magic:{chain:[8,9,12],heavy:22,skills:[18,22,24],cooldowns:[4,6,9],ultimate:58,ultimateCooldown:24},
   soldier:{chain:[5,5,8],heavy:18,skills:[15,21,25],cooldowns:[3,6,8],ultimate:56,ultimateCooldown:24},

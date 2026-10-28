@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const root = process.cwd();
-const port = Number(process.env.PORT || 8123);
+const port = Number(process.env.PORT || 8080);
 const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.glb': 'model/gltf-binary', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.md': 'text/plain; charset=utf-8' };
 const clients = new Set();
 let revision = Date.now();
@@ -75,7 +75,8 @@ const server = http.createServer(async (req, res) => {
     if (!file.startsWith(root + path.sep)) { res.writeHead(403).end(); return; }
     let data = await readFile(file);
     const extension = path.extname(file);
-    if (extension === '.html') {
+    // Exporting a fighter writes watched assets; do not interrupt preparation.
+    if (extension === '.html' && !pathname.startsWith('/scripts/prepare')) {
       data = data.toString('utf8').replace(/<\/body>/i, '<script src="/__streetclash/live.js" defer></script></body>');
       // Minimal preparation pages may omit a closing body tag.
       if (!data.includes('src="/__streetclash/live.js"')) data += '<script src="/__streetclash/live.js" defer></script>';

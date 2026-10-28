@@ -11,7 +11,7 @@ create table public.sc_members (
  room_id uuid not null references public.sc_rooms(id) on delete cascade,
  user_id uuid not null references auth.users(id) on delete cascade,
  display_name text not null check(length(display_name) between 1 and 20),
- fighter text not null check(fighter in ('capoeira','magic','soldier','archer','greatsword','axe','paladin')),
+ fighter text not null check(fighter in ('capoeira','magic','soldier','archer','greatsword','axe','paladin','avatar')),
  ready boolean not null default false, joined_at timestamptz not null default now(),last_seen timestamptz not null default now(),
  primary key(room_id,user_id),unique(user_id)
 );
