@@ -3,6 +3,7 @@ import { soldierLoadout } from './SoldierLoadout.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { Character } from './Character.js';
+import { batchSkinnedPrimitives } from './SkinnedBatches.js';
 import { Mover } from './Mover.js';
 import { FIGHTERS, FIGHTER_LIST } from './FighterCatalog.js';
 import { FIGHTER_MOVES, fighterDefense } from '../combat/fighterMoves.js';
@@ -16,6 +17,7 @@ export class FighterLibrary {
     const loader = new GLTFLoader(); let done = 0;
     await Promise.all(FIGHTER_LIST.map(async config => {
       const gltf = await loader.loadAsync(config.url).catch(() => { throw new Error(`Could not load prepared fighter ${config.name}. Check assets/characters/generated.`); });
+      gltf.userData={batchedPrimitives:batchSkinnedPrimitives(gltf)};
       this.models.set(config.id, gltf); progress(++done, FIGHTER_LIST.length);
     }));
     this.weapons = await new FighterWeapons().load();

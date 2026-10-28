@@ -1,6 +1,10 @@
+import { DisplayOptions } from './ui/DisplayOptions.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import * as THREE from 'three';
 import { AdaptivePerformance } from './core/AdaptivePerformance.js';
 import { CombatJuice } from './combat/CombatJuice.js';
+import { FreeForAll } from './game/FreeForAll.js';
+import { LobbyFlow } from './ui/LobbyFlow.js';
 import { HeroPreview } from './ui/HeroPreview.js';
 import { Multiplayer } from './online/Multiplayer.js';
 import { QUALITY, applyQuality } from './core/quality.js';
@@ -15,7 +19,7 @@ import { Projectiles } from './combat/Projectiles.js';
 import { ThirdPersonCamera } from './core/ThirdPersonCamera.js';
 import { Input } from './core/input.js';
 import { FixedStep } from './core/FixedStep.js';
-import { createWarehouseArena } from './core/WarehouseArena.js';
+import { createWarehouseArena } from './core/DistrictArena.js';
 import { Sound } from './core/Sound.js';
 import { TargetLock } from './combat/TargetLock.js';
 import { shortestAngle } from './characters/Mover.js';
@@ -49,11 +53,13 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.08;
+renderer.toneMappingExposure = .98;
 document.body.appendChild(renderer.domElement);
 
 // Scene
 const scene = new THREE.Scene();
+const pmrem=new THREE.PMREMGenerator(renderer),roomEnvironment=new RoomEnvironment();
+scene.environment=pmrem.fromScene(roomEnvironment,.04).texture;scene.environmentIntensity=.32;roomEnvironment.dispose();pmrem.dispose();
 scene.background = new THREE.Color(ART.sky);
 scene.fog = new THREE.Fog(ART.fog, 23, 49);
 
@@ -167,9 +173,9 @@ const world = {
     if(source)this.match?.recordHit(source,target,'periodic',damage);
     effects.spark(target.position.clone().add(new THREE.Vector3(0,.8,0)),type.color,3,1);
   },
-  onGroundImpact(c,move,point,radius,fracture){effects.contacts.dust(point,radius,fracture?1.8:.7);sound.play(fracture?'stone':'land',{volume:.7});if(c===this.combatants[0]&&!this.juice?.reduced)cam.shake(fracture?.07:.02);},
+  onGroundImpact(c,move,point,radius,fracture){effects.contacts.dust(point,radius,fracture?1.8:.7);sound.play(this.arena.surfaceAt?.(point.x,point.z)==='metal'?'metal':fracture?'stone':'land',{volume:.7});if(c===this.combatants[0]&&!this.juice?.reduced)cam.shake(fracture?.07:.02);},
   onLanding(c,speed){sound.play('land');effects.elemental.landing(c,speed);if(c.team==='p'){if(!this.juice?.reduced)cam.shake(.035);}},
-  onKill(attacker,target) { this.physics?.ragdolls.stop(target);target.statuses.clear(); }, // Match still owns scoring/outcomes.
+  onKill(attacker,target) { this.freeForAll?.kill(attacker,target);this.physics?.ragdolls.stop(target);target.statuses.clear(); }, // Match still owns scoring/outcomes.
   onRespawn() {},
 };
 
@@ -184,7 +190,7 @@ async function boot() {
     createWarehouseArena(scene, (n, total) => { statusEl.textContent = `Loading warehouse ${n}/${total}…`; }),
     effects.loadSprites(),
   ]);
-  arena = warehouse; world.arena = arena;
+  arena = warehouse; world.arena = arena;world.cameraRig=cam;
   world.destruction = new DestructibleProps(world,effects);
   world.library = library;
   feedback=world.feedback=new CombatFeedback(world);feedback.setBudget(QUALITY[qualityOrder[qIndex]].particles);
@@ -206,7 +212,7 @@ async function boot() {
   world.presentation = new FighterPresentation(scene, world.combatants);
   world.statusPresentation = new StatusPresentation(scene,world.combatants);world.statusPresentation.setBudget(QUALITY[qualityOrder[qIndex]].particles);
   const ai = new EnemyAI(dummy);
-  const lock = new TargetLock(player, world);
+  const lock = new TargetLock(player, world);world.lock=lock;
   const aimTrace = new Aim(); world.aim = aimTrace;
   const signals = new CombatSignals(scene, world.combatants); world.signals = signals;
   const lockRing = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.57, 32), new THREE.MeshBasicMaterial({ color: 0xffcf40, side: THREE.DoubleSide, depthWrite: false }));
@@ -235,13 +241,14 @@ async function boot() {
     },
     onFinish(result) {
       if (input.locked) document.exitPointerLock();
-      const winner = result.outcome === 'victory' ? player : result.outcome === 'defeat' ? dummy : null;
+      const winner = world.freeForAll?.active ? (result.outcome==='draw'?null:world.freeForAll.leader) : result.outcome === 'victory' ? player : result.outcome === 'defeat' ? dummy : null;
       for (const c of world.combatants) if (c.alive) { c.character.endAction(0.12); c.move = null; c.strikers = []; c.buffer = null; c._setState('free'); }
       if (winner?.character.hasClip('Victory')) { winner.character.playAction('Victory', { fade: 0.15 }); winner._setState('victory'); }
     },
   });
   world.match = match;
   world.circuit = new ArenaCircuit({world,match,player,enemy:dummy,ai,library,scene,effects,lock});
+  world.freeForAll=new FreeForAll({world,player,enemy:dummy,ai,library});
   world.selectFighter = (side, id) => {
     if (match.state !== 'lobby' || !FIGHTERS[id] || side==='player'&&FIGHTERS[id].enemyOnly) return false;
     if(side === 'opponent') world.circuit.rivalId=id;
@@ -279,12 +286,12 @@ async function boot() {
     player.aimPoint = lock.target ? lock.target.position.clone().add(new THREE.Vector3(0, 1, 0)) : aimTrace.point.clone();
     const aim = lock.target ? player.mover.lockFacing : aimTrace.heading(player);
     const ranged = player.profile.ranged ?? ['magic', 'soldier', 'archer'].includes(player.profile.id);
-    if (!lock.target && ranged && input.locked && !input.down('KeyZ')) player.mover.lockFacing = aim;
+    if (!lock.target && ranged && input.locked && !input.sprintModifier) player.mover.lockFacing = aim;
 
     player.mover.steer(_dir, mag, input.walkModifier);
     player.wantBlock = input.down('KeyF');
     player.wantCrouch = input.down('KeyC');
-    player.mover.sprinting = input.down('KeyZ') && player.character.hasClip('Sprint');
+    player.mover.sprinting = input.sprintModifier;
     if (input.pressed('KeyQ')) world.switchSoldierWeapon();
     if (input.pressed('Space')) player.tryJump();
 
@@ -308,7 +315,9 @@ async function boot() {
   const graphics=document.createElement('label');graphics.className='graphics-option';graphics.innerHTML='GRAPHICS <select data-graphics-mode aria-label="Graphics quality"><option value="auto">Auto / recommended</option><option value="low">Performance</option><option value="medium">Balanced</option><option value="high">High</option></select>';graphics.querySelector('select').value=world.performance.mode;graphics.querySelector('select').onchange=e=>world.performance.setMode(e.target.value);document.getElementById('practice').after(graphics);
   const pauseGraphics=graphics.cloneNode(true);pauseGraphics.querySelector('select').onchange=e=>world.performance.setMode(e.target.value);document.getElementById('resume').after(pauseGraphics);
   world.heroPreview=new HeroPreview({renderer,scene,world,player});
+  world.lobbyFlow=new LobbyFlow(world);
   world.online=new Multiplayer({world,player,enemy:dummy,ai,input,cam,camera,aim:aimTrace,lock,effects});
+  world.input=input;world.displayOptions=new DisplayOptions(world);
   world.onNetworkHit=(a,b,point,result)=>{feedback?.damage(a,b,point,result);world.juice.hit(a,b,result,a.move||a.moves.punch,point);};
   const aiEl = document.getElementById('ai');
   const debugEl = document.getElementById('debug');
@@ -333,9 +342,9 @@ async function boot() {
   function updateHud() {
     const loadout=document.getElementById('weaponLoadout');loadout.hidden=player.profile.id!=='soldier';
     loadout.textContent='Q · '+(player.equipment?.id==='pistol'?'PISTOL / SWITCH TO RIFLE':'RIFLE / SWITCH TO PISTOL');
-    combatHud.update(player,dummy,match,world,lock);
+    combatHud.update(player,lock.target||dummy,match,world,lock);world.lobbyFlow?.update();
     if(!world.online?.playing)world.circuit?.updateHud();else document.getElementById('encounterDisplay').hidden=true;
-    world.statusPresentation.updateHud();
+    world.statusPresentation.updateHud();world.displayOptions?.update();
     input.combatEnabled = match.canFight && !world.paused;
     aiEl.textContent = ai.enabled ? 'ON' : 'OFF (dummy)';
     document.getElementById('grip').textContent = player.bat ? player.bat.gripLabel() : '-';
@@ -345,7 +354,7 @@ async function boot() {
     for (const button of document.querySelectorAll('[data-fighter]')) button.setAttribute('aria-pressed', String(button.dataset.fighter === player.profile.id));
     document.getElementById('opponentChoice').value = dummy.profile.id;
     const reticle = document.getElementById('crosshair');
-    reticle.hidden = !match.canFight || world.paused;
+    reticle.hidden = !match.canFight || world.paused || (!input.locked&&!lock.target&&world.hitMarkerT<=0);
     reticle.classList.toggle('on-target', !!aimTrace.target || !!lock.target);
     reticle.classList.toggle('confirmed', world.hitMarkerT > 0);
     document.getElementById('hitConfirm').textContent = world.hitMarkerT > 0 ? world.hitMessage : '';
@@ -359,6 +368,7 @@ async function boot() {
     const banner = document.getElementById('countdown');
     if(!world.online?.playing)banner.hidden = !['countdown', 'ending'].includes(match.state);
     if(!world.online?.playing)banner.textContent = match.state === 'countdown' ? String(Math.max(1, Math.ceil(match.countdownRemaining))) : match.result?.outcome === 'victory' ? 'KNOCKOUT · YOU WIN' : match.result?.outcome === 'defeat' ? 'RIVAL WINS' : 'DRAW';
+    if(world.freeForAll?.active&&match.state==='ending')banner.textContent=match.result?.outcome==='victory'?'YOU WIN':match.result?.outcome==='draw'?'DRAW':world.freeForAll.leader.profile.name.toUpperCase()+' WINS';
     if (match.state === 'ending' && match.result?.reason.startsWith('Time')) banner.textContent = 'TIME UP';
     if (match.result) {
       document.getElementById('resultTitle').textContent = match.result.outcome.toUpperCase();
@@ -409,11 +419,11 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
     if (value && input.locked) document.exitPointerLock();
   }
   window.addEventListener('keydown', e => {
-    if (e.repeat||e.target.closest?.('input,textarea,select,[contenteditable],.hero-stage')) return;
+    if (e.repeat||e.target.closest?.('input,textarea,select,button,summary,[contenteditable],.hero-stage,#hudOptions')) return;
     if (world.online?.rooms.room&&['Enter','KeyR'].includes(e.code)) return;
     if (e.code === 'KeyP') pause(!world.paused);
     if (e.code === 'KeyM') { sound.muted = !sound.muted; if (!sound.muted) sound.unlock(); updateHud(); }
-    if (e.code === 'Enter' && ['lobby', 'results'].includes(match.state)) begin('match');
+    if (e.code === 'Enter' && ['lobby', 'results'].includes(match.state)) {if(match.state==='lobby'&&world.lobbyFlow.step==='hero')world.lobbyFlow.show('match');else begin('match');}
     if (e.code === 'KeyR' && match.canPause) { if (match.state === 'practice') begin('practice'); else begin('match'); }
   });
   function begin(mode) { if(world.online?.rooms.room)return;pause(false); input.clear(); if (mode === 'practice') match.practice(); else match.start(); }
@@ -469,7 +479,7 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
     }
     const alpha = world.paused ? 1 : fixed.advance(raw, simulate);
     // Attachments already updated at the fixed simulation step.
-    if (!world.paused) {effects.update(raw);world.juice.update(raw,match.canFight&&world.combatEnabled);}
+    if (!world.paused) {effects.update(raw);world.juice.update(raw,match.canFight&&world.combatEnabled);arena.ambience?.update(raw,player.position);}
     if (!world.paused) world.hitMarkerT = Math.max(0, world.hitMarkerT - raw);
     // Interpolate only for drawing; restore authoritative positions afterwards.
     world.combatants.forEach((c, i) => {
@@ -487,7 +497,7 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
     }
     world.signals.update(match.canFight, player);
     const lightFocus = player.position.clone().lerp(dummy.position, 0.5).setY(0);
-    key.position.set(lightFocus.x + 5, 9, lightFocus.z + 4);
+    key.position.set(lightFocus.x + 5, 13, lightFocus.z + 4);
     key.target.position.copy(lightFocus); key.target.updateMatrixWorld();
     portraitFill.visible = match.state === 'lobby';
     if (portraitFill.visible) {
@@ -501,7 +511,7 @@ function startLoop(player, dummy, ai, playerBrain, updateHud, lock, lockRing, ma
     if(!world.online?.playing)world.circuit.render(camera);
     effects.render(camera);
     feedback.render(camera,world.paused?0:raw,match.canFight||match.state==='ending');
-    renderer.render(scene, camera);
+    if(match.state!=='lobby')renderer.render(scene, camera);
     world.heroPreview?.render();
     world.online?.render(camera);
     if(match.state!=='lobby')world.juice.endRender();

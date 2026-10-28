@@ -11,10 +11,10 @@ await mkdir(output, { recursive: true });
 
 // Preserve runtime paths; FBX sources, development tools and unused models stay local.
 for (const entry of ['src', 'assets/characters/generated', 'assets/environment/factory',
-  'assets/environment/old-barrel.glb', 'assets/environment/wooden-crate.glb',
+  'assets/environment/old-barrel.glb', 'assets/environment/wooden-crate.glb', 'assets/environment/polyhaven',
   'assets/Weapons/long-bow.glb', 'assets/Weapons/battle-axe.glb', 'assets/Weapons/generated/great-sword.glb',
   'assets/Weapons/realistic',
-  'assets/textures', 'assets/audio/kenney-impact', 'assets/ASSET-LICENSES.md', 'assets/USER-ASSETS.json']) {
+  'assets/textures', 'assets/vfx/dragon', 'assets/presentation', 'assets/audio/kenney-impact', 'assets/ASSET-LICENSES.md', 'assets/USER-ASSETS.json']) {
   await cp(path.join(root, entry), path.join(output, entry), { recursive: true });
 }
 await mkdir(path.join(output, 'vendor/three/build'), { recursive: true });

@@ -28,12 +28,13 @@ function signTexture(title, subtitle, bg = '#353c3c', fg = '#e0d6ba') {
 }
 
 // Batch static meshes by material after placing props and measuring colliders.
-function batchStatic(group) {
+export function batchStatic(group, { cellSize = 0 } = {}) {
   group.updateMatrixWorld(true);
   const batches = new Map();
   group.traverse(mesh => {
     if (!mesh.isMesh) return;
-    const key = mesh.material.uuid + ':' + mesh.castShadow;
+    let cell='';if(cellSize){if(!mesh.geometry.boundingBox)mesh.geometry.computeBoundingBox();const center=mesh.geometry.boundingBox.getCenter(new THREE.Vector3()).applyMatrix4(mesh.matrixWorld);cell=':'+Math.floor(center.x/cellSize)+':'+Math.floor(center.z/cellSize);}
+    const key = mesh.material.uuid + ':' + mesh.castShadow + cell;
     if (!batches.has(key)) batches.set(key, { material: mesh.material, shadows: mesh.castShadow, geometries: [] });
     const geometry = mesh.geometry.clone().applyMatrix4(mesh.matrixWorld).toNonIndexed();
     // Imported GLBs can carry tangents/UV2/color; this shared material needs only these.
@@ -55,7 +56,7 @@ function batchStatic(group) {
 
 // Keep independent health/transforms while rendering repeated crate/barrel parts
 // together. Hidden source meshes retain the original model transforms for bounds.
-function batchBreakables(props,group){
+export function batchBreakables(props,group){
   const batches=new Map();
   for(const prop of props){prop.root.updateMatrixWorld(true);prop.root.traverse(mesh=>{
     if(!mesh.isMesh||Array.isArray(mesh.material))return;
@@ -67,8 +68,10 @@ function batchBreakables(props,group){
     batch.mesh=new THREE.InstancedMesh(batch.geometry,batch.material,batch.sources.length);
     batch.mesh.castShadow=true;batch.mesh.receiveShadow=true;batch.mesh.frustumCulled=false;batch.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);group.add(batch.mesh);
   }
-  const zero=new THREE.Matrix4().makeScale(0,0,0),color=new THREE.Color();
+  const zero=new THREE.Matrix4().makeScale(0,0,0),color=new THREE.Color(),states=new Map();
   return()=>{
+    let changed=false;for(const p of props){const old=states.get(p);if(!old||old.alive!==p.alive||old.hp!==p.hp||!old.position.equals(p.root.position)||!old.rotation.equals(p.root.quaternion)||!old.scale.equals(p.root.scale)){changed=true;states.set(p,{alive:p.alive,hp:p.hp,position:p.root.position.clone(),rotation:p.root.quaternion.clone(),scale:p.root.scale.clone()});}}
+    if(!changed)return;
     for(const prop of props)prop.root.updateMatrixWorld(true);
     for(const batch of batches.values()){
       batch.sources.forEach(({prop,mesh},i)=>{batch.mesh.setMatrixAt(i,prop.alive?mesh.matrixWorld:zero);color.setRGB(1,1,1).multiplyScalar(.7+.3*prop.hp/prop.maxHp);batch.mesh.setColorAt(i,color);});

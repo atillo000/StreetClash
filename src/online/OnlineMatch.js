@@ -67,7 +67,7 @@ export class OnlineMatch{
   if(this.input.pressed('Tab'))this.lock.toggle();this.lock.update();this.aim.update(this.camera,this.player,this.world);
   const axis=this.input.moveAxis(),f=new THREE.Vector3(),r=new THREE.Vector3(),dir=new THREE.Vector3();this.cam.forward(f);this.cam.right(r);dir.addScaledVector(f,axis.y).addScaledVector(r,axis.x);if(dir.lengthSq()>1)dir.normalize();
   const target=this.lock.target,point=target?target.position.clone().add(new THREE.Vector3(0,1,0)):this.aim.point.clone();
-  this.latestInput={dir:[dir.x,dir.z],aim:wrap(target?Math.atan2(target.position.x-this.player.position.x,target.position.z-this.player.position.z):this.aim.heading(this.player)),point:point.toArray(),aiming:!!target||this.input.locked,walk:this.input.walkModifier,block:this.input.down('KeyF'),crouch:this.input.down('KeyC'),sprint:this.input.down('KeyZ')};
+  this.latestInput={dir:[dir.x,dir.z],aim:wrap(target?Math.atan2(target.position.x-this.player.position.x,target.position.z-this.player.position.z):this.aim.heading(this.player)),point:point.toArray(),aiming:!!target||this.input.locked,walk:this.input.walkModifier,block:this.input.down('KeyF'),crouch:this.input.down('KeyC'),sprint:this.input.sprintModifier};
   const pressed=requestedAttacks(this.input,this.player.moves);if(pressed.length&&this.countdown<=0&&!this.finished)this.world.sound.play('intent');
   this.pendingAttacks.push(...pressed);this.pendingAttacks=this.pendingAttacks.slice(0,6);
   for(const[k,code]of [['jump','Space'],['dodge','KeyE'],['switchWeapon','KeyQ']])this.pendingEdges[k]||=this.input.pressed(code);
@@ -75,7 +75,7 @@ export class OnlineMatch{
  }
  applyRemote(){
   const now=performance.now();for(const[id,c]of this.actors){if(c===this.player)continue;const p=this.remote.get(id);if(!p||now-p.at>NET.inputTimeoutMs||this.countdown>0||this.finished){c.mover.steer(new THREE.Vector3(),0);c.wantBlock=c.wantCrouch=false;c.mover.sprinting=false;continue;}
-   const dir=new THREE.Vector3(p.dir[0],0,p.dir[1]);if(dir.lengthSq()>1)dir.normalize();c.manualAim=true;c.aimPoint=vec(p.point);c.target=null;const ranged=c.profile.ranged??['magic','soldier','archer'].includes(c.profile.id);c.mover.lockFacing=ranged&&p.aiming&&!p.sprint?p.aim:null;c.mover.steer(dir,dir.length(),p.walk);c.wantBlock=p.block;c.wantCrouch=p.crouch;c.mover.sprinting=p.sprint&&c.character.hasClip('Sprint');
+   const dir=new THREE.Vector3(p.dir[0],0,p.dir[1]);if(dir.lengthSq()>1)dir.normalize();c.manualAim=true;c.aimPoint=vec(p.point);c.target=null;const ranged=c.profile.ranged??['magic','soldier','archer'].includes(c.profile.id);c.mover.lockFacing=ranged&&p.aiming&&!p.sprint?p.aim:null;c.mover.steer(dir,dir.length(),p.walk);c.wantBlock=p.block;c.wantCrouch=p.crouch;c.mover.sprinting=p.sprint&&!p.walk;
    if(p.edges.switchWeapon&&c.profile.id==='soldier'&&c.state==='free'){c.equipment.toggle();c.moves=c.equipment.moves;}
    if(p.edges.jump)c.tryJump();if(p.edges.dodge)c.tryDodge(dir.lengthSq()?Math.atan2(dir.x,dir.z):null);
    for(const key of p.attacks)if(ACTIONS.includes(key)&&!c.moves[key]?.sequenceOnly)c.tryAttack(key,p.aim);p.attacks=[];p.edges={};

@@ -1,11 +1,13 @@
 import * as THREE from 'three';
+import { DragonVFX as DragonApparition, loadDragonAsset } from './DragonVFX.js';
+export { DragonApparition };
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { COMBAT_ART } from './CombatArt.js';
 import { vfxTextures } from './TexturedVFX.js';
 export const elementalTextures={};
 let guardianModel;
 export async function loadElementalAssets(){
- const[atlas,sword]=await Promise.all([new THREE.TextureLoader().loadAsync('assets/textures/combat/elemental-atlas-v1.png'),new GLTFLoader().loadAsync('assets/Weapons/generated/great-sword.glb')]);atlas.colorSpace=THREE.SRGBColorSpace;guardianModel=sword.scene;
+ const[atlas,sword]=await Promise.all([new THREE.TextureLoader().loadAsync('assets/textures/combat/elemental-atlas-v1.png'),new GLTFLoader().loadAsync('assets/Weapons/generated/great-sword.glb'),loadDragonAsset()]);atlas.colorSpace=THREE.SRGBColorSpace;guardianModel=sword.scene;
  for(const[name,x,y]of [['fire',0,.5],['dragon',.5,.5],['slash',0,0],['mist',.5,0]]){
   const texture=atlas.clone();texture.repeat.set(.5,.5);texture.offset.set(x,y);texture.needsUpdate=true;elementalTextures[name]=texture;
  }
@@ -134,19 +136,6 @@ export class ElementalEffects{
  }
 }
 
-// A textured spectral creature and flowing flame tail replace the old spheres
-// and cones. This is a view-facing magical apparition, not an imported animal.
-export class DragonApparition{
- constructor(parent){this.group=new THREE.Group();parent.add(this.group);this.head=new THREE.Sprite(new THREE.SpriteMaterial({transparent:true,depthWrite:false,toneMapped:false,blending:THREE.AdditiveBlending}));this.head.scale.set(2,1.7,1);this.head.position.set(0,.1,.5);this.group.add(this.head);this.tail=[];for(let i=0;i<4;i++){const s=new THREE.Sprite(new THREE.SpriteMaterial({transparent:true,depthWrite:false,toneMapped:false,blending:THREE.AdditiveBlending}));this.group.add(s);this.tail.push(s);}this.direction=new THREE.Vector3();this.up=new THREE.Vector3();this.right=new THREE.Vector3();}
- update(s,fade){this.group.visible=s.kind==='dragon';if(!this.group.visible)return;this.state=s;this.fade=fade;
-  if(this.head.material.map!==elementalTextures.dragon){this.head.material.map=elementalTextures.dragon;this.head.material.needsUpdate=true;}
-  this.head.material.opacity=.92*fade;
-  for(let i=0;i<4;i++){const sprite=this.tail[i];if(sprite.material.map!==elementalTextures.fire){sprite.material.map=elementalTextures.fire;sprite.material.needsUpdate=true;}sprite.position.set(Math.sin(s.time*12-i)*.1,Math.cos(s.time*8-i)*.08,-i*.45);sprite.scale.set(1.6-i*.18,1-i*.1,1);sprite.material.opacity=(.5-i*.07)*fade;}
- }
- render(camera){if(!this.group.visible||!this.state)return;this.right.set(1,0,0).applyQuaternion(camera.quaternion);this.up.set(0,1,0).applyQuaternion(camera.quaternion);const angle=Math.atan2(this.state.direction.dot(this.up),this.state.direction.dot(this.right));this.head.material.rotation=angle;for(const s of this.tail)s.material.rotation=angle;}
-}
-
-
 export class GuardianWards{
  constructor(parent){this.group=new THREE.Group();parent.add(this.group);this.swords=[];}
  update(s){
@@ -162,9 +151,9 @@ export class GuardianWards{
  }
 }
 
-// Two small painted familiars share the existing apparition artwork.
+// Two small rigged familiars share the cached dragon geometry and texture.
 export class FamiliarOrbit{
  constructor(parent){this.group=new THREE.Group();parent.add(this.group);this.items=Array.from({length:2},()=>{const pivot=new THREE.Group();pivot.scale.setScalar(.3);this.group.add(pivot);return{pivot,apparition:new DragonApparition(pivot),state:{kind:'dragon',time:0,direction:new THREE.Vector3()}};});}
- update(s,fade){this.group.visible=s.kind==='spirits';if(!this.group.visible)return;for(let i=0;i<2;i++){const e=this.items[i],a=s.time*1.5+i*Math.PI;e.pivot.position.set(Math.cos(a)*.85,1.15+Math.sin(s.time*3+i)*.1,Math.sin(a)*.85);e.state.time=s.time;e.state.direction.set(-Math.sin(a),0,Math.cos(a));e.apparition.update(e.state,fade);}}
+ update(s,fade){this.group.visible=s.kind==='spirits';if(!this.group.visible)return;for(let i=0;i<2;i++){const e=this.items[i],a=s.time*1.5+i*Math.PI;e.pivot.position.set(Math.cos(a)*.85,1.15+Math.sin(s.time*3+i)*.1,Math.sin(a)*.85);e.state.time=s.time;e.state.direction.set(-Math.sin(a),0,Math.cos(a));e.state.material=s.material;e.pivot.rotation.y=Math.atan2(e.state.direction.x,e.state.direction.z);e.apparition.update(e.state,fade);}}
  render(camera){if(this.group.visible)for(const e of this.items)e.apparition.render(camera);}
 }

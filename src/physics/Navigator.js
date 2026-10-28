@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { sweepBox } from './collision.js';
+const graphs=new WeakMap();
 
 // Small visibility graph around inflated cover corners. No grid, navmesh assets,
 // worker, or physics package needed for a static two-fighter warehouse.
@@ -14,6 +15,8 @@ export class Navigator {
 
   rebuild(){
     this.revision=this.arena.revision||0;
+    let cache=graphs.get(this.arena);if(!cache){cache=new Map();graphs.set(this.arena,cache);}const shared=cache.get(this.margin);
+    if(shared?.revision===this.revision){this.nodes=shared.nodes;this.edges=shared.edges;return;}
     this.nodes = [];
     for (const b of this.arena.obstacles) {
       for (const x of [b.min.x - this.margin - 0.05, b.max.x + this.margin + 0.05]) {
@@ -30,6 +33,7 @@ export class Navigator {
         this.edges[i].push([j, cost]); this.edges[j].push([i, cost]);
       }
     }
+    cache.set(this.margin,{revision:this.revision,nodes:this.nodes,edges:this.edges});
   }
 
   inside(p, b) {

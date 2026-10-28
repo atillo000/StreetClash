@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Street Clash — Ironworks</title>
+<title>Street Clash — Arena Circuit</title>
 <style>
   html, body { margin: 0; height: 100%; background: #14161c; overflow: hidden; font-family: system-ui, sans-serif; color: #fff; }
   canvas { display: block; }
@@ -21,6 +21,9 @@
 <link rel="stylesheet" href="./src/ui/combat-feedback.css">
 <link rel="stylesheet" href="./src/ui/campaign.css">
 <link rel="stylesheet" href="./src/ui/online.css">
+<link rel="stylesheet" href="./src/ui/district.css">
+<link rel="stylesheet" href="./src/ui/selection-overlay.css">
+<link rel="stylesheet" href="./src/ui/presentation.css">
 <script type="importmap">
 { "imports": {
   "three": "./node_modules/three/build/three.module.js",
@@ -38,13 +41,13 @@
     <h1>STREET<br><span>CLASH</span></h1>
     <p class="menu-intro">IRONWORKS / LOCAL ARENA CIRCUIT</p>
     <div class="fighter-select"><div class="eyebrow">CHOOSE YOUR FIGHTER</div><div id="fighterChoices"></div><p id="fighterDescription"></p><label for="opponentChoice">RIVAL</label><select id="opponentChoice"></select></div>
-    <label class="mode-label" for="arenaMode">ENCOUNTER</label><select id="arenaMode"><option value="duel">Duel / chosen rival</option><option value="campaign">Campaign / missions &amp; progress</option><option value="survival">Zombie Survival / five waves</option><option value="gauntlet">Gauntlet / zombies and two bosses</option><option value="boss">Boss Hunt / giant Mutant</option><option value="predator">Boss Hunt / El Chupacabra</option></select>
+    <label class="mode-label" for="arenaMode">ENCOUNTER</label><select id="arenaMode"><option value="ffa" selected>Free for all / four rival bots</option><option value="duel">Duel / chosen rival</option><option value="campaign">Campaign / missions &amp; progress</option><option value="survival">Zombie Survival / five waves</option><option value="gauntlet">Gauntlet / zombies and two bosses</option><option value="boss">Boss Hunt / giant Mutant</option><option value="predator">Boss Hunt / El Chupacabra</option></select>
     <div class="arena-card"><span class="arena-number">09</span><div><strong>IRONWORKS</strong><small>DOCK 09 · INDUSTRIAL WAREHOUSE</small></div><span class="arena-tag">1V1</span></div>
     <p class="match-rules" id="modeRules">One rival. Two minutes. Win by knockout or finish with more health.</p>
-    <button id="startMatch" class="primary" type="button" disabled>Loading warehouse…</button>
+    <button id="startMatch" class="primary" type="button" disabled>Loading heroes and district…</button>
     <button id="practice" class="secondary" type="button" disabled>Practice arena</button>
     <p class="menu-controls"><kbd>WASD</kbd> move <kbd>LMB</kbd> basic <kbd>RMB</kbd> heavy <kbd>1 / 2 / 3</kbd> skills <kbd>Tab</kbd> lock on<br><kbd>F</kbd> guard <kbd>E</kbd> evade <kbd>Space</kbd> jump <kbd>C</kbd> crouch <kbd>Z</kbd> sprint<br><kbd>Q</kbd> Soldier rifle / pistol. Click to capture mouse and aim. Tap LMB three times to chain attacks.</p>
-    <details class="credits"><summary>Asset credits</summary>Industrial props and particle sprites: Kenney Factory Kit and Particle Pack (CC0). Textured Soldier rifle and service pistol: Poly Haven (CC0). Concrete: eye-candy.xyz / Poly Haven (CC0). Fighters: supplied rigged humanoid assets. Brick: Poly Haven (CC0). <a href="./assets/ASSET-LICENSES.md" target="_blank" rel="noopener">License record</a></details>
+    <details class="credits"><summary>Asset credits</summary>Industrial props and particle sprites: Kenney Factory Kit and Particle Pack (CC0). Textured Soldier rifle and service pistol: Poly Haven (CC0). Concrete: eye-candy.xyz / Poly Haven (CC0). Fighters: supplied rigged humanoid assets. Brick: Poly Haven (CC0). <a href="./assets/ASSET-LICENSES.md" target="_blank" rel="noopener">License record</a> · Detailed architecture: <a href="https://polyhaven.com" target="_blank" rel="noopener">Powered by Poly Haven</a> (CC0).</details>
   </div>
   <div class="location-stamp"><span>FREIGHT TERMINAL</span><strong>DOCK / 09</strong><small>SELECT YOUR FIGHTER</small></div>
 </section>
@@ -76,10 +79,10 @@
     <button id="rematch" class="primary" type="button">Fight again <span>↗</span></button><button id="returnMenu" class="secondary" type="button">Return to dock</button>
   </div>
 </section>
-<div id="pause"><div class="pause-card"><div class="eyebrow">TAKE A BREATHER</div><h1>PAUSED</h1><p>Your match timer is stopped.</p><button id="resume" class="primary" type="button">Resume fight</button><button id="restartMatch" class="secondary" type="button">Restart</button><button id="pauseMenu" class="secondary" type="button">Return to dock</button><details class="player-controls"><summary>Controls &amp; sound</summary><p><kbd>WASD</kbd> move · <kbd>Shift</kbd> walk · <kbd>Z</kbd> sprint<br><kbd>LMB / J</kbd> basic · <kbd>RMB / L</kbd> heavy<br><kbd>1 / K</kbd> secondary · <kbd>2 / 3</kbd> skills<br><kbd>F</kbd> guard · <kbd>E</kbd> evade<br><kbd>Space</kbd> jump · <kbd>C</kbd> crouch<br><kbd>Tab</kbd> target lock · <kbd>Wheel</kbd> camera zoom<br><kbd>Click</kbd> capture mouse · <kbd>Esc</kbd> release<br><kbd>P</kbd> pause · <kbd>M</kbd> sound: <span id="playerSound">ON</span></p></details></div></div>
+<div id="pause"><div class="pause-card"><div class="eyebrow">TAKE A BREATHER</div><h1>PAUSED</h1><p>Your match timer is stopped.</p><button id="resume" class="primary" type="button">Resume fight</button><button id="restartMatch" class="secondary" type="button">Restart</button><button id="pauseMenu" class="secondary" type="button">Return to dock</button><details class="player-controls"><summary>Controls &amp; sound</summary><p><kbd>WASD</kbd> move · <kbd>Ctrl + WASD</kbd> walk · <kbd>Shift</kbd> sprint<br><kbd>LMB / J</kbd> basic · <kbd>RMB / L</kbd> heavy<br><kbd>1 / K</kbd> secondary · <kbd>2 / 3</kbd> skills<br><kbd>F</kbd> guard · <kbd>E</kbd> evade<br><kbd>Space</kbd> jump · <kbd>C</kbd> crouch<br><kbd>Tab</kbd> target lock · <kbd>Wheel</kbd> camera zoom<br><kbd>Click</kbd> capture mouse · <kbd>Esc</kbd> release<br><kbd>P</kbd> pause · <kbd>M</kbd> sound: <span id="playerSound">ON</span></p></details></div></div>
 <aside id="devTools" hidden aria-label="Developer diagnostics"><header><span>F1 / DEVELOPER MODE</span><span id="debugFps"></span></header><div class="dev-metrics"><span>Quality <b id="q">medium</b></span><span>Sound <b id="sound">ON</b></span><span>AI <b id="ai">ON</b></span><span>Grip <b id="grip">-</b></span></div><pre id="debug"></pre><details><summary>Controls &amp; development shortcuts</summary><div id="hud">
   <b>STREET CLASH</b> / IRONWORKS<br>
-  <b>WASD</b> move &nbsp; <b>Shift</b> walk &nbsp; <b>Space</b> dodge roll<br>
+  <b>WASD</b> move &nbsp; <b>Shift</b> sprint / <b>Ctrl + WASD</b> walk &nbsp; <b>Space</b> jump<br>
   <b>LMB / J</b> light &nbsp; <b>1 / K</b> secondary &nbsp; <b>RMB / L</b> heavy<br>
   <b>2 / 3</b> skills &nbsp; Red rings warn of incoming attacks<br>
   <b>X</b> jump &nbsp; <b>C</b> crouch (caster / rifle) &nbsp; <b>Z</b> sprint<br>

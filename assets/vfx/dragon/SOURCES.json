@@ -1,0 +1,33 @@
+{
+  "author": "Drummyfish (3D mesh/rig), Cethiel (original design/texture)",
+  "license": "CC0-1.0",
+  "original": "https://opengameart.org/content/cethiels-dragon-3d",
+  "distribution": "https://github.com/Subject-314159/here-be-dragons/tree/main/blender_files",
+  "files": [
+    {
+      "file": "LICENCE",
+      "url": "https://raw.githubusercontent.com/Subject-314159/here-be-dragons/main/blender_files/LICENCE",
+      "bytes": 1320,
+      "sha256": "004f2f4268161ae8e1129a889606e316cbd44cae3581786367e6d0e87da623a5"
+    },
+    {
+      "file": "dragon.dae",
+      "url": "https://raw.githubusercontent.com/Subject-314159/here-be-dragons/main/blender_files/dragon.dae",
+      "bytes": 235178,
+      "sha256": "46c2f8f1092efd71c945d12873ca8eee905ae619c5bf27339e3c1b0289e73096"
+    },
+    {
+      "file": "dragon.png",
+      "url": "https://raw.githubusercontent.com/Subject-314159/here-be-dragons/main/blender_files/dragon.png",
+      "bytes": 260151,
+      "sha256": "f0489ade499eff7bf08c02b919ec45e28960a045a79d386d4aa1b28a2d802b13"
+    }
+  ],
+  "runtime": {
+    "file": "dragon.glb",
+    "bytes": 510660,
+    "sha256": "8e3d76121af412c1e5f1f9d33ab4aaccebaf95d95ff76d2f0ba08a988fcf10d5",
+    "triangles": 1262,
+    "processing": "Converted Collada mesh/rig and its original texture to self-contained GLB using Three.js ColladaLoader and GLTFExporter. No source animations exported; runtime wing/jaw/tail motion is procedural. Original source mesh/PNG are not shipped."
+  }
+}

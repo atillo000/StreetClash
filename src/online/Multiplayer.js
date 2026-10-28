@@ -37,7 +37,7 @@ export class Multiplayer{
  draw(){
   const room=this.rooms.room,joined=!!room;document.body.classList.toggle('online-room',joined);this.overlay.hidden=!this.playing;
   document.getElementById('onlineRoom').hidden=!joined;for(const id of ['createRoom','joinRoom','onlineCode'])document.getElementById(id).disabled=this.busy||joined;
-  for(const id of ['startMatch','practice','arenaMode','opponentChoice']){const el=document.getElementById(id);if(el)el.disabled=joined;}
+  for(const id of ['startMatch','practice','arenaMode','opponentChoice','arenaChoice']){const el=document.getElementById(id);if(el)el.disabled=joined;}
   if(room){document.getElementById('roomCode').textContent='ROOM '+room.code;const list=document.getElementById('roomMembers');list.replaceChildren();for(const m of this.rooms.members){const li=document.createElement('li');li.textContent=m.display_name+(m.user_id===room.host_id?' · HOST':'')+' / '+m.fighter+' / '+(m.ready?'READY':'CHOOSING');list.appendChild(li);}document.getElementById('readyRoom').textContent=this.me?.ready?'Not ready':'Ready';document.getElementById('readyRoom').disabled=this.busy||room.status!=='lobby';document.getElementById('startOnline').hidden=!this.rooms.host;document.getElementById('startOnline').disabled=this.busy||this.rooms.members.length<2||!this.rooms.members.every(m=>m.ready)||room.status!=='lobby';}
   document.getElementById('onlineBack').hidden=!this.rooms.host||!this.session.finished;document.getElementById('onlineExit').disabled=this.busy;
  }

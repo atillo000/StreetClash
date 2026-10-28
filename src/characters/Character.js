@@ -49,7 +49,7 @@ export class Character {
     return -Math.atan2(dx, dz);
   }
 
-  bone(name) { return this.model.getObjectByName(name); }
+  bone(name) { this.boneCache??=new Map();if(!this.boneCache.has(name))this.boneCache.set(name,this.model.getObjectByName(name)||null);return this.boneCache.get(name); }
   clipNames() { return [...this.actions.keys()]; }
   hasClip(name) { return this.actions.has(name); }
 

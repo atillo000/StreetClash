@@ -8,12 +8,12 @@ export const ART = {
 };
 
 export function createArcadeLighting(scene) {
-  scene.add(new THREE.HemisphereLight(0xc6d3de,0x625a4e,.85));
-  const key=new THREE.DirectionalLight(0xffe5c4,2.25);key.position.set(5,9,4);key.castShadow=true;
+  scene.add(new THREE.HemisphereLight(0xc6d3de,0x758073,.95));
+  const key=new THREE.DirectionalLight(0xffe3bd,2.05);key.position.set(5,9,4);key.castShadow=true;
   Object.assign(key.shadow.camera,{left:-7,right:7,top:7,bottom:-7,near:1,far:30});
   key.shadow.bias=-0.00035;key.shadow.normalBias=.015;key.shadow.radius=2;
   scene.add(key);
-  const rim=new THREE.DirectionalLight(0xbbd0df,.65);rim.position.set(-5,5,-6);scene.add(rim);
+  const rim=new THREE.DirectionalLight(0xa9c7d3,.6);rim.position.set(-5,5,-6);scene.add(rim);
   const fill=new THREE.DirectionalLight(0xe2e4dd,.3);fill.position.set(1,4,8);scene.add(fill);
   const portraitFill=new THREE.DirectionalLight(0xffebd0,1.1);scene.add(portraitFill,portraitFill.target);
   return{key,portraitFill};
@@ -26,7 +26,7 @@ export function paintedTexture(source,factory=false) {
   if(!factory)return source;
   if(converted.has(source))return converted.get(source);
   const canvas=document.createElement('canvas');canvas.width=canvas.height=256;
-  const g=canvas.getContext('2d');g.filter='saturate(32%) brightness(82%)';g.drawImage(source.image,0,0,256,256);
+  const g=canvas.getContext('2d');g.filter='saturate(58%) brightness(102%)';g.drawImage(source.image,0,0,256,256);
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
   texture.wrapS=source.wrapS;texture.wrapT=source.wrapT;texture.flipY=source.flipY;
   texture.repeat.copy(source.repeat);texture.offset.copy(source.offset);texture.anisotropy=4;

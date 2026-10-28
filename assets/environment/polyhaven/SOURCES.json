@@ -1,0 +1,354 @@
+{
+  "prepared": "2026-10-28",
+  "api": "Powered by Poly Haven — https://polyhaven.com",
+  "modifications": "Selected modules only; source layout translations removed for modular placement; original 1k PBR maps retained and embedded. No skeleton required for static architecture.",
+  "assets": [
+    {
+      "id": "modular_factory_facade",
+      "title": "Modular Factory Facade",
+      "authors": {
+        "James Ray Cock": "All"
+      },
+      "source": "https://polyhaven.com/a/modular_factory_facade",
+      "license": "CC0-1.0",
+      "licenseURL": "https://polyhaven.com/license",
+      "resolution": "1k",
+      "modules": [
+        "window_centered_small_01",
+        "window_centered_large_01",
+        "wall_window_centered_small_01",
+        "wall_door_garage_centered_01",
+        "door_garage_centered_01",
+        "wall_door_centered_small_01",
+        "door_centered_small_01",
+        "cornice02_standard_standard_01",
+        "dado_standard_standard_01"
+      ],
+      "sha256": "4d19fd767e174562a50d4fa2d18209eba191b9aa7c6ba6b30b9b8a3b9573758f",
+      "bytes": 11866028,
+      "triangles": 6968,
+      "sourceFiles": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/modular_factory_facade/modular_factory_facade_1k.gltf",
+          "sha256": "41ff58b722f9cb3e9db8bcacae3163946603ae99a1d42bb6f9045d7c4ec0f179",
+          "bytes": 372666
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_factory_facade/modular_factory_facade_trim_01_diff_1k.jpg",
+          "sha256": "beff49832938c5493a4b5bbb82eeabd138c29c6523e5228e006f702859bbc87f",
+          "bytes": 617348
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_factory_facade/modular_factory_facade_brick_arm_1k.jpg",
+          "sha256": "322cba4e6b03e39fa2a57335deddfbda6d819f8b29b108b9000790ded99b0d95",
+          "bytes": 726245
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_factory_facade/modular_factory_facade_doors_diff_1k.jpg",
+          "sha256": "157b59b9d1c929e51e2747f4f9481389743acba539308cecbb98c17294b6c7e1",
+          "bytes": 570733
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_factory_facade/modular_factory_facade_garage_arm_1k.jpg",
+          "sha256": "a72cfa9020a0a7aad2476b2ceb3c60dc21ac69d4e9026dcddc82710e6784b40f",
+          "bytes": 682331
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_factory_facade/modular_factory_facade_brick_diff_1k.jpg",
+          "sha256": "852b01c61efc07fd8e60e59767657ef51112bf65f5eaf184f02c27ea5170582d",
+          "bytes": 1115986
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_factory_facade/modular_factory_facade_trim_01_nor_gl_1k.jpg",
+          "sha256": "05441cf545c9d5f6786cd191e9b3b627668b1176e155d1fae7fbe28f6a8d3802",
+          "bytes": 827556
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_factory_facade/modular_factory_facade_brick_nor_gl_1k.jpg",
+          "sha256": "1168796e949c5ce3957142e86bce1d09531466aaea90dc46cbc3f3225cbdd78e",
+          "bytes": 1052229
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_factory_facade/modular_factory_facade_windows_diff_1k.jpg",
+          "sha256": "d361dacbd23095dacf1d82eb5a509a305c44b007f8adfb221dc2e5efe56180e0",
+          "bytes": 619613
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_factory_facade/modular_factory_facade_windows_nor_gl_1k.jpg",
+          "sha256": "4dc9e4a6b97d5384849faeebca87eae9f6736664971c6c10a41fc19bd01fc106",
+          "bytes": 612643
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_factory_facade/modular_factory_facade_trim_01_arm_1k.jpg",
+          "sha256": "0ab1657c75a9b5beb3d5552adfafccdd5174c391f20ccd6c0b41939c1a8bfe3f",
+          "bytes": 733418
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_factory_facade/modular_factory_facade_doors_nor_gl_1k.jpg",
+          "sha256": "1e3bdff6d4b30cb26e901d6d14e42d398aeacfb46767900404eb38ec5ba016dc",
+          "bytes": 488916
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_factory_facade/modular_factory_facade_windows_arm_1k.jpg",
+          "sha256": "7bfc0d579188dd88bb2d8962ae81402e6ccabff244709e68ba3be4cc5d500d0d",
+          "bytes": 873236
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_factory_facade/modular_factory_facade_doors_arm_1k.jpg",
+          "sha256": "794b16de5bd2aae6431fd8aee7b10b3b1095bbe89b233a158a1e031e0a27c4e3",
+          "bytes": 723782
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_factory_facade/modular_factory_facade_garage_nor_gl_1k.jpg",
+          "sha256": "e8ac6265622fb8c8df454ae02a75746bc37ded0d4533dbe65fa275d0e40f28ba",
+          "bytes": 752068
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_factory_facade/modular_factory_facade_garage_diff_1k.jpg",
+          "sha256": "d1cf6239c7364900b02279600937a4c9bf0a21d315efabf18f16d5637020e39f",
+          "bytes": 588149
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/modular_factory_facade/modular_factory_facade.bin",
+          "sha256": "12702fb065a838695e0621e1aac3947af92d32c439fb965c8b0563ad691fed70",
+          "bytes": 6269260
+        }
+      ]
+    },
+    {
+      "id": "modular_urban_apartments_facade",
+      "title": "Modular Urban Apartments Facade",
+      "authors": {
+        "James Ray Cock": "All"
+      },
+      "source": "https://polyhaven.com/a/modular_urban_apartments_facade",
+      "license": "CC0-1.0",
+      "licenseURL": "https://polyhaven.com/license",
+      "resolution": "1k",
+      "modules": [
+        "door_centered_small_01",
+        "wall_door_centered_small_01",
+        "window_centered_small_01",
+        "wall_window_centered_small_01",
+        "wall_standard_standard_01",
+        "cornice_standard_standard_01",
+        "crown_standard_standard_01",
+        "dado_standard_standard_01"
+      ],
+      "sha256": "63c0d8124bffaf1c38dac5429c1f05608570981a0e05bc52b237bb3d8129cb92",
+      "bytes": 8476196,
+      "triangles": 14565,
+      "sourceFiles": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/modular_urban_apartments_facade/modular_urban_apartments_facade_1k.gltf",
+          "sha256": "1a5a17dffd27fb9e1236dea7e51c4e0393a9d88ed0885a0621e67a37f80b27eb",
+          "bytes": 270799
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_urban_apartments_facade/modular_urban_apartments_facade_objects_arm_1k.jpg",
+          "sha256": "16c23388d22461b5fc8f2a879e5549bc1591d99e0da4f0c057fe2a49c458da38",
+          "bytes": 790231
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_urban_apartments_facade/modular_urban_apartments_facade_objects_diff_1k.jpg",
+          "sha256": "038083f96e63d92e6a30685f1a7f5b5b01a6448118dfecd6ed364d31088db7df",
+          "bytes": 576336
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_urban_apartments_facade/modular_urban_apartments_facade_plaster_diff_1k.jpg",
+          "sha256": "aac6cb79d9a3f73ad360077a439e1b81b1e919d6ace658a27225b20858bcad3c",
+          "bytes": 519200
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_urban_apartments_facade/modular_urban_apartments_facade_trim_01_diff_1k.jpg",
+          "sha256": "62510c9e167363da1ff101b03d0c7705c74cb0e20bb02fc7bc0596f9da26ac8c",
+          "bytes": 553769
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_urban_apartments_facade/modular_urban_apartments_facade_trim_02_diff_1k.jpg",
+          "sha256": "10097392fa107eb3723fff229f1f9522dedd2f91e4bdc3eaac884325d42ddf8e",
+          "bytes": 499399
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_urban_apartments_facade/modular_urban_apartments_facade_objects_nor_gl_1k.jpg",
+          "sha256": "e5bac0355cbacb09d4400398f7e5f159624fb0519d5c007b639da75e59137030",
+          "bytes": 544638
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_urban_apartments_facade/modular_urban_apartments_facade_trim_01_arm_1k.jpg",
+          "sha256": "b3fe0aa9389d827afa4a29e15842209a6d8dadb86eca9a0b462c2c9fe4f58987",
+          "bytes": 651756
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_urban_apartments_facade/modular_urban_apartments_facade_trim_02_arm_1k.jpg",
+          "sha256": "45a49a17b19b7d579237ec343b56ebee79ce1b06cb9d1179af8609d64ee1c27f",
+          "bytes": 706292
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_urban_apartments_facade/modular_urban_apartments_facade_plaster_arm_1k.jpg",
+          "sha256": "71c2ab6cfe97411f0111e99658b88cd22946abc96a3ed67051e06dab8dde5cb8",
+          "bytes": 533411
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_urban_apartments_facade/modular_urban_apartments_facade_trim_02_nor_gl_1k.jpg",
+          "sha256": "8a87d143725ec32951061b55935ffcef426755b0d11236d93e8b18cf94612498",
+          "bytes": 820776
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_urban_apartments_facade/modular_urban_apartments_facade_trim_01_nor_gl_1k.jpg",
+          "sha256": "65cf274a67914590329b67eb6d926377d5aa45fa326afb91caa8781a30c99160",
+          "bytes": 850037
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/modular_urban_apartments_facade/modular_urban_apartments_facade_plaster_nor_gl_1k.jpg",
+          "sha256": "79cebca9b98dcb62efc5474a2d236c98a34b7260b58a65db24e501acf60de66c",
+          "bytes": 1003277
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/modular_urban_apartments_facade/modular_urban_apartments_facade.bin",
+          "sha256": "f041e71b6bd31864f20dd64d3a82519454a603c300686161e0349ff44f838bf2",
+          "bytes": 8168772
+        }
+      ]
+    },
+    {
+      "id": "painted_wooden_bench",
+      "title": "Painted Wooden Bench",
+      "authors": {
+        "Kirill Sannikov": "All"
+      },
+      "source": "https://polyhaven.com/a/painted_wooden_bench",
+      "license": "CC0-1.0",
+      "licenseURL": "https://polyhaven.com/license",
+      "resolution": "1k",
+      "modules": [
+        "painted_wooden_bench"
+      ],
+      "sha256": "f0efb0006a38a66284cb40dc909fafe33393bc4c37ab9fe54a7a21195911be0c",
+      "bytes": 1988536,
+      "triangles": 630,
+      "sourceFiles": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/painted_wooden_bench/painted_wooden_bench_1k.gltf",
+          "sha256": "2289ab82f3fe3045bf18f7b9541743d2c65b9f071cb34bbe424d2bc998f3e507",
+          "bytes": 2835
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/painted_wooden_bench/painted_wooden_bench.bin",
+          "sha256": "5799bcb20924105cccd6424de8cdb8e67eb57fddc19c395befeac634a7b2e013",
+          "bytes": 25444
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/painted_wooden_bench/painted_wooden_bench_nor_gl_1k.jpg",
+          "sha256": "a0f53740d77fc61aac01de0b7e1ae6109445d1756839f739ae31fdf10c9911f2",
+          "bytes": 830104
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/painted_wooden_bench/painted_wooden_bench_diff_1k.jpg",
+          "sha256": "9bc533313091ee71eaca5fa6334b71d27935d9d75311f64df6a53c28a67c435c",
+          "bytes": 545216
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/painted_wooden_bench/painted_wooden_bench_arm_1k.jpg",
+          "sha256": "878785565eeff706b8f1e4db7e3d794a544e9cf0e56cee424d9a271ab4ead47e",
+          "bytes": 586040
+        }
+      ]
+    },
+    {
+      "id": "steel_frame_shelves_02",
+      "title": "Steel Frame Shelves 02",
+      "authors": {
+        "James Ray Cock": "All"
+      },
+      "source": "https://polyhaven.com/a/steel_frame_shelves_02",
+      "license": "CC0-1.0",
+      "licenseURL": "https://polyhaven.com/license",
+      "resolution": "1k",
+      "modules": [
+        "steel_frame_shelves_02"
+      ],
+      "sha256": "d9858736c181f2ddc8f306958625ad0c319c37e8ae3cd124e40679d5b41ffed6",
+      "bytes": 539252,
+      "triangles": 4348,
+      "sourceFiles": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/steel_frame_shelves_02/steel_frame_shelves_02_1k.gltf",
+          "sha256": "df103b9fbb08a60e262cc1d8af5cb37f3c1231a8764eeacec23d363be24feca6",
+          "bytes": 2775
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/steel_frame_shelves_02/steel_frame_shelves_02.bin",
+          "sha256": "bcfe8e37632961b13f7ac845f7f2505181c394e7bd356c123a0ef7706aabd70d",
+          "bytes": 142344
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/steel_frame_shelves_02/steel_frame_shelves_02_nor_gl_1k.jpg",
+          "sha256": "c0033947364a267d17307943df975bc9d81268b51532c73340dd0bf45d204990",
+          "bytes": 51446
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/steel_frame_shelves_02/steel_frame_shelves_02_arm_1k.jpg",
+          "sha256": "7fbcad4858018270eec05cbcdfec886adf4de39a057a8fc15a3c1d1d009f0307",
+          "bytes": 199312
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/steel_frame_shelves_02/steel_frame_shelves_02_diff_1k.jpg",
+          "sha256": "2b41f59f3fbc6464e10ce11ee17c80f35173de8321865e4c4a966c55f5898f15",
+          "bytes": 144386
+        }
+      ]
+    },
+    {
+      "id": "metal_tool_chest",
+      "title": "Metal Tool Chest",
+      "authors": {
+        "Yann Kervran": "Rigging",
+        "John Hutcheson": "Modeling & Texturing"
+      },
+      "source": "https://polyhaven.com/a/metal_tool_chest",
+      "license": "CC0-1.0",
+      "licenseURL": "https://polyhaven.com/license",
+      "resolution": "1k",
+      "modules": [
+        "metal_tool_chest_chest",
+        "metal_tool_chest_hinge_chest",
+        "metal_tool_chest_lid",
+        "metal_tool_chest_handle_left",
+        "metal_tool_chest_lock",
+        "metal_tool_chest_hinge_lid",
+        "metal_tool_chest_handle_right"
+      ],
+      "sha256": "a4589b5b9dd04fb94a482596cf33a13c554523af42a3d4ae29b47abb2cc5e93d",
+      "bytes": 2354196,
+      "triangles": 13360,
+      "sourceFiles": [
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/metal_tool_chest/metal_tool_chest_1k.gltf",
+          "sha256": "2f66fbb723cd52382f73daec184b68d9b36842a488ecaf120e5c3a6354e9dea4",
+          "bytes": 12256
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/metal_tool_chest/metal_tool_chest.bin",
+          "sha256": "c2bde4e96af4aad171e57e00ff78f0aa9e3b603286a2c74cd6d7c2a20c487342",
+          "bytes": 434496
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/metal_tool_chest/metal_tool_chest_diff_1k.jpg",
+          "sha256": "da37ba2a8d064637c7206cb091597275986e788ce379bee58a96c949cce06511",
+          "bytes": 552016
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/metal_tool_chest/metal_tool_chest_nor_gl_1k.jpg",
+          "sha256": "bc5a4009a544a9504849b951afd984d6ac7c5adb0d43c5a08c0a834f8e811a01",
+          "bytes": 604781
+        },
+        {
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/metal_tool_chest/metal_tool_chest_arm_1k.jpg",
+          "sha256": "d5552ee63ac9bc53527ee1bf19bcbd31d8424bcc15fe9861f79bba917e857828",
+          "bytes": 755794
+        }
+      ]
+    }
+  ]
+}

@@ -10,7 +10,8 @@ export class Input {
     this.combatEnabled = false;
 
     window.addEventListener('keydown', e => {
-      if(e.target.closest?.('input,textarea,select,[contenteditable],.hero-stage'))return;
+      if(e.target.closest?.('input,textarea,select,button,summary,[contenteditable],.hero-stage,#hudOptions'))return;
+      if(this.combatEnabled&&e.ctrlKey&&['KeyW','KeyA','KeyS','KeyD'].includes(e.code))e.preventDefault();
       if (['Space', 'Tab', 'F1', 'KeyX', 'KeyC', 'KeyZ', 'Digit1', 'Digit2', 'Digit3', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
       if (!e.repeat) this.pressedSet.add(e.code);
       this.keys.add(e.code);
@@ -59,7 +60,8 @@ export class Input {
     return len > 1 ? { x: x / len, y: y / len } : { x, y };
   }
 
-  get walkModifier() { return this.down('ShiftLeft') || this.down('ShiftRight'); }
+  get walkModifier() { return this.down('ControlLeft') || this.down('ControlRight'); }
+  get sprintModifier() { return !this.walkModifier&&(this.down('ShiftLeft') || this.down('ShiftRight')); }
 
   // Returns and clears accumulated look/zoom input for this frame.
   consumeLook() {

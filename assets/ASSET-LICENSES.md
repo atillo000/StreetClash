@@ -148,3 +148,35 @@ Adobe's Mixamo FAQ permits royalty-free use of characters and animations in vide
 ## Combat impact audio - 2026-10-26
 
 21 original OGG files selected from Kenney Impact Sounds: https://kenney.nl/assets/impact-sounds . CC0-1.0; License.txt and file hashes retained in assets/audio/kenney-impact. Punches, metal blocks, concrete steps and wood/stone/metal impacts use three variations each. The download archive and unused sounds are not shipped. Existing Kenney particle art supplies the textured contact flashes, streaks and dust; no new third-party JavaScript dependency.
+
+
+## District presentation - 2026-10-28
+
+No third-party assets downloaded. Existing licensed Kenney factory models, supplied crates/barrels and concrete/brick textures are reused. District buildings, phone booths, benches, tower, stage, signs, hero-selection pedestal and UI are original project geometry/code; hero backstories are original fiction. The three location themes share one layout. Existing fighter meshes, skins, rigs, clips, weapons and VFX retain their existing licenses.
+
+
+## Detailed architecture and selection workshop — 2026-10-28
+
+Five locally downloaded Poly Haven assets, CC0-1.0 (https://polyhaven.com/license):
+
+- Modular Factory Facade — https://polyhaven.com/a/modular_factory_facade — 11588 KiB; 6968 source triangles.
+- Modular Urban Apartments Facade — https://polyhaven.com/a/modular_urban_apartments_facade — 8278 KiB; 14565 source triangles.
+- Painted Wooden Bench — https://polyhaven.com/a/painted_wooden_bench — 1942 KiB; 630 source triangles.
+- Steel Frame Shelves 02 — https://polyhaven.com/a/steel_frame_shelves_02 — 527 KiB; 4348 source triangles.
+- Metal Tool Chest — https://polyhaven.com/a/metal_tool_chest — 2299 KiB; 13360 source triangles.
+
+Only selected façade modules and original 1K PBR maps are retained. Non-modular prop transforms are flattened for static placement. Runtime GLBs total 25.22 MB. Exact sources, authors, hashes and changes are in environment/polyhaven/SOURCES.json; license record is beside it. Powered by Poly Haven — https://polyhaven.com . Workshop briefing-board artwork, phone-booth details and overlay UI are original project code. Existing fighter rigs and textures retain their existing terms.
+
+
+## Minimal HUD and industrial surfaces - 2026-10-28
+
+Metal Plate 02 (https://polyhaven.com/a/metal_plate_02) and Corrugated Iron 03 (https://polyhaven.com/a/corrugated_iron_03), six local 1K JPG PBR maps, CC0-1.0: https://polyhaven.com/license . Exact downloads and hashes are in presentation/SOURCES.json; license record is presentation/LICENSE-textures.txt.
+
+Barlow Condensed Bold and Black from the official Google Fonts repository: https://github.com/google/fonts/tree/main/ofl/barlowcondensed . Copyright The Barlow Project Authors, SIL Open Font License 1.1; presentation/OFL.txt is retained. Font files are unmodified and served locally.
+
+HUD skull/broken-heart icons, corrugated roof geometry, rivets and presentation code are original project work. No proprietary Brawl Busters graphics, logos or UI textures were imported.
+
+
+## Rigged dragon visual - 2026-10-28
+
+Cethiel's Dragon 3D: https://opengameart.org/content/cethiels-dragon-3d . 3D mesh/rig by Drummyfish, original design and texture by Cethiel, CC0-1.0. Downloaded only the CC0 mesh, texture and asset-specific LICENCE from https://github.com/Subject-314159/here-be-dragons/tree/main/blender_files . The repository's GPL game code was not used. Converted to a self-contained GLB; original painted texture and 32-bone rig retained. Runtime animation in DragonVFX.js is original procedural code. Source URLs/hashes, conversion notes and runtime GLB hash are in vfx/dragon/SOURCES.json; LICENCE is retained there.
